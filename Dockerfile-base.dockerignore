@@ -1,0 +1,7 @@
+# Using the exclude everything -> add stuff pattern
+
+*
+
+!renv.lock
+!python_requirements.txt
+!Makevars-docker

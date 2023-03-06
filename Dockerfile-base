@@ -1,0 +1,59 @@
+## SLOPER base dependencies image.  Installs system libraries, R libraries, and others.  
+## Top image extends this image and copies the source code for the app
+
+## Must provide a secret file for access to private github repos with the build argument:  
+## docker build --secret id=github_pat,src=.mysecret ...
+
+# Install latest version of rocker image
+FROM rocker/shiny:4.1.1
+
+# Load general use libraries
+RUN apt-get update && apt-get install -y \
+    sudo \
+    pandoc \
+    pandoc-citeproc \
+    libssl-dev \
+    libcurl4-openssl-dev \
+    libcairo2-dev \
+    libxt-dev \
+    libv8-dev \
+    libssh2-1-dev \
+    libhiredis-dev \
+    libmagick++-dev \
+    libzmq3-dev \
+    libxml2-dev \
+    vim python3-venv
+    
+USER root
+
+WORKDIR /srv/shiny-server/
+
+# Need to set linker flags to install pmartR in linux environment
+RUN mkdir $HOME/.R
+COPY Makevars-docker .
+RUN cp Makevars-docker $HOME/.R/Makevars
+
+# only need this to restore
+COPY renv.lock .
+
+# pre-install renv
+RUN R -e "install.packages('renv', repos = 'https://cran.rstudio.com')"
+
+# install all packages listed in renv.lock
+RUN --mount=type=secret,id=access_tokens set -a \
+&& . /run/secrets/access_tokens && set +a \
+&& R -e 'renv::restore()'
+
+# install packages in active development, this helps with build times as these
+# are often changed and require re-installation of all files in the lockfile.
+RUN --mount=type=secret,id=access_tokens set -a \
+&& . /run/secrets/access_tokens && set +a \
+&& R -e "renv::install('gitlab@code.emsl.pnl.gov::multiomics-analyses/mapdataaccess-lib@72e880781d8f4cea7e9045c088020d04fce66d0d')" \
+&& R -e "renv::install('EMSL-computing/pallid@d07c0330fbd29f3bb22e7aadd0e212735e7c50d8')" \
+&& R -e "options(repos = BiocManager::repositories());renv::install('pmartR/pmartR@2d922a3ef3709f5164660210591d15e69ee81f6c')"
+
+# python and requirements
+COPY python_requirements.txt .
+RUN python3 -m venv /venv
+RUN /venv/bin/pip install --upgrade pip
+RUN /venv/bin/pip install -r python_requirements.txt
