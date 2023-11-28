@@ -1,0 +1,55 @@
+
+## render
+
+output$transform_picker_UI <- renderUI({
+  
+  if(inherits(omicsData$objQC, "seqData")){
+    return("Data scaling and transformation is not appropriate for count-based RNA-seq data.")
+  }
+  
+  ## Disable for seqdata
+  choices <- list("Raw intensity" = "abundance", 
+                  "Log base 2" = "log2", 
+                  "Log base 10" = "log10", 
+                  "Natural log" = "log")
+  
+  choices <- choices[!(choices %in% get_data_scale(omicsData$objQC))]
+  pickerInput("transform", "Transform data to:", choices = c("No transformation", choices))
+})
+
+
+output$transform_preview_plot <- renderPlot({
+  
+  req(!inherits(omicsData$objMSU, "seqData"))
+  
+  out <- omicsData$objMSU
+  
+  if(input$transform != get_data_scale(omicsData$objMSU) && 
+     !is.null(input$transform) && 
+     input$transform != "No transformation"){
+    out <- edata_transform(out, input$transform)
+  }
+  
+  plot(out)
+  
+})
+
+observeEvent(input$done_tr_box, {
+  
+  updateBoxCollapse(session, id = "transform_collapse", close = "transformation")
+  shinyjs::show("complete_transform")
+  
+})
+
+
+observeEvent(input$complete_transform, {
+  
+  req(!is.null(omicsData$objMSU) && input$complete_transform > 0 && 
+        !is.null(input$transform) && 
+        input$transform != "No transformation" &&
+        input$transform != get_data_scale(omicsData$objMSU))
+  
+  ## Call from previous so they can redo as they like
+    omicsData$objPP <- edata_transform(omicsData$objMSU, input$transform)
+  
+})

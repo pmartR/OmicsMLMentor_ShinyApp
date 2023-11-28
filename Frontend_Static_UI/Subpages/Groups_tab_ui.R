@@ -1,0 +1,91 @@
+
+groups_tab <- function() {
+  # tabPanel("Upload Sample Data",
+           # class = "collapse_page",
+           fluidRow(
+             column(
+               4,
+               collapseBoxGroup(
+                 id = "groups_collapse_left",
+                 # file upload collapse sub-div
+                 collapseBox(
+                   "Sample Data File Options", 
+                   icon_id = "groups-upload-fmeta",
+                   icon = icon("exclamation-sign", lib = "glyphicon"),
+                   value = "fdata_options",
+                   collapsed = F,
+                   
+                   
+                   radioGroupButtons(
+                     inputId = "use_fdata", label = "Include sample data in workflow?",
+                     choices = c("Yes" = "f_data", "No" = ""), selected = character(0)
+                   ),
+                   
+                   "(Allows for response or coloring designation on experimental factors or other sample data)",
+                   
+                   conditionalPanel(
+                     condition = "input.use_example == true && input.use_fdata == 'f_data'",
+                     div(
+                       br(),
+                       checkboxInput("use_example_fdata", "Use example sample data?", value = F),
+                     )
+                   ),
+                   
+                   conditionalPanel(
+                     condition = "input.use_fdata == 'f_data' && input.use_example_fdata == false",
+                     div(
+                       br(),
+                       radioGroupButtons(
+                         inputId = "how_make_fdata", label = "Create sample data from:",
+                         choices = c("Uploaded file" = "upload", 
+                                     "Experimental data column names" = "colnames"),
+                         selected = character(0)
+                       )
+                     )
+                   ),
+                   
+                   br(),
+                   br(),
+                   
+                   fluidRow(
+                     column(10, ""),
+                     column(2, actionButton("fdata_options_done", "Done", style="float:right"))
+                   )
+                 ),
+                 
+                 uiOutput("f_data_upload_UI"),
+                 
+                 uiOutput("f_data_generate_UI"),
+                 
+                 uiOutput("f_meta_spec_UI")
+                 
+               ), # parent collapse
+               
+               
+               div(id = "check_group_cols_wrapper", class = "tooltip-wrapper",
+                   actionButton(inputId = "check_group_cols", 
+                                label = "Confirm selections"
+                                )
+               )
+             ), # column 4
+             column(
+               8,
+               collapseBoxGroup(
+                 id = "groups_collapse_right", multiple = TRUE,
+                 collapseBox("Sample Data Preview",
+                             value = "data_preview_fdata",
+                             
+                             tabsetPanel(id = "preview_data_f_data")
+                             # DTOutput("DT_f_data")
+                 ),
+                 collapseBox("Detected Data Properties",
+                             value = "fdata_plots",
+                             uiOutput("Group_plot_picker"),
+                             plotOutput("Group_tab_plots")
+                             # uiOutput("group_tab_boxplots")
+                 )
+               )
+             ) # column 8
+           ) # fluidrow
+  # )
+}

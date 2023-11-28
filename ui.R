@@ -5,7 +5,7 @@ ui <- function(request) {
     use_prompt(),
     useShinydashboardPlus(),
     
-    extendShinyjs(script = "../Helper_functions/shinyui.js", functions = c(
+    extendShinyjs(script = "./Helpers/shinyui.js", functions = c(
       "isTabdisabled", # For testing purposes
       "isIconhidden", # For testing purposes
       "disableTab", # Disables a tab
@@ -16,14 +16,18 @@ ui <- function(request) {
     )), # Custom JS code
     
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "../Helpers/SLOPER.css"),
+      # tags$link(rel = "stylesheet", type = "text/css", href = "./Helpers/SLOPER.css"),
       
       # Hack to replicate the addTooltip functionality with prompter
-      tags$script(HTML(addTooltip_handler_script))
+      tags$script(HTML(addTooltip_handler_script)),
+      
+      includeCSS("./Helpers/SLOPER.css")
     ),
     
-    list(tags$head(HTML('<link rel="icon", href="pmartlogo.png", type="image/png" />'))),
-    div(style = "display:none", titlePanel(title = "", windowTitle = "SLOPE")),
+    list(tags$head(HTML('<link rel="icon", href="slope_icon.png", 
+                        type="image/png" />'))),
+    
+    div(style = "display:none", titlePanel(title = "", windowTitle = "")),
     
     # Loading mask, can hide/show/edit html when wanting to show "loading" but a
     # progress indicator doesn't make sense (like at startup, where a bunch of
@@ -31,56 +35,51 @@ ui <- function(request) {
     div(
       id = "loading-gray-overlay",
       class = "loading-mask",
-      div(class = "fadein-out busy relative-centered", style = "font-size:xx-large", "Loading app resources...")
+      div(class = "fadein-out busy relative-centered",
+          style = "font-size:xx-large",
+          "Loading app resources...")
     ), 
+    
+    inlineCSS('.navbar-default .navbar-brand {padding: 2px;}'),
     #
     navbarPage(
-      title = tags$span(tags$img(src = "pmartlogo.png", style = "max-height:100%"), "SLOPE"),
+      title = tags$span(tags$img(src = "slope_icon.png", style = "max-height:100%"), ""),
       id = "top_page",
       ##### LANDING TAB ######
       navbarMenu(
         "Welcome",
         tabPanel(
           "Instructions",
-          includeMarkdown("Static_UI/datareqs.md")
+          includeMarkdown("Frontend_Static_UI/datareqs.md")
         ),
         tabPanel("Example Data"),
-        tabPanel("Glossary")
+        tabPanel("Glossary",
+                 
+                 wellPanel(
+                   
+                   strong("Click graph for more information"),
+                   
+                   hr(),
+                   
+                   div(
+                     style = 'height:500px; overflow-y: scroll',
+                     
+                     br(),
+                     
+                     fluidRow(
+                       map(models, function(x) uiOutput(paste0("EM_", x)))
+                     )
+                     
+                   )
+                 )
+                 
+                 )
       ),
-
-      ##### GOALS TAB ######
-      # goals_tab(),
-
-      ##### UPLOAD TAB ######
-      upload_tab(),
-
-      ##### REFERENCE TAB ######
-      # reference_tab(),
-
-      ###### Groups TAB #######
-      groups_tab(),
       
-      ###### Variable Selection #######
-      tabPanel("Variable Specifications"),
-      
-      ###### Variable Selection #######
-      tabPanel("Model Selection"),
-      
-      navbarMenu("Pre-processing",
-                 tabPanel("Scaling and Transformation"),
-                 
-                 #### Filter Tab ####
-                 filter_tab(),
-                 
-                 ###### Normalization TAB #######
-                 norm_tab(),
-                 
-                 # #### Statistics Tab #####
-                 # pepstats_tab(),
-                 
-                 ###### Roll-up Tab ######
-                 rollup_tab("")
-                 ),
+      tabPanel("Upload", upload_tab_overlord()),
+      tabPanel("Quality Control", QC_tab_overlord()),
+      tabPanel("Model Set-Up", Model_setup_tab_overlord()),
+      tabPanel("Pre-processing", preprocessing_tab_overlord()),
       
       # #### EDA Tab #####
 
@@ -88,14 +87,11 @@ ui <- function(request) {
       # #### EDA Tab #####
       # EDA_tab(),
 
-      # #### Statistics Tab #####
-      # stats_tab(),
-
       #### Stats Integration Tab ####
       # integration_tab(),
 
       ### Run model ###
-      tabPanel("Run Model"),
+      tabPanel("Run Model", RM_tab_overlord()),
       
       # #### Download Tab #####
       download_tab(),
@@ -112,10 +108,10 @@ ui <- function(request) {
                         style = "position:fixed;left:15px;bottom:15px")),
     
     actionButton("model_reccomendations", 
-                        "Model Suggestions",
+                        "Model Requirements",
                         style = "position:absolute;top:3px;right:16px;z-index:1100;"),
     
-    uiOutput("developer_buttons"),
+    # uiOutput("developer_buttons"),
     
     ## ADDED FOR MAP
     div(
@@ -123,7 +119,10 @@ ui <- function(request) {
       div(
         uiOutput("MAP_button")
       )
-    )
+    ),
+    
+    
+    uiOutput("developer_buttons")
     
     
   )

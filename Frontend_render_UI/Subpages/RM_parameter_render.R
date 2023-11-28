@@ -1,0 +1,427 @@
+
+
+observeEvent(map_lgl(grep("optimize", names(input), value = T), function(x) input[[x]]), {
+  
+  if(any(map_lgl(grep("optimize", names(input), value = T), function(x) input[[x]]))){
+    enable("param_opti")
+  } else disable("param_opti")
+  
+})
+
+## Param output
+
+### Functions for valid model parameters
+
+## There are a ton -- https://www.tidymodels.org/find/parsnip/
+## Find valid optimizations
+
+rf_params <- function(){
+
+  ## params
+  ## "parsnip::rand_forest -- mode, engine, mtry, trees, min_n"
+  ## "randomForest:::randomForest.default -- x, y, xtest, ytest, ntree, mtry, weights, replace, classwt, cutoff, strata, sampsize, nodesize, maxnodes, importance, localImp, nPerm, proximity, oob.prox, norm.votes, do.trace, keep.forest, corr.bias, keep.inbag, ..."
+
+  # ## Figure out which ones can be tuned
+  # 
+  # dials::mtry()
+  # dials::trees()
+  # dials::min_n()
+  # 
+  # dials::max_nodes()
+  # 
+  # ## strata argument for stratified sampling
+  # 
+  # dials::sample_size()
+  # dials::sample_prop()
+  # dials::cost_complexity()
+  # dials::tree_depth()
+  # dials::loss_reduction()
+  # dials::prune()
+  
+  if(isTruthy(input$skip_ag)){
+    response <- input$pick_model_group_pick
+  } else {
+    response <- input$f_data_response_picker
+  }
+  
+  x <- as.data.frame(t(omicsData$objPP$e_data[-1]))
+  if(length(response) == 1){
+    y <- omicsData$objPP$f_data[[response]]
+  } else {
+    y <- omicsData$objPP$f_data[response]
+    y <- apply(y, 1, paste, sep = "_")
+  }
+  
+  mtry <- if(!is.null(y) && !is.factor(y)) max(floor(ncol(x)/3), 1) else floor(sqrt(ncol(x)))
+  min_n <- if (!is.null(y) && !is.factor(y)) 5 else 1
+  
+  div(
+    numericInput("trees", "Number of trees in forest", min = 1L, 
+                 max = 2000L, value = 500),
+    checkboxInput("optimize_trees", "Optimize?", value = F),
+    br(),
+    
+    numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
+                 max = 40L, value = min_n),
+    checkboxInput("optimize_min_n", "Optimize?", value = F),
+    br(),
+    
+    numericInput("mtry", "Number of predictors to evaluate at each split", min = 1L, 
+                 max = 50L, value = mtry),
+    checkboxInput("optimize_mtry", "Optimize?", value = F),
+    
+  )
+  
+
+}
+
+lsvm_params <- function(){
+
+  ## Selected params
+  # parsnip::svm_linear -- mode, engine, cost, margin
+  # ksvm_fun -- x, data, ..., subset, na.action, scaled
+
+  ## Figure out which ones can be tuned
+  ## scaled as TF, when would you not scale?
+  # dials::cost() #### is the trans argument needed here?
+  # dials::svm_margin() #### is the trans argument needed here?
+  
+  div(
+    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
+                 max = 5, value = 1),
+    checkboxInput("optimize_cost", "Optimize?", value = F),
+    br(),
+    
+    numericInput("svm_margin", "A positive number for the epsilon in the SVM insensitive loss function (regression only)", min = 0, 
+                 max = 0.2, value = 0.1),
+    checkboxInput("optimize_svm_margin", "Optimize?", value = F),
+
+  )
+
+
+}
+
+psvm_params <- function(){
+
+  ## Selected params
+  # parsnip::svm_poly -- mode, engine, cost, degree, scale_factor, margin
+  # ksvm_fun -- x, data, ..., subset, na.action, scaled
+  ## Figure out which ones can be tuned
+
+  ## scaled as TF, when would you not scale?
+  # dials::cost() ## C #### is the trans argument needed here?
+  # dials::svm_margin() ## epsilon.   #### is the trans argument needed here?
+  # dials::scale_factor()
+  # dials::degree()
+  
+  
+  div(
+    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
+                 max = 5, value = 1),
+    checkboxInput("optimize_cost", "Optimize?", value = F),
+    br(),
+    
+    numericInput("svm_margin", "A positive number for the epsilon in the SVM insensitive loss function (regression only)", min = 0, 
+                 max = 0.2, value = 0.1),
+    checkboxInput("optimize_svm_margin", "Optimize?", value = F),
+    
+    numericInput("scale_factor", "The scaling parameter of the polynomial and tangent kernel is a convenient way of normalizing patterns without the need to modify the data itself", min = 0,
+                 max = 10, value = 1),
+    checkboxInput("optimize_scale_factor", "Optimize?", value = F),
+    
+    
+    # numericInput("scale_factor", "The scaling parameter of the polynomial and tangent kernel is a convenient way of normalizing patterns without the need to modify the data itself", min = 10^-10, 
+    #              max = 10^-1, value = 1),
+    # checkboxInput("optimize_scale_factor", "Optimize?", value = F),
+    
+    numericInput("degree", "A positive number for polynomial degree", min = 1, 
+                 max = 3, value = 1),
+    checkboxInput("optimize_degree", "Optimize?", value = F),
+    
+  )
+
+}
+
+rsvm_params <- function(){
+
+  ## Selected params
+  # parsnip::svm_rbf -- mode, engine, cost, rbf_sigma, margin
+  # ksvm_fun -- x, data, ..., subset, na.action, scaled
+
+  ## Figure out which ones can be tuned
+  ## scaled as TF, when would you not scale?
+  # dials::cost()
+  # dials::svm_margin()
+  # dials::rbf_sigma()
+  
+  div(
+    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
+                 max = 5, value = 2),
+    checkboxInput("optimize_cost", "Optimize?", value = F),
+    br(),
+    
+    numericInput("svm_margin", "A positive number for the epsilon in the SVM insensitive loss function (regression only)", min = 0, 
+                 max = 0.2, value = 0.1),
+    checkboxInput("optimize_svm_margin", "Optimize?", value = F),
+    br(),
+    
+    numericInput("rbf_sigma", "The inverse kernel width used by the kernel", min = 10^-10, 
+                 max = 1, value = 1),
+    br(),
+    ## sigest
+    checkboxInput("optimize_rbf_sigma", "Optimize?", value = F)
+    
+  )
+
+}
+
+logistic_params <- function(){
+
+  ## Selected params
+  # parsnip::logistic_reg -- mode, engine, penalty, mixture
+  # glmnet::glmnet -- x, y, family, weights, offset, alpha, nlambda, lambda.min.ratio, lambda, standardize, intercept, thresh, dfmax, pmax, exclude, penalty.factor, lower.limits, upper.limits, maxit, type.gaussian, type.logistic, standardize.response, type.multinomial, relax, trace.it, ...
+  ## Figure out which ones can be tuned
+
+  # dials::penalty() ## these should be for feature selection -- these need to come after splits tho?
+  # dials::mixture() ## these should be for feature selection  -- these need to come after splits tho?
+  # ?dials::weight
+  # ?dials::weight_scheme
+  # ?dials::weight_func
+  
+  div(
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
+                 max = 1, value = 0, step = 0.1),
+    checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br(),
+    
+    numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
+                 max = 1, value = 0, step = 0.1),
+    checkboxInput("optimize_mix", "Optimize?", value = F),
+    
+  )
+
+}
+
+loglasso_params <- function(){
+
+  ## Selected params
+  # parsnip::logistic_reg -- mode, engine, penalty, mixture
+  # glmnet::glmnet -- x, y, family, weights, offset, alpha, nlambda, lambda.min.ratio, lambda, standardize, intercept, thresh, dfmax, pmax, exclude, penalty.factor, lower.limits, upper.limits, maxit, type.gaussian, type.logistic, standardize.response, type.multinomial, relax, trace.it, ...
+  # ## Figure out which ones can be tuned
+
+  # dials::penalty() ## these should be for feature selection -- these need to come after splits tho?
+  # dials::mixture() ## these should be for feature selection  -- these need to come after splits tho?
+  # ?dials::weight
+  # ?dials::weight_scheme
+  # ?dials::weight_func
+  
+  div(
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
+                 max = 1, value = 1, step = 0.1),
+    checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br(),
+    
+    numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
+                 max = 1, value = 1, step = 0.1),
+    checkboxInput("optimize_mix", "Optimize?", value = F),
+    
+  )
+
+}
+
+multi_params <- function(){
+
+  ## Selected params
+  # parsnip::multinom_reg -- mode, engine, penalty, mixture
+  # glmnet::glmnet -- x, y, family, weights, offset, alpha, nlambda, lambda.min.ratio, lambda, standardize, intercept, thresh, dfmax, pmax, exclude, penalty.factor, lower.limits, upper.limits, maxit, type.gaussian, type.logistic, standardize.response, type.multinomial, relax, trace.it, ...
+  ## Figure out which ones can be tuned
+
+  # dials::penalty() ## these should be for feature selection -- these need to come after splits tho?
+  # dials::mixture() ## these should be for feature selection  -- these need to come after splits tho?
+  # ?dials::weight
+  # ?dials::weight_scheme
+  # ?dials::weight_func
+  
+  div(
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
+                 max = 1, value = 0, step = 0.1),
+    checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br(),
+    
+    numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
+                 max = 1, value = 0, step = 0.1),
+    checkboxInput("optimize_mix", "Optimize?", value = F),
+    
+  )
+
+}
+
+multilasso_params <- function(){
+
+  ## Selected params
+  # parsnip::multinom_reg -- mode, engine, penalty, mixture
+  # glmnet::glmnet -- x, y, family, weights, offset, alpha, nlambda, lambda.min.ratio, lambda, standardize, intercept, thresh, dfmax, pmax, exclude, penalty.factor, lower.limits, upper.limits, maxit, type.gaussian, type.logistic, standardize.response, type.multinomial, relax, trace.it, ...
+  # ## Figure out which ones can be tuned
+
+  div(
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
+                 max = 1, value = 1, step = 0.1),
+    checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br(),
+    
+    numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
+                 max = 1, value = 1, step = 0.1),
+    checkboxInput("optimize_mix", "Optimize?", value = F),
+    
+  )
+
+}
+
+gbtree_params <- function(){
+
+  ## Selected params
+  # parsnip::boost_tree -- mode, engine, mtry, trees, min_n, tree_depth, learn_rate, loss_reduction, sample_size, stop_iter
+  # parsnip::xgb_train -- x, y, weights, max_depth, nrounds, eta, colsample_bynode, colsample_bytree, min_child_weight, gamma, subsample, validation, early_stop, counts, event_level, ...
+  # xgboost::xgb.train -- params, data, nrounds, watchlist, obj, feval, verbose, print_every_n, early_stopping_rounds, maximize, save_period, save_name, xgb_model, callbacks, ...
+  # ## Figure out which ones can be tuned
+
+  # ?dials::cost_complexity()
+  # ?dials::tree_depth()
+  # dials::trees()
+  # dials::sample_size()
+  # dials::sample_prop()
+  # dials::loss_reduction()
+  # ?dials::learn_rate()
+  # ?dials::stop_iter()
+  # dials::min_n()
+  # dials::mtry()
+  
+  
+  if(isTruthy(input$skip_ag)){
+    response <- input$pick_model_group_pick
+  } else {
+    response <- input$f_data_response_picker
+  }
+  
+  x <- as.data.frame(t(omicsData$objPP$e_data[-1]))
+  if(length(response) == 1){
+    y <- omicsData$objPP$f_data[[response]]
+  } else {
+    y <- omicsData$objPP$f_data[response]
+    y <- apply(y, 1, paste, sep = "_")
+  }
+  
+  mtry <- if(!is.null(y) && !is.factor(y)) max(floor(ncol(x)/3), 1) else floor(sqrt(ncol(x)))
+  min_n <- if (!is.null(y) && !is.factor(y)) 5 else 1
+
+  div(
+    numericInput("trees", "Number of trees in boosted ensemble", min = 1L, 
+                 max = 2000L, value = 50),
+    checkboxInput("optimize_trees", "Optimize?", value = F),
+    br(),
+    
+    numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
+                 max = 40L, value = 50),
+    checkboxInput("optimize_min_n", "Optimize?", value = F),
+    br(),
+    
+    numericInput("mtry", "Number of predictors to evaluate at each split", min = 1L, 
+                 max = 50L, value = 20),
+    checkboxInput("optimize_mtry", "Optimize?", value = F),
+    br(),
+    
+    # numericInput("cost_complexity", "Number of predictors to evaluate at each split", min = -10, 
+    #              max = -1, value = 5),
+    # checkboxInput("optimize_cost_complexity", "Optimize?", value = F),
+    # br(),
+    
+    numericInput("tree_depth", "Number of predictors to evaluate at each split", min = 1L, 
+                 max = 15L, value = 6),
+    checkboxInput("optimize_tree_depth", "Optimize?", value = ),
+    br(),
+    
+    numericInput("loss_reduction", "Number of predictors to evaluate at each split", min = -10, 
+                 max = 1.5, value = 0),
+    checkboxInput("optimize_loss_reduction", "Optimize?", value = F),
+    br(),
+    
+    numericInput("learn_rate", "Number of predictors to evaluate at each split", min = -10, 
+                 max = -1, value = -2),
+    checkboxInput("optimize_learn_rate", "Optimize?", value = F),
+    br(),
+    
+    numericInput("stop_iter", "Number of predictors to evaluate at each split", min = 3L, 
+                 max = 20L, value = 8L),
+    checkboxInput("optimize_stop_iter", "Optimize?", value = F),
+    br(),
+    
+    numericInput("sample_prop", "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting", min = 0, 
+                 max = 1, value = .7),
+    checkboxInput("optimize_sample_prop", "Optimize?", value = F)
+    
+  )
+  
+  
+}
+
+
+## Split into appropriate later
+
+kmeans_params <- function(){
+  
+  numericInput("num_clust", "Number of clusters", value = 1, 
+               min = 1, max = ncol(omicsData$objPP$e_data[-1]))
+  
+}
+
+hclust_params <- function(){
+  
+  div(
+    ## This might make more sense as a picture -- hierachical only
+    pickerInput("linkage_method", "Linkage method", 
+                choices = c("ward.D",
+                            "ward.D2",
+                            "single",
+                            "complete",
+                            "average",
+                            "mcquitty",
+                            "median",
+                            "centroid")),
+    
+    radioGroupButtons("height_clust", "Define clusters by:", choices = c("Height", "Number of clusters")),
+    
+    conditionalPanel("input.height_clust == 'Height'", {
+      numericInput("cut_height", "Dendogram height to define clusters from", value = 0.5)
+    }),
+    
+    conditionalPanel("input.height_clust == 'Number of clusters'", {
+      numericInput("num_clust", "Number of clusters", value = 2, 
+                   min = 1, max = ncol(omicsData$objPP$e_data[-1]))
+    })
+  )
+  
+}
+
+
+### Not yet available
+umap_params <- function(){
+  
+}
+
+### Not yet available
+pca_params <- function(){
+  
+}
+
+
+
+output[["model_specific_parameters"]] <- renderUI({
+  
+  # fun <- as.character(models_long_name[names(models_long_name) == input$pick_model_EM]) ## while unsup summary is being fixed
+  fun <- input$pick_model_EM
+  
+  function_str <- paste0(fun, "_params()")
+  
+  eval(parse(text = function_str))
+
+})

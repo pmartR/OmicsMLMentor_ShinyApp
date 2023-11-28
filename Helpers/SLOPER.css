@@ -2,9 +2,9 @@
   *background:#f6941d;
 }*/
 
-body {
+/*body {
   background-color:ghostwhite;
-}
+}*/
 
 .nav li a.disabled {
   background-color: #aaa !important;
@@ -551,9 +551,12 @@ fieldset[disabled] .btn-danger.active {
  * Custom CSS to make shinydashboardPlus look more like shinyBS
  */
 
+/* This guy not working quite cause the on click does not run */
+/*
 .btn-box-tool {
 	display: none !important;
 }
+*/
 
 .box {
 	margin-bottom: 10px;
