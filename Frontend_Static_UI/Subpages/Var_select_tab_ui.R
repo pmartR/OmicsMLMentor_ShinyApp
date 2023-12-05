@@ -83,12 +83,16 @@ var_select_tab <- function() {
                  collapseBox("Data Preview",
                              collapsed = FALSE,
                              value = "data_preview_all",
-                             uiOutput("preview_all_data_UI")
+                             fluidRow(
+                               column(12, uiOutput("preview_all_data_UI"))
+                             )
                  ),
-                 collapseBox("Detected Data Properties",
-                             value = "detected_plots",
-                             uiOutput("vs_tab_boxplots")
-                 )
+                 
+                 uiOutput("detected_box_varsel")
+                 # collapseBox("Detected Data Properties",
+                 #             value = "detected_plots",
+                 #             uiOutput("vs_tab_boxplots")
+                 # )
                )
              ) # column 8
            ) # fluidrow

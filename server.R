@@ -195,7 +195,7 @@ shinyServer(function(session, input, output) {
   # })
   
   # Allow reconnect on server when disconnected on the server (e.g. network connection issues)
-  session$allowReconnect(TRUE)
+  # session$allowReconnect(TRUE)
   # Rstudio version; test-able by closing, then reentering the URL in the rendered window
   # session$allowReconnect("force")
   # options(shiny.launch.browser=FALSE)

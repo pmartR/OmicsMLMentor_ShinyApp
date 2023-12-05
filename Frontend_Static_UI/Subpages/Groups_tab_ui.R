@@ -78,12 +78,14 @@ groups_tab <- function() {
                              tabsetPanel(id = "preview_data_f_data")
                              # DTOutput("DT_f_data")
                  ),
-                 collapseBox("Detected Data Properties",
-                             value = "fdata_plots",
-                             uiOutput("Group_plot_picker"),
-                             plotOutput("Group_tab_plots")
-                             # uiOutput("group_tab_boxplots")
-                 )
+                 
+                 uiOutput("detected_box_group")
+                 # collapseBox("Detected Data Properties",
+                 #             value = "fdata_plots",
+                 #             uiOutput("Group_plot_picker"),
+                 #             plotOutput("Group_tab_plots")
+                 #             # uiOutput("group_tab_boxplots")
+                 # )
                )
              ) # column 8
            ) # fluidrow

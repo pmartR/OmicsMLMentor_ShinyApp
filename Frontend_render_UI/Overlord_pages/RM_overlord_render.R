@@ -27,13 +27,13 @@ output$RM_ui <- renderUI({
         
         
         column(1, 
-               actionBttn(
+               disabled(actionBttn(
                  inputId = "show_TrainSize",
                  label = HTML("Holdout and<br/>Crossvalidation<br/>"),
                  style = "jelly", 
                  color = "default",
                  size = "s"
-               )
+               ))
         ),
         
         column(
@@ -352,7 +352,7 @@ output$RM_ui <- renderUI({
 
 ## upload overlord observers
 
-observeEvent(input$show_model_options, {
+observeEvent(input$show_model_options, ignoreInit = F, ignoreNULL = F, {
   
   shinyjs::show(id = "rm_prompt_box")
   shinyjs::hide(id = "train_box")

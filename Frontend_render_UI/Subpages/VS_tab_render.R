@@ -62,8 +62,119 @@ map(c("e_data", "f_data", "e_meta"), function(lab) {
   })
 })
 
+output$vs_tab_plots_UI <- renderUI({
+  
+  switch_text <- if(inherits(omicsData$objMSU, "seqData")) "Count data" else "Abundance data"
+  
+  names <- c(switch_text, "Sample data", "Biomolecule data")
+  choices <- names(omicsData$objMSU)
+  if(!("f_data" %in% choices)) names <- names[-2]
+  names(choices) <- names[1:length(choices)]
+  
+  div(
+    fluidRow(
+    column(6, pickerInput("VS_data_picker",
+                "Select data to visualize",
+                choices = choices
+    )),
+    column(6, 
+    uiOutput("VS_column_examine")),
+    br(),
+    column(12, withSpinner(plotOutput("vs_tab_plots")))
+  ))
+  
+})
+
+output$VS_column_examine <- renderUI({
+  
+  req(input$VS_data_picker != "e_data")
+  
+  if(input$VS_data_picker == "f_data"){
+    choices <- colnames(omicsData$objMSU$f_data)
+    choices <- choices[!(choices %in% get_fdata_cname(omicsData$objMSU))]
+  } else {
+    choices <- colnames(omicsData$objMSU$e_meta)
+    choices <- choices[!(choices %in% get_emeta_cname(omicsData$objMSU))]
+  }
+  
+  pickerInput("VS_column_picker",
+              "Select column to visualize",
+              choices = choices
+  )
+  
+})
+
+output$vs_tab_plots <-  renderPlot({
+  
+  if(input$VS_data_picker == "e_data"){
+    plot(omicsData$objMSU)
+  } else if(input$VS_data_picker == "f_data"){
+    
+    df <- omicsData$objMSU$f_data
+    df <- df[colnames(df) != get_fdata_cname(omicsData$objMSU)]
+    df <- gather(df)
+    df <- df[!is.na(df$value),]
+    
+    df <- df[df$key %in% input$VS_column_picker,]
+    
+    if(all(is.na(as.numeric(as.character(df$value))))){
+      return(
+        ggplot(df, aes(x = value, fill = value)) + 
+          geom_bar(color = "black", show.legend = F) + theme_bw() + 
+          ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+          labs(x = "Level", y = "Samples per level", title = input$Gplot_picker)
+      )
+    } else {
+      
+      df$value <-  as.numeric(as.character(df$value))
+      return(
+        ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() + 
+          ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+          labs(x = "Value", y = "Frequency")
+      )
+    }
+    
+  } else if (input$VS_data_picker == "e_meta"){
+    
+    df <- omicsData$objMSU$e_meta
+    df <- df[colnames(df) != get_emeta_cname(omicsData$objMSU)]
+    df <- gather(df)
+    df <- df[!is.na(df$value),]
+    
+    df <- df[df$key %in% input$VS_column_picker,]
+    
+    if(all(is.na(as.numeric(as.character(df$value))))){
+      return(
+        ggplot(df, aes(x = value, fill = value)) + 
+          geom_bar(color = "black", show.legend = F) + theme_bw() + 
+          ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+          labs(x = "Level", y = "Biomolecules per level", title = input$Gplot_picker)
+      )
+    } else {
+      
+      df$value <-  as.numeric(as.character(df$value))
+      return(
+        ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() + 
+          ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+          labs(x = "Value", y = "Frequency")
+      )
+    }
+    
+  }
+  
+})
+
 
 #### Accordian behavior
+
+output$detected_box_varsel <- renderUI({
+  
+  req(input$vscols_ints_done > 0)
+  collapseBox("Detected Data Properties",
+              value = "detected_plots",
+              uiOutput("vs_tab_plots_UI")
+  )
+})
 
 observeEvent(input$vscols_options_done, {
   req(input$vscols_options_done > 0)
@@ -81,3 +192,9 @@ observeEvent(input$vscols_ints_done, {
   updateBoxCollapse(session, "vs_collapse_left", close = "int_cols_vs")
   shinyjs::show("done_VS")
 })
+
+observeEvent(input$done_VS, {
+  req(input$done_VS > 0)
+  updateBoxCollapse(session, "vs_collapse_right", close = "data_preview_all", open = "detected_plots")
+})
+

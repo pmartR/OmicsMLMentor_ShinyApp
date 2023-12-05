@@ -421,13 +421,14 @@ observeEvent(input$review_PP, {
 
 observeEvent(input$complete_transform, ignoreInit = T, {
   
+  print("transform")
+  
   if(!is.null(input$complete_transform) && input$complete_transform > 0){
     enable("show_filters")
     disable("show_normalization")
     disable("show_protein_roll")
     disable("review_PP")
   }
-  
   
   shinyalert(title = "Success!", "Continue to next page or review results?",
              showCancelButton = T, closeOnEsc = F, 
@@ -457,6 +458,8 @@ observeEvent(input$complete_transform, ignoreInit = T, {
 })
 
 observeEvent(input$complete_filters, ignoreInit = T, {
+  
+  print("filters")
   
   if(!is.null(omicsData$objfilters)){
     omicsData$objPP <- omicsData$objfilters
@@ -497,6 +500,8 @@ observeEvent(input$complete_filters, ignoreInit = T, {
 })
 
 observeEvent(input$complete_norm, ignoreInit = T, {
+  
+  print("norm")
   
   if(!is.null(input$complete_norm) && input$complete_norm > 0){
     enable("show_protein_roll")
@@ -554,6 +559,8 @@ observeEvent(input$complete_norm, ignoreInit = T, {
 
 observeEvent(input$complete_rollup, ignoreInit = T, {
   
+  print("rollup")
+  
   if(!is.null(input$complete_rollup) && input$complete_rollup > 0){
     enable("review_PP")
   }
@@ -584,6 +591,8 @@ observeEvent(input$complete_rollup, ignoreInit = T, {
 })
 
 observeEvent(input$complete_ppreview, ignoreInit = T, {
+  
+  print("preview")
   
   if(!is.null(input$complete_ppreview) && input$complete_ppreview > 0){
     updateNavbarPage(session, "top_page", "Run Model")

@@ -111,6 +111,16 @@ output$Group_tab_plots <- renderPlot({
 
 ## Accordion behavior
 
+output$detected_box_group <- renderUI({
+  
+  req(input$specify_fdata_done > 0)
+  collapseBox("Detected Data Properties",
+              value = "fdata_plots",
+              uiOutput("Group_plot_picker"),
+              plotOutput("Group_tab_plots")
+              # uiOutput("group_tab_boxplots")
+  )
+})
 
 observeEvent(input$fdata_upload_done, {
   updateBoxCollapse(session, "groups_collapse_left", close = "upload_fdata_UI_box")
@@ -161,4 +171,6 @@ observe({
   
   toggleElement("check_group_cols", condition = cond)
 })
+
+
 

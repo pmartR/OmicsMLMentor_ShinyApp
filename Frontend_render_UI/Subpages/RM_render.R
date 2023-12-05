@@ -473,16 +473,6 @@ observeEvent(input$run_sl, {
 })
 
 
-output$nTest_count_ui <- renderUI({
-  req(!is.null(omicsData$objPP))
-  
-  ## Ideally update this based on model requirements as well
-  numericInput("nTest_count", "Approximate number of samples for testing data", 
-               value = floor(ncol(omicsData$objPP$e_data)*.3), 
-               min = 1, max = (ncol(omicsData$objPP$e_data)) - 2)
-  
-})
-
 output$true_pos_picker_ui <- renderUI({
   
   if(isTruthy(input$skip_ag)){

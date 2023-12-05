@@ -43,7 +43,7 @@ observeEvent(input$show_EM, {
   
 })
 
-observeEvent(input$review_MSU, {
+observeEvent(input$review_MSU, ignoreInit = T, {
   
   shinyjs::hide(id = "VS_box")
   shinyjs::hide(id = "AG_box")
@@ -65,6 +65,7 @@ observeEvent(input$done_VS, ignoreInit = T, {
     disable("review_MSU")
   }
   
+  print("donevs")
   
   shinyalert(title = "Success!", "Continue to next page or review results?",
              showCancelButton = T, closeOnEsc = F, 
@@ -98,6 +99,7 @@ observeEvent(input$ag_done, ignoreInit = T, {
     disable("review_MSU")
   }
   
+  print("doneag")
   
   shinyalert(title = "Success!", "Continue to next page or review results?",
              showCancelButton = T, closeOnEsc = F, 
@@ -127,6 +129,8 @@ observeEvent(input$em_select, ignoreInit = T, {
   if(!is.null(input$em_select) && input$em_select > 0){
     enable("review_MSU")
   }
+  
+  print("doneem_select")
   
   shinyalert(title = "Success!", "Continue to next page or review results?",
              showCancelButton = T, closeOnEsc = F, 

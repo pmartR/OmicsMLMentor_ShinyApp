@@ -213,6 +213,19 @@ output$boxplot_UI <- renderPlot({
 })
 
 ## Accordion behavior
+
+output$detected_box_upload <- renderUI({
+  
+  req(input$specify_edata_done > 0)
+  div(collapseBox(
+    "Detected Data Properties",
+    value = "summary",
+    # uiOutput("Characteristics_module_tabset")
+    withSpinner(plotOutput("boxplot_UI"))#,
+    # uiOutput("show_log_UI")
+  ))
+})
+
 observeEvent(input$data_type_done, {
   updateBoxCollapse(session, "upload_collapse_left", close = "datselect")
 })

@@ -1,5 +1,5 @@
 TS_RM_UI <- function() {
-  tabPanel("Holdout and Crossvalidation",
+  tabPanel("Holdout and ",
            value = "TS_RM",
            class = "collapse_page",
            column(
@@ -23,57 +23,42 @@ TS_RM_UI <- function() {
                  
                  ## Do we allow a seed or pick our own?
                  
-                 radioGroupButtons("numb_test", "Define testing set", choices = c("Proportion", "Count")),
+                 ## if hp tuning and holdout
+                 uiOutput("holdout_set"), ## holdout_valid
                  
-                 conditionalPanel("input.numb_test == 'Proportion'", 
-                                  numericInput("nTest_prop", "Proportion of samples for testing data", min = 0, 
-                                               max = 1, value = 0.3, step = 0.01)
-                                  ),
+                 ## If no hp tuning or holdout
+                 uiOutput("crossval_perform"), ## !holdout_valid
                  
-                 ## Make this dependent on size of dataset
-                 conditionalPanel("input.numb_test == 'Count'", 
-                                  
-                                  uiOutput("nTest_count_ui")
-                 ),
-                 
-                 
-                 #### Are we using a stratified approach?
-                 
-                 pickerInput("training_type", "Type of cross validation ", 
-                             choices = c(
-                               "Leave one out" = "loocv",
-                               "K-fold (stratified)" = "kfcv"
-                             )
-                 ),
-                 
+                 ## If hp tuning
+                 uiOutput("crossval_hp"), ## tuning option avaialable
                  
                  ### What model is returned in this case??
-                 conditionalPanel(
-                   "input.training_type == 'loocv'",
-                   
-                   div(
-                     br(),
-                     "N models will generate equal to the number of samples. Training data will include all but one sample, and validation to assess model performance will be performed on the remaining sample. The average performance over all the models estimates overall training performance.",
-                     br(),
-                     br()
-                   )
-                   ),
+                 # conditionalPanel(
+                 #   "input.training_type == 'loocv'",
+                 #   
+                 #   div(
+                 #     br(),
+                 #     "N models will generate equal to the number of samples. Training data will include all but one sample, and validation to assess model performance will be performed on the remaining sample. The average performance over all the models estimates overall training performance.",
+                 #     br(),
+                 #     br()
+                 #   )
+                 #   ),
+                 # 
+                 # conditionalPanel(
+                 #   "input.training_type == 'kfcv'",
+                 #   div(
+                 #     br(),
+                 #     "Training data will include all but one subset (K-1), and testing to assess model performance will be performed on the remaining subset. The average performance over all the models estimates overall training performance.",
+                 #     br(),
+                 #     br(),
+                 #   numericInput("nFolds", "Number of folds to use", value = 5, min = 2, max = 10)
+                 #   )
+                 # ),
                  
-                 conditionalPanel(
-                   "input.training_type == 'kfcv'",
-                   div(
-                     br(),
-                     "Training data will include all but one subset (K-1), and testing to assess model performance will be performed on the remaining subset. The average performance over all the models estimates overall training performance.",
-                     br(),
-                     br(),
-                   numericInput("nFolds", "Number of folds to use", value = 5, min = 2, max = 10)
-                   )
-                 ),
+                 uiOutput("train_test_summary") ## Test vs Validation report by group, leave one out vs k-fold image, random seed
                  
-                 uiOutput("train_test_summary"), ## Test vs Validation report by group, leave one out vs k-fold image, random seed
-                 
-                 actionButton("rec_split", "Use recommended split"),
-                 actionButton("done_crossval_option", "Done")
+                 # actionButton("rec_split", "Use recommended split"),
+                 # actionButton("done_crossval_option", "Done")
                )
              ), # parent collapse
              

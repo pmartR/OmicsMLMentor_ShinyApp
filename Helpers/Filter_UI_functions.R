@@ -91,7 +91,10 @@ filter_tab_temp <- function(tabname, keep_missing) {
                  "Visualize filters",
                  value = "filter_plots",
                  collapsed = F,
-                 withSpinner(plotOutput(paste0(tabname, "_filter_plots")))
+                 br(),
+                 tabsetPanel(id = "filter_previews")
+                 # br(),
+                 # withSpinner(plotOutput(paste0(tabname, "_filter_plots")))
                ) # ,
                # collapseBox('Axes options', value = 'axes_options',
                # collapsed = F,

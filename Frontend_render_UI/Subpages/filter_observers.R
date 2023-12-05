@@ -21,6 +21,28 @@ filter_effects <- reactiveValues()
 
 filter_settings <- reactiveValues()
 
+## get applied filters
+apply_filt_flags <- reactive({
+  req(!is.null(omicsData$objPP))
+  front <- str_to_title(class(omicsData$objPP)[[1]])
+  input_text <- grep(paste0(front, "_add_"), names(input), value = T)
+  flags <- map_lgl(input_text, function(x) input[[x]])
+  names(flags) <- gsub(paste0(front, "_add_"), "", input_text)
+  flags
+})
+
+observeEvent(apply_filt_flags(), {
+  
+  flags <- apply_filt_flags()
+  active_filters <- names(flags[flags])
+  active_filters <- gsub("edata|fdata", "", active_filters)
+  if(!all(active_filters %in% map(attr(omicsData$objPP, "filters"), 1))){
+    disable(id = "complete_filters")
+  } else {
+    enable(id = "complete_filters")
+  }
+  
+})
 
 # filter name mapping
 FNAME_MAP <- list(
@@ -331,14 +353,26 @@ observeEvent(omicsData$objPP, {
     # check if molfilt was created
     molfilt_exists <- !is.null(filters[[name]]$molfilt)
     
-    toggleState(paste0(name, "_mol_min_num", 
-                        name), 
+    if(molfilt_exists){
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "Molecule filter",
+          value = "molfilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("molfilt_plot"))
+        )
+      )
+    } else {
+      removeTab("filter_previews", target = "molfilt_plot_tab")
+    }
+    
+    toggleState(paste0(name, "_mol_min_num"), 
                 condition = !molfilt_exists)
-    toggleState(paste0(name, "_preview_molfilt", 
-                        name), 
+    toggleState(paste0(name, "_preview_molfilt"), 
                 condition = !input[[paste0(name, "_add_molfilt")]])
-    toggleCssClass(paste0(name, "_mol_min_num", 
-                           name), 
+    toggleCssClass(paste0(name, "_mol_min_num"), 
                    "grey_text", condition = molfilt_exists)
   })
   
@@ -348,6 +382,18 @@ observeEvent(omicsData$objPP, {
                 "molfilt", "Something went wrong assigning your molecule filter.", 
                 pmartR::molecule_filter, preview = TRUE,
                 settings = list(min_num = input[[paste0(name, "_mol_min_num")]])
+    )
+    removeTab("filter_previews", target = "molfilt_plot_tab")
+    
+    appendTab(
+      "filter_previews",
+      select = TRUE,
+      tabPanel(
+        title = "Molecule filter",
+        value = "molfilt_plot_tab",
+        br(),
+        withSpinner(plotOutput("molfilt_plot"))
+      )
     )
   })
   
@@ -365,6 +411,21 @@ observeEvent(omicsData$objPP, {
     
     cvfilt_exists <- !is.null(filters[[name]]$cvfilt)
     
+    if(cvfilt_exists){
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "Coefficient of variation filter",
+          value = "cvfilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("cvfilt_plot"))
+        )
+      )
+    } else {
+      removeTab("filter_previews", target = "cvfilt_plot_tab")
+    }
+    
     toggleState(paste0(name, "_preview_cvfilt"), condition = !input[[paste0(name, "_add_cvfilt")]])
     toggleState(paste0(name, "_cv_threshold"), condition = !cvfilt_exists)
     toggleCssClass(paste0(name, "_cv_threshold"), "grey_text", condition = cvfilt_exists)
@@ -379,6 +440,18 @@ observeEvent(omicsData$objPP, {
                 preview = TRUE,
                 use_groups = isTRUE(as.logical(input[[paste0(name, "_cvfilt_use_groups")]])),
                 settings = list(cv_threshold = input[[paste0(name, "_cv_threshold")]])
+    )
+    
+    removeTab("filter_previews", target = "cvfilt_plot_tab")
+    appendTab(
+      "filter_previews",
+      select = TRUE,
+      tabPanel(
+        title = "Coefficient of variation filter",
+        value = "cvfilt_plot_tab",
+        br(),
+        withSpinner(plotOutput("cvfilt_plot"))
+      )
     )
     
   })
@@ -413,6 +486,21 @@ observeEvent(omicsData$objPP, {
       
       profilt_exists <- !is.null(filters[[name]]$profilt)
       
+      if(profilt_exists){
+        appendTab(
+          "filter_previews",
+          select = TRUE,
+          tabPanel(
+            title = "Proteomic filter",
+            value = "profilt_plot_tab",
+            br(),
+            withSpinner(plotOutput("profilt_plot"))
+          )
+        )
+      } else {
+        removeTab("filter_previews", target = "profilt_plot_tab")
+      }
+      
       toggleState(paste0(name, "_preview_profilt"), condition = !input[[paste0(name, "_add_profilt")]])
       toggle(paste0(name, "_profilt_exists"), condition = profilt_exists, anim = TRUE)
       toggleState(paste0(name, "_min_num_peps"), condition = !profilt_exists)
@@ -427,6 +515,18 @@ observeEvent(omicsData$objPP, {
                 "Something went wrong assigning your proteomics filter.", 
                 pmartR::proteomics_filter, preview = TRUE,
                 settings = list(min_num_peps = input[[paste0(name, "_min_num_peps")]]))
+    
+    removeTab("filter_previews", target = "profilt_plot_tab")
+    appendTab(
+      "filter_previews",
+      select = TRUE,
+      tabPanel(
+        title = "Proteomic filter",
+        value = "profilt_plot_tab",
+        br(),
+        withSpinner(plotOutput("profilt_plot"))
+      )
+    )
   })
   
   
@@ -434,64 +534,13 @@ observeEvent(omicsData$objPP, {
   
   imputation_function <- function(omicsData){
     
-    id_col <- colnames(omicsData$e_data) %in% pmartR::get_edata_cname(omicsData)
-    df <- omicsData$e_data[!id_col]
-    
-    apply_dir <- 1
-    total <- ncol(df[-1])
-    
-    data <- data.frame(
-      omicsData$e_data[id_col],
-      `Percentage missing` = apply(is.na(df[-1]), apply_dir, sum)/total*100, check.names = F)
-    
-    data$Handling <- "Unassigned"
-    
-    if("keep" %in% input$missing_options_filter){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= input$filter_filt_keep[1],
-        data[["Percentage missing"]] <= input$filter_filt_keep[2]
-      ))
-      
-      data$Handling[rows] <- "Keep"
-      
-    }
-    
-    if("impute" %in% input$missing_options_filter){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= input$filter_filt_impute[1],
-        data[["Percentage missing"]] <= input$filter_filt_impute[2]
-      ))
-      
-      data$Handling[rows] <- "Estimate"
-      
-    }
-    
-    if("convert" %in% input$missing_options_filter){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= input$filter_filt_convert[1],
-        data[["Percentage missing"]] <= input$filter_filt_convert[2]
-      ))
-      
-      data$Handling[rows] <- "Convert"
-      
-    }
-    
-    if("remove" %in% input$missing_options_filter){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= input$filter_filt_remove[1],
-        data[["Percentage missing"]] <= input$filter_filt_remove[2]
-      ))
-      
-      data$Handling[rows] <- "Remove"
-      
-    }
-    
-    
-    data
+    thresholds <- list(
+      keep = input[["filter_filt_keep"]],
+      impute = input[["filter_filt_impute"]],
+      convert = input[["filter_filt_convert"]],
+      remove = input[["filter_filt_remove"]]
+    )
+    edata_nathresh_transform(as.slData(omicsData), thresholds)
     
   }
   
@@ -513,6 +562,21 @@ observeEvent(omicsData$objPP, {
     
     imputefilt_exists <- !is.null(filters[[name]]$imputefilt)
     
+    if(imputefilt_exists){
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "Missingness handling filter",
+          value = "imputefilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("imputefilt_plot"))
+        )
+      )
+    } else {
+      removeTab("filter_previews", target = "imputefilt_plot_tab")
+    }
+    
     toggleState(paste0(name, "_preview_impute"), condition = !input[[paste0(name, "_add_imputefilt")]])
     toggle(paste0(name, "_impute_exists"), condition = imputefilt_exists, anim = TRUE)
     toggleState("missing_options_filter", condition = !imputefilt_exists)
@@ -527,6 +591,7 @@ observeEvent(omicsData$objPP, {
     
     req(length(input$missing_options_filter) > 0)
     
+    removeTab("filter_previews", target = "imputefilt_plot_tab")
     make_filter(dataname = name,
                 filter_tag = "imputefilt",
                 message = "Something went wrong assigning your imputation filter.",
@@ -538,6 +603,17 @@ observeEvent(omicsData$objPP, {
                   convert = input[["filter_filt_convert"]],
                   remove = input[["filter_filt_remove"]]
                 )
+    )
+    
+    appendTab(
+      "filter_previews",
+      select = TRUE,
+      tabPanel(
+        title = "Missingness handling filter",
+        value = "imputefilt_plot_tab",
+        br(),
+        withSpinner(plotOutput("imputefilt_plot"))
+      )
     )
   })
   
@@ -554,6 +630,21 @@ observeEvent(omicsData$objPP, {
       
       TCfilt_exists <- !is.null(filters[[name]]$TCfilt)
       
+      if(TCfilt_exists){
+        appendTab(
+          "filter_previews",
+          select = TRUE,
+          tabPanel(
+            title = "Total count filter",
+            value = "TCfilt_plot_tab",
+            br(),
+            withSpinner(plotOutput("TCfilt_plot"))
+          )
+        )
+      } else {
+        removeTab("filter_previews", target = "TCfilt_plot_tab")
+      }
+      
       toggleState(paste0(name, "_preview_TCfilt"), condition = !input[[paste0(name, "_add_TCfilt")]])
       toggle(paste0(name, "_TCfilt_exists"), condition = TCfilt_exists, anim = TRUE)
       toggleState(paste0(name, "_min_num_trans"), condition = !TCfilt_exists)
@@ -569,6 +660,18 @@ observeEvent(omicsData$objPP, {
                   preview = TRUE,
                   settings = list(min_count = input[[paste0(name, "_min_num_trans")]])
       )
+      
+      removeTab("filter_previews", target = "TCfilt_plot_tab")
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "Total count filter",
+          value = "TCfilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("TCfilt_plot"))
+        )
+      )
     })
     
     # ### Library size filter if in RNA-seq land ###
@@ -582,6 +685,21 @@ observeEvent(omicsData$objPP, {
       
       Libfilt_exists <- !is.null(filters[[name]]$Libfilt)
       
+      if(Libfilt_exists){
+        appendTab(
+          "filter_previews",
+          select = TRUE,
+          tabPanel(
+            title = "Library size filter",
+            value = "Libfilt_plot_tab",
+            br(),
+            withSpinner(plotOutput("Libfilt_plot"))
+          )
+        )
+      } else {
+        removeTab("filter_previews", target = "Libfilt_plot_tab")
+      }
+      
       toggleState(paste0(name, "_preview_Libfilt"), condition = !input[[paste0(name, "_add_Libfilt")]])
       toggle(paste0(name, "_Libfilt_exists"), condition = Libfilt_exists, anim = TRUE)
       toggleState(paste0(name, "_min_lib_size"), condition = !Libfilt_exists)
@@ -593,6 +711,18 @@ observeEvent(omicsData$objPP, {
       make_filter(name, "Libfilt", "Something went wrong assigning your library size filter.",
                   pmartR::RNA_filter, preview = TRUE,
                   settings = list(size_library = input[[paste0(name, "_min_lib_size")]])
+      )
+      
+      removeTab("filter_previews", target = "Libfilt_plot_tab")
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "Library size filter",
+          value = "Libfilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("Libfilt_plot"))
+        )
       )
     })
     
@@ -607,6 +737,21 @@ observeEvent(omicsData$objPP, {
       
       NZfilt_exists <- !is.null(filters[[name]]$NZfilt)
       
+      if(NZfilt_exists){
+        appendTab(
+          "filter_previews",
+          select = TRUE,
+          tabPanel(
+            title = "Non-zero filter",
+            value = "NZfilt_plot_tab",
+            br(),
+            withSpinner(plotOutput("NZfilt_plot"))
+          )
+        )
+      } else {
+        removeTab("filter_previews", target = "NZfilt_plot_tab")
+      }
+      
       toggleState(paste0(name, "_preview_NZfilt"), condition = !input[[paste0(name, "_add_NZfilt")]])
       toggle(paste0(name, "_NZfilt_exists"), condition = NZfilt_exists, anim = TRUE)
       toggleState(paste0(name, "_min_nonzero"), condition = !NZfilt_exists)
@@ -618,6 +763,18 @@ observeEvent(omicsData$objPP, {
       make_filter(name, "NZfilt", "Something went wrong assigning your non-zero observations filter.",
                   pmartR::RNA_filter, preview = TRUE,
                   settings = list(min_nonzero = input[[paste0(name, "_min_nonzero")]])
+      )
+      
+      removeTab("filter_previews", target = "NZfilt_plot_tab")
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "Non-zero filter",
+          value = "NZfilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("NZfilt_plot"))
+        )
       )
     })
   }
@@ -634,6 +791,21 @@ observeEvent(omicsData$objPP, {
     )
     
     rmdfilt_exists <- !is.null(filters[[name]]$rmdfilt)
+    
+    if(rmdfilt_exists){
+      appendTab(
+        "filter_previews",
+        select = TRUE,
+        tabPanel(
+          title = "RMd filter",
+          value = "rmdfilt_plot_tab",
+          br(),
+          withSpinner(plotOutput("rmdfilt_plot"))
+        )
+      )
+    } else {
+      removeTab("filter_previews", target = "rmdfilt_plot_tab")
+    }
     
     #' Check for zero variance metrics, untoggle the switch and show an error
     #' if any are zero variance
@@ -694,6 +866,18 @@ observeEvent(omicsData$objPP, {
                 )),
                 settings = list(pvalue_threshold = input[[paste0(name, "_pvalue_threshold")]])
     )
+    
+    removeTab("filter_previews", target = "rmdfilt_plot_tab")
+    appendTab(
+      "filter_previews",
+      select = TRUE,
+      tabPanel(
+        title = "RMd filter",
+        value = "rmdfilt_plot_tab",
+        br(),
+        withSpinner(plotOutput("rmdfilt_plot"))
+      )
+    )
   })
   # ... disable functionality (must have more than 100 biomolecules in edata)
   observe(
@@ -737,7 +921,20 @@ observeEvent(omicsData$objPP, {
                 settings = NULL
     )
     
-    customfilt_exists <- !is.null(filters[[name]]$edata_customfilt)
+    # if(customfilt_exists){
+    #   appendTab(
+    #     "filter_previews",
+    #     select = TRUE,
+    #     tabPanel(
+    #       title = "Custom biomolecule filter",
+    #       value = "edata_customfilt_plot_tab",
+    #       br(),
+    #       withSpinner(plotOutput("edata_customfilt_plot"))
+    #     )
+    #   )
+    # } else {
+    #   removeTab("filter_previews", target = "edata_customfilt_plot_tab")
+    # }
     
     # toggleState(paste0(name, "_edata_preview_customfilt"), condition = !input[[paste0(name, "_add_edata_customfilt")]])
     toggle(paste0(name, "_edata_customfilt_exists"), condition = customfilt_exists, anim = TRUE)
@@ -798,7 +995,22 @@ observeEvent(omicsData$objPP, {
   ### sample custom filter ###
   observeEvent(input[[paste0(name, "_add_fdata_customfilt")]], {
     
-    customfilt_exists <- !is.null(filters[[name]]$customfilt)
+    customfilt_exists <- !is.null(filters[[name]]$fdata_customfilt)
+    
+    # if(customfilt_exists){
+    #   appendTab(
+    #     "filter_previews",
+    #     select = TRUE,
+    #     tabPanel(
+    #       title = "Custom sample filter",
+    #       value = "fdata_customfilt_plot_tab",
+    #       br(),
+    #       withSpinner(plotOutput("fdata_customfilt_plot"))
+    #     )
+    #   )
+    # } else {
+    #   removeTab("filter_previews", target = "fdata_customfilt_plot_tab")
+    # }
     
     samples_rmv <- if (input[[paste0(name, "_remove_or_keep")]] == "Remove") input[[paste0(name, "_fdata_customfilt_choices")]] else 
       setdiff(sample_names()[[name]], input[[paste0(name, "_fdata_customfilt_choices")]])
@@ -809,8 +1021,6 @@ observeEvent(omicsData$objPP, {
                 f_data_remove = samples_rmv,
                 settings = NULL
     )
-    
-    customfilt_exists <- !is.null(filters[[name]]$customfilt)
     
     # toggleState(paste0(name, "_preview_customfilt"), condition = !input[[paste0(name, "_add_fdata_customfilt")]])
     toggle(paste0(name, "_customfilt_exists"), condition = customfilt_exists, anim = TRUE)
@@ -887,70 +1097,28 @@ observeEvent(input$apply_filters, {
           !is.null(input[[paste0(name, "_add_imputefilt")]]) &&
           input[[paste0(name, "_add_imputefilt")]]) {
         
-        selections <- filters[[name]]$imputefilt
+        thresholds <- filter_settings[[name]]$imputefilt
         
-        estimate_peps <- selections[selections$Handling == "Estimate", 1]
-        convert_peps <- selections[selections$Handling == "Convert", 1]
-        remove_peps <- selections[selections$Handling == "Remove", 1]
+        tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
+        # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
+
+        # tmp$e_data <- sldata_temp$e_data
+        # tmp$f_data <- sldata_temp$f_data
+        # tmp$e_meta <- sldata_temp$e_meta
         
-        ## Impute
-        if(length(estimate_peps) > 0){
-          all_imp <- slopeR::imputation(as.slData(tmp))
-          impute_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% estimate_peps
-          tmp$e_data[impute_rows, -1] <- all_imp[impute_rows,]
-          
-          dInfo <- get_data_info(tmp)
-          
           # Update the data_info attribute.
-          attr(tmp, 'data_info') <- pmartR:::set_data_info(
-            e_data = tmp$e_data,
-            edata_cname = get_edata_cname(tmp),
-            data_scale_orig = get_data_scale_orig(tmp),
-            data_scale = get_data_scale(tmp),
-            data_types = dInfo$data_types,
-            norm_info = dInfo$norm_info,
-            is_normalized = dInfo$norm_info$is_normalized,
-            batch_info = dInfo$batch_info,
-            is_bc = dInfo$batch_info$is_bc
-          )
-        }
-        
-        ## Convert
-        if(length(convert_peps) > 0){
-          convert_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% convert_peps
-          tmp$e_data[convert_rows, -1] <- apply(
-            
-            ## Logical T/F for presence/absence
-            Reduce("&", list(
-              !is.na(tmp$e_data[convert_rows, -1]), ## Normal
-              tmp$e_data[convert_rows, -1] != 0 ## RNA, shouldn't mess up other types since we convert 0s
-            )), 
-            
-            ## Convert to numeric
-            2, as.numeric)
-          
-          attr(tmp, 'data_info') <- pmartR:::set_data_info(
-            e_data = tmp$e_data,
-            edata_cname = get_edata_cname(tmp),
-            data_scale_orig = get_data_scale_orig(tmp),
-            data_scale = get_data_scale(tmp),
-            data_types = dInfo$data_types,
-            norm_info = dInfo$norm_info,
-            is_normalized = dInfo$norm_info$is_normalized,
-            batch_info = dInfo$batch_info,
-            is_bc = dInfo$batch_info$is_bc
-          )
-        }
-        
-        ## Remove
-        if(length(remove_peps) > 0){
-        tmp <- applyFilt(
-          custom_filter(
-            tmp, 
-            e_data_remove = remove_peps[remove_peps %in% tmp$e_data[[get_edata_cname(tmp)]]]), 
-          tmp)
-        }
-        
+          # attr(tmp, 'data_info') <- pmartR:::set_data_info(
+          #   e_data = tmp$e_data,
+          #   edata_cname = get_edata_cname(tmp),
+          #   data_scale_orig = get_data_scale_orig(tmp),
+          #   data_scale = get_data_scale(tmp),
+          #   data_types = dInfo$data_types,
+          #   norm_info = dInfo$norm_info,
+          #   is_normalized = dInfo$norm_info$is_normalized,
+          #   batch_info = dInfo$batch_info,
+          #   is_bc = dInfo$batch_info$is_bc
+          # )
+          # 
       }
       
       # cv filter
@@ -1272,94 +1440,96 @@ output$missing_options_filter_UI <- renderUI({
   )
 })
 
+
+
 observeEvent(input$em_select, ignoreNULL = T, once = T, {
   name  <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
   
-  output[[paste0(name, "_filter_plots")]] <- renderPlot({
-    
-    req(!is.null(filter_flags[[name]]$last_created), cancelOutput = T)
-    req(input$complete_filters == 0, cancelOutput = T)
-    
-    filt <- filter_flags[[name]]$last_created
-    settings <- filter_settings[[name]][[filt]]
-    
-    if(filt == "imputefilt"){
-      
-      selections <- filters[[name]]$imputefilt
-      tmp <- omicsData$objPP
-      
-      estimate_peps <- selections[selections$Handling == "Estimate", 1]
-      convert_peps <- selections[selections$Handling == "Convert", 1]
-      remove_peps <- selections[selections$Handling == "Remove", 1]
-      
-      if(length(estimate_peps) > 0){
-        ## Impute
-        all_imp <- slopeR::imputation(as.slData(tmp))
-        impute_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% estimate_peps
-        if(length(impute_rows) > 0){
-          tmp$e_data[impute_rows, -1] <- all_imp[impute_rows,]
-        }
-      }
-      
-      if(length(convert_peps) > 0){
-      ## Convert
-      convert_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% convert_peps
-      if(length(convert_rows) > 0){
-        tmp$e_data[convert_rows, -1] <- apply(
-          
-          ## Logical T/F for presence/absence
-          Reduce("&", list(
-            !is.na(tmp$e_data[convert_rows, -1]), ## Normal
-            tmp$e_data[convert_rows, -1] != 0 ## RNA, shouldn't mess up other types since we convert 0s
-          )), 
-          
-          ## Convert to numeric
-          2, as.numeric)
-       }
-      }
-      
-      if(length(remove_peps) > 0){
-      ## Remove
-      remove_peps <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% remove_peps
-      if(length(remove_peps) > 0){
-        tmp <- applyFilt(custom_filter(tmp, e_data_remove = remove_peps), tmp)
-      }}
-      
-      
-      if(!is.null(get_group_DF(omicsData$objPP))){
-        p1 <- plot(omicsData$objPP, color_by = "Group", order_by = "Group") + 
-          labs(title = "Before handling missingness")
-        p2 <- plot(tmp, color_by = "Group", order_by = "Group") + 
-          labs(title = "After handling missingness")
-      } else {
-        p1 <- plot(omicsData$objPP) + 
-          labs(title = "Before handling missingness")
-        p2 <- plot(tmp) + 
-          labs(title = "After handling missingness")
-      }
-      
-      wrap_plots(p1, p2, guides = "collect")
-      # text_ylab <- "biomolecules"
-      # 
-      # ggplot(filters[[name]][[filt]], 
-      #        aes(x = `Percentage missing`, fill = Handling)) +
-      #   geom_histogram() + theme_bw() + labs(y = paste0("Count of ", text_ylab))
-    } else if (filt == "cvfilt" ){
-     
-      if(settings$cv_threshold < max(filters[[name]][[filt]]$CV, na.rm = T)){
-        do.call(plot, c(list(filters[[name]][[filt]]),
-                        settings))
-      } else {
-        do.call(plot, list(filters[[name]][[filt]]))
-      }
-      
-    } else {
-      
-      do.call(plot, c(list(filters[[name]][[filt]]),
-                      settings))
-    }
-    
-  })
+  # output[[paste0(name, "_filter_plots")]] <- renderPlot({
+  #   
+  #   req(!is.null(filter_flags[[name]]$last_created), cancelOutput = T)
+  #   req(input$complete_filters == 0, cancelOutput = T)
+  #   
+  #   filt <- filter_flags[[name]]$last_created
+  #   settings <- filter_settings[[name]][[filt]]
+  #   
+  #   if(filt == "imputefilt"){
+  #     
+  #     selections <- filters[[name]]$imputefilt
+  #     tmp <- omicsData$objPP
+  #     
+  #     estimate_peps <- selections[selections$Handling == "Estimate", 1]
+  #     convert_peps <- selections[selections$Handling == "Convert", 1]
+  #     remove_peps <- selections[selections$Handling == "Remove", 1]
+  #     
+  #     if(length(estimate_peps) > 0){
+  #       ## Impute
+  #       all_imp <- slopeR::imputation(as.slData(tmp))
+  #       impute_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% estimate_peps
+  #       if(length(impute_rows) > 0){
+  #         tmp$e_data[impute_rows, -1] <- all_imp[impute_rows,]
+  #       }
+  #     }
+  #     
+  #     if(length(convert_peps) > 0){
+  #     ## Convert
+  #     convert_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% convert_peps
+  #     if(length(convert_rows) > 0){
+  #       tmp$e_data[convert_rows, -1] <- apply(
+  #         
+  #         ## Logical T/F for presence/absence
+  #         Reduce("&", list(
+  #           !is.na(tmp$e_data[convert_rows, -1]), ## Normal
+  #           tmp$e_data[convert_rows, -1] != 0 ## RNA, shouldn't mess up other types since we convert 0s
+  #         )), 
+  #         
+  #         ## Convert to numeric
+  #         2, as.numeric)
+  #      }
+  #     }
+  #     
+  #     if(length(remove_peps) > 0){
+  #     ## Remove
+  #     remove_peps <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% remove_peps
+  #     if(length(remove_peps) > 0){
+  #       tmp <- applyFilt(custom_filter(tmp, e_data_remove = remove_peps), tmp)
+  #     }}
+  #     
+  #     
+  #     if(!is.null(get_group_DF(omicsData$objPP))){
+  #       p1 <- plot(omicsData$objPP, color_by = "Group", order_by = "Group") + 
+  #         labs(title = "Before handling missingness")
+  #       p2 <- plot(tmp, color_by = "Group", order_by = "Group") + 
+  #         labs(title = "After handling missingness")
+  #     } else {
+  #       p1 <- plot(omicsData$objPP) + 
+  #         labs(title = "Before handling missingness")
+  #       p2 <- plot(tmp) + 
+  #         labs(title = "After handling missingness")
+  #     }
+  #     
+  #     wrap_plots(p1, p2, guides = "collect")
+  #     # text_ylab <- "biomolecules"
+  #     # 
+  #     # ggplot(filters[[name]][[filt]], 
+  #     #        aes(x = `Percentage missing`, fill = Handling)) +
+  #     #   geom_histogram() + theme_bw() + labs(y = paste0("Count of ", text_ylab))
+  #   } else if (filt == "cvfilt" ){
+  #    
+  #     if(settings$cv_threshold < max(filters[[name]][[filt]]$CV, na.rm = T)){
+  #       do.call(plot, c(list(filters[[name]][[filt]]),
+  #                       settings))
+  #     } else {
+  #       do.call(plot, list(filters[[name]][[filt]]))
+  #     }
+  #     
+  #   } else {
+  #     
+  #     do.call(plot, c(list(filters[[name]][[filt]]),
+  #                     settings))
+  #   }
+  #   
+  # })
   
   output[[paste0( name, "_mol_min_num_UI")]] <- renderUI({
     
@@ -1417,7 +1587,8 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
     tagList(
       tags$p("Some examples of biomolecules selected:", style = "overflow-x:auto"),
       tags$p(paste(preview, collapse = " | "), style = "overflow-x:auto;white-space:nowrap"),
-      tags$p(paste0("Total molecules removed : ", length(mols_rmv)), style = "overflow-x:auto")
+      tags$p(paste0("          Total molecules removed : ", 
+                    length(mols_rmv)), style = "overflow-x:auto")
     )
   })
   
@@ -1557,6 +1728,96 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
     }
   })
   
+})
+
+## Plots for tabpanel
+map(c("imputefilt", "NZfilt", "cvfilt", "molfilt", 
+      # "fdata_customfilt", "emeta_customfilt", 
+      "profilt", "TCfilt", "Libfilt", "rmdfilt"
+      ), 
+    function(filter_tag){
+      
+      
+  output[[paste0(filter_tag, "_plot")]] <- renderPlot({
+    
+    tabname <- str_to_title(class(omicsData$objPP)[[1]])
+    settings <- filter_settings[[tabname]][[filter_tag]]
+    filter <- filters[[tabname]][[filter_tag]]
+    
+    if(filter_tag == "imputefilt"){
+      
+      selections <- filter_settings[[tabname]]$imputefilt
+      tmp <- filter
+      
+      # tmp <- omicsData$objPP
+      # 
+      # estimate_peps <- selections[selections$Handling == "Estimate", 1]
+      # convert_peps <- selections[selections$Handling == "Convert", 1]
+      # remove_peps <- selections[selections$Handling == "Remove", 1]
+      # 
+      # if(length(estimate_peps) > 0){
+      #   ## Impute
+      #   all_imp <- slopeR::imputation(as.slData(tmp))
+      #   impute_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% estimate_peps
+      #   if(length(impute_rows) > 0){
+      #     tmp$e_data[impute_rows, -1] <- all_imp[impute_rows,]
+      #   }
+      # }
+      # 
+      # if(length(convert_peps) > 0){
+      # ## Convert
+      # convert_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% convert_peps
+      # if(length(convert_rows) > 0){
+      #   tmp$e_data[convert_rows, -1] <- apply(
+      # 
+      #     ## Logical T/F for presence/absence
+      #     Reduce("&", list(
+      #       !is.na(tmp$e_data[convert_rows, -1]), ## Normal
+      #       tmp$e_data[convert_rows, -1] != 0 ## RNA, shouldn't mess up other types since we convert 0s
+      #     )),
+      # 
+      #     ## Convert to numeric
+      #     2, as.numeric)
+      #  }
+      # }
+      # 
+      # if(length(remove_peps) > 0){
+      # ## Remove
+      # remove_peps <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% remove_peps
+      # if(length(remove_peps) > 0){
+      #   tmp <- applyFilt(custom_filter(tmp, e_data_remove = remove_peps), tmp)
+      # }}
+
+
+      if(!is.null(get_group_DF(omicsData$objPP))){
+        p1 <- plot(omicsData$objPP, color_by = "Group", order_by = "Group") +
+          labs(title = "Before handling missingness")
+        p2 <- plot_noconv(tmp, color_by = "Group", order_by = "Group") +
+          labs(title = "After handling missingness")
+      } else {
+        p1 <- plot(omicsData$objPP) +
+          labs(title = "Before handling missingness")
+        p2 <- plot_noconv(tmp) +
+          labs(title = "After handling missingness")
+      }
+
+      wrap_plots(p1, p2, guides = "collect")
+
+    } else if (filter_tag == "cvfilt" ){
+
+      if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
+              do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
+                              settings))
+      } else {
+        do.call(plot, list(filters[[tabname]][[filter_tag]]))
+      }
+
+    } else {
+
+      do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
+                      settings))
+    }
+  })
 })
 
 output$add_impute_ui <- renderUI({

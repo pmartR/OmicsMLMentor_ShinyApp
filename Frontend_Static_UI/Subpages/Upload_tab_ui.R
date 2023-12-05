@@ -78,13 +78,14 @@ upload_tab <- function() {
           )),
 
           ## Plots and stats here
-          div(collapseBox(
-            "Detected Data Properties",
-            value = "summary",
-            # uiOutput("Characteristics_module_tabset")
-            withSpinner(plotOutput("boxplot_UI"))#,
-            # uiOutput("show_log_UI")
-          ))
+          uiOutput("detected_box_upload")
+          # div(collapseBox(
+          #   "Detected Data Properties",
+          #   value = "summary",
+          #   # uiOutput("Characteristics_module_tabset")
+          #   withSpinner(plotOutput("boxplot_UI"))#,
+          #   # uiOutput("show_log_UI")
+          # ))
 
         ) # Collapse parent
       ) # main_column
