@@ -135,7 +135,7 @@ output$rm_prompt_hp_UI <- renderUI({
        !is.null(input$rm_prompts_train) && 
        input$rm_prompts_train == choiceValues_rm[5]){
       
-      ## It'd be nice if this was able to diable rather than remove -- TO DO
+      ## It'd be nice if this was able to disable rather than remove -- TO DO
       radioButtons(
         "rm_prompts_hp",
         label = "",

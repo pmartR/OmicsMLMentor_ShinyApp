@@ -20,23 +20,53 @@ filter_flags <- reactiveValues()
 filter_effects <- reactiveValues()
 
 filter_settings <- reactiveValues()
+filter_settings_stored <- reactiveValues()
 
 ## get applied filters
 apply_filt_flags <- reactive({
+  
   req(!is.null(omicsData$objPP))
   front <- str_to_title(class(omicsData$objPP)[[1]])
   input_text <- grep(paste0(front, "_add_"), names(input), value = T)
   flags <- map_lgl(input_text, function(x) input[[x]])
   names(flags) <- gsub(paste0(front, "_add_"), "", input_text)
   flags
+  
 })
 
-observeEvent(apply_filt_flags(), {
+## if UI applied filters are different than stored, don't allow to continue until applied
+## For more robustness -- check applied filter settings against stored settings
+observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
   
+  name <- str_to_title(class(omicsData$objPP)[[1]])
   flags <- apply_filt_flags()
   active_filters <- names(flags[flags])
   active_filters <- gsub("edata|fdata", "", active_filters)
-  if(!all(active_filters %in% map(attr(omicsData$objPP, "filters"), 1))){
+  
+  stored_settings <- filter_settings_stored$stored[[name]]
+  
+  settings_stored <- stored_settings[names(stored_settings) %in% active_filters]
+  settings_current <- filter_settings[[name]][names(filter_settings[[name]]) %in% active_filters]
+  
+  compare <- map_chr(active_filters, function(x)
+    switch(x, 
+           "cvfilt" = "cvFilt",
+           "molfilt" = "moleculeFilt",
+            "imputefilt" = "imputationFilt",
+           "customfilt" = "customFilt",
+           "TCFilt" = "TCFilt",
+           "NZFilt" = "NZFilt",
+           "LibFilt" = "LibFilt",
+           "profilt" = "proFilt"
+           )
+    )
+  
+  
+  if(!all(compare %in% map(attr(omicsData$objfilters, "filters"), 1)) ||
+     !all(map(attr(omicsData$objfilters, "filters"), 1) %in% compare) ||
+     ((length(settings_stored) != 0 || length(settings_current) != 0 ) &&
+     !identical(settings_stored, settings_current))
+     ){
     disable(id = "complete_filters")
   } else {
     enable(id = "complete_filters")
@@ -1055,7 +1085,7 @@ priority = 10
 
 
 ### Apply filters ###
-observeEvent(input$apply_filters, {
+observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   
   name <- str_to_title(class(omicsData$objPP)[[1]])
   
@@ -1100,6 +1130,7 @@ observeEvent(input$apply_filters, {
         thresholds <- filter_settings[[name]]$imputefilt
         
         tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
+        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list("imputationFilt")))
         # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
 
         # tmp$e_data <- sldata_temp$e_data
@@ -1152,6 +1183,7 @@ observeEvent(input$apply_filters, {
       }
       
       omicsData$objfilters <- tmp
+      filter_settings_stored$stored <- reactiveValuesToList(filter_settings)
       rm(tmp)
       
       # flag to indicate success
@@ -1743,6 +1775,8 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
     tabname <- str_to_title(class(omicsData$objPP)[[1]])
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
+    
+    req(!is.null(filter))
     
     if(filter_tag == "imputefilt"){
       
