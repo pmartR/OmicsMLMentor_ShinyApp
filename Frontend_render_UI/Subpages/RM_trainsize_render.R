@@ -113,7 +113,8 @@ output$crossval_perform <- renderUI({
       choices = list(
         "Evaluate multiple models with single samples left out (leave-one-out)" = "loocv",
         "Evaluate multiple models with multiple samples left out (K-fold)" = "kfcv"
-      )
+      ),
+      width = "100%"
     ),
     
     br(),
@@ -149,7 +150,8 @@ output$crossval_hp <- renderUI({
       choices = list(
         "Evaluate multiple models with single samples left out for testing (leave-one-out)" = "loocv",
         "Evaluate multiple models with multiple samples left out for testing (K-fold)" = "kfcv"
-      )
+      ),
+      width = "100%"
     ),
     
     br(),

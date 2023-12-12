@@ -1774,7 +1774,7 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       
   output[[paste0(filter_tag, "_plot")]] <- renderPlot({
     
-    tabname <- str_to_title(class(omicsData$objPP)[[1]])
+    tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
     
@@ -1785,53 +1785,13 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       selections <- filter_settings[[tabname]]$imputefilt
       tmp <- filter
       
-      # tmp <- omicsData$objPP
-      # 
-      # estimate_peps <- selections[selections$Handling == "Estimate", 1]
-      # convert_peps <- selections[selections$Handling == "Convert", 1]
-      # remove_peps <- selections[selections$Handling == "Remove", 1]
-      # 
-      # if(length(estimate_peps) > 0){
-      #   ## Impute
-      #   all_imp <- slopeR::imputation(as.slData(tmp))
-      #   impute_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% estimate_peps
-      #   if(length(impute_rows) > 0){
-      #     tmp$e_data[impute_rows, -1] <- all_imp[impute_rows,]
-      #   }
-      # }
-      # 
-      # if(length(convert_peps) > 0){
-      # ## Convert
-      # convert_rows <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% convert_peps
-      # if(length(convert_rows) > 0){
-      #   tmp$e_data[convert_rows, -1] <- apply(
-      # 
-      #     ## Logical T/F for presence/absence
-      #     Reduce("&", list(
-      #       !is.na(tmp$e_data[convert_rows, -1]), ## Normal
-      #       tmp$e_data[convert_rows, -1] != 0 ## RNA, shouldn't mess up other types since we convert 0s
-      #     )),
-      # 
-      #     ## Convert to numeric
-      #     2, as.numeric)
-      #  }
-      # }
-      # 
-      # if(length(remove_peps) > 0){
-      # ## Remove
-      # remove_peps <- tmp$e_data[[pmartR::get_edata_cname(tmp)]] %in% remove_peps
-      # if(length(remove_peps) > 0){
-      #   tmp <- applyFilt(custom_filter(tmp, e_data_remove = remove_peps), tmp)
-      # }}
-
-
-      if(!is.null(get_group_DF(omicsData$objPP))){
-        p1 <- plot(omicsData$objPP, color_by = "Group", order_by = "Group") +
+      if(!is.null(isolate(get_group_DF(omicsData$objPP)))){
+        p1 <- plot(isolate(omicsData$objPP), color_by = "Group", order_by = "Group") +
           labs(title = "Before handling missingness")
         p2 <- plot_noconv(tmp, color_by = "Group", order_by = "Group") +
           labs(title = "After handling missingness")
       } else {
-        p1 <- plot(omicsData$objPP) +
+        p1 <- plot(isolate(omicsData$objPP)) +
           labs(title = "Before handling missingness")
         p2 <- plot_noconv(tmp) +
           labs(title = "After handling missingness")

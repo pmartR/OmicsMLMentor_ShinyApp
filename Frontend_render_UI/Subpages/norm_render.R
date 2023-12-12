@@ -9,6 +9,7 @@ subset_conv <- function(slData) {
   if (!is.null(na_trf_df)) {
     nonconverted_biomols <- na_trf_df %>% 
       dplyr::filter(Handling != "Convert") %>% 
+      dplyr::filter(Handling != "Remove") %>% 
       dplyr::pull(get_edata_cname(slData))
     
     nonconverted_biomols <- nonconverted_biomols[(nonconverted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]

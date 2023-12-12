@@ -71,7 +71,7 @@ choiceNames_rm <- pmap(list(rm_text, files_rm),
                          
                          div(id="panerm",
                              wellPanel(
-                               text,
+                               HTML(text),
                                br(),
                                br(),
                                # splitLayout(
