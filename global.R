@@ -27,6 +27,7 @@ suppressPackageStartupMessages({
   library(patchwork)
   library(ggdendro)
   library(dendextend)
+  library("rintrojs")
   
   library(dplyr) # dplyr always at bottom, to avoid function collisions.
   library(purrr)

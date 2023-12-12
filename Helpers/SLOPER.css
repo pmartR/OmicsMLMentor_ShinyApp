@@ -19,7 +19,7 @@
    top: 0;
    left: 0;
    position: fixed;
-   background-color: rgba(255, 255, 255, 0.75);
+   background-color: rgba(255, 255, 255, 0.9);
    z-index: 9999;
    text-align: center;
 }

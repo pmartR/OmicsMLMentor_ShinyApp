@@ -69,7 +69,7 @@ holdout_valid <- reactive({
 choiceNames_rm <- pmap(list(rm_text, files_rm), 
                        function(text, p1){
                          
-                         div(id="pane",
+                         div(id="panerm",
                              wellPanel(
                                text,
                                br(),
@@ -80,7 +80,7 @@ choiceNames_rm <- pmap(list(rm_text, files_rm),
                                  # img(src = paste0("Example_ag/", p2), width = "95%", height = "95%"
                                  # )
                                # )
-                             ), tags$style(type="text/css","#pane{font-size:14px;width:405px;}")
+                             ), tags$style(type="text/css","#panerm{font-size:14px;width:405px;}")
                          )
                        })
 

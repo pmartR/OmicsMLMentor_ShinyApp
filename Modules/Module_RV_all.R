@@ -13,6 +13,8 @@ omicsData <- reactiveValues(obj = NULL,
                             objPP = NULL
                             )
 
+popup <- reactiveValues()
+
 observeEvent(omicsData$obj, {
   
   omicsData$objQC <- omicsData$obj

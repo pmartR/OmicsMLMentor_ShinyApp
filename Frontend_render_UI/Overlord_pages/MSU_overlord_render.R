@@ -152,6 +152,8 @@ observeEvent(input$em_select, ignoreInit = T, {
 
   updateProgressBar(session, "EM_done", value = 100)
   
+  show("model_reccomendations")
+  
 })
 
 observeEvent(input$msu_review_done, ignoreInit = T, {

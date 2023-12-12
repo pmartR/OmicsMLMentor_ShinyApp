@@ -1,5 +1,271 @@
 #' ## This needs to be modified for the overlord tab -- must skip this section
 
+SPANS_res <- reactiveValues()
+
+
+subset_conv <- function(slData) {
+  na_trf_df = attributes(slData)$na_transform
+  
+  if (!is.null(na_trf_df)) {
+    nonconverted_biomols <- na_trf_df %>% 
+      dplyr::filter(Handling != "Convert") %>% 
+      dplyr::pull(get_edata_cname(slData))
+    
+    nonconverted_biomols <- nonconverted_biomols[(nonconverted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]
+    
+    if (length(nonconverted_biomols) > 0) {
+      cfilt <- pmartR::custom_filter(slData, e_data_remove = nonconverted_biomols)
+      slData <- pmartR::applyFilt(cfilt, slData)
+    }
+  } else {
+    warning("No na_transform attribute found. Returning original slData object.")
+  }
+  
+  return(slData)
+}
+
+subset_noconv <- function(slData) {
+  na_trf_df = attributes(slData)$na_transform
+  
+  if (!is.null(na_trf_df)) {
+    converted_biomols <- na_trf_df %>% 
+      dplyr::filter(Handling == "Convert") %>% 
+      dplyr::pull(get_edata_cname(slData))
+    
+    converted_biomols <- converted_biomols[(converted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]
+    
+    if (length(converted_biomols) > 0) {
+      cfilt <- pmartR::custom_filter(slData, e_data_remove = converted_biomols)
+      slData <- pmartR::applyFilt(cfilt, slData)
+    }
+  } else {
+    warning("No na_transform attribute found. Returning original slData object.")
+  }
+  
+  return(slData)
+}
+
+combine_omicsdata <- function(obj_1, obj_2){
+  
+  new_edata_cname <- get_edata_cname(obj_1)
+  new_emeta_cname <- get_emeta_cname(obj_1)
+  
+  # bind the two data frames
+  new_edata <- dplyr::bind_rows(
+    obj_1$e_data,
+    obj_2$e_data %>%
+      dplyr::rename(setNames(
+        get_edata_cname(obj_2),
+        get_edata_cname(obj_1)
+      ))
+  )
+  
+  molnames <- new_edata[, get_edata_cname(obj_1)]
+  
+  if (length(molnames) != length(unique(molnames))) {
+    warning("Duplicate molecule identifiers were found in your combined data.")
+  }
+  
+  # Combined fdata will keep all columns from the first dataset in the case of
+  # duplicates.
+  obj_1_fdata_colnames <- obj_1$f_data %>%
+    dplyr::select(-dplyr::one_of(get_fdata_cname(obj_1))) %>%
+    colnames()
+  
+  omicsData$objNorm <- subset_conv
+  
+  if (is.null(omicsData$objNorm)) {
+    updatePrettySwitch(session, paste0(tab, "_lock_norm"), value = F)
+    return(NULL)
+  }
+  
+  new_fdata <- obj_1$f_data %>%
+    dplyr::left_join(
+      dplyr::select(obj_2$f_data, -dplyr::one_of(obj_1_fdata_colnames)),
+      by = setNames(get_fdata_cname(obj_2), get_fdata_cname(obj_1))
+    )
+  
+  # Combine e_meta in the same way as e_data if it exists in both datasets.
+  if (!is.null(obj_1$e_meta) & !is.null(obj_2$e_meta)) {
+    new_emeta_cname = get_emeta_cname(obj_1)
+    
+    new_emeta <- dplyr::bind_rows(
+      obj_1$e_meta,
+      obj_2$e_meta %>%
+        dplyr::rename(setNames(
+          get_emeta_cname(obj_2),
+          get_emeta_cname(obj_1)
+        ))
+    )
+    
+    # Check and warn about non-unique e_meta identifiers, this is pre-empting a
+    # situation where this function can take objects with pepData-like e_meta.
+    new_emeta_ids = new_emeta[, new_emeta_cname]
+    emeta_ids_1 = obj_1$e_meta[, get_emeta_cname(obj_1)]
+    emeta_ids_2 = obj_2$e_meta[, get_emeta_cname(obj_2)]
+    
+    if (length(unique(new_emeta_ids)) !=
+        length(unique(emeta_ids_1)) + length(unique(emeta_ids_2))) {
+      if (drop_duplicate_emeta) {
+        warning(
+          "There were non-unique molecule identifiers in e_meta, dropping these duplicates, some meta-data information may be lost."
+        )
+        new_emeta <-
+          new_emeta %>% dplyr::distinct(!!dplyr::sym(new_edata_cname), .keep_all = TRUE)
+      } else {
+        warning(
+          "There were non-unique molecule identifiers in e_meta, this may cause the object construction to fail if edata_cname and emeta_cname do not specify unique rows in the combined e_meta"
+        )
+      }
+    }
+  } else {
+    new_emeta_cname = new_emeta = NULL
+  }
+  
+  # Construct the new object using the appropriate type.
+  obj_class <- class(obj_1)
+  obj_class <- obj_class[obj_class != "slData"]
+  if(length(obj_class) > 1 && "pepData" %in% obj_class){
+    ## should be ref normed at this point
+    obj_class <- "pepData"
+  }
+  
+  constructor_fn <- get(sprintf("as.%s", obj_class))
+  
+  new_object <- constructor_fn(
+    e_data = new_edata,
+    edata_cname = new_edata_cname,
+    f_data = new_fdata,
+    fdata_cname = get_fdata_cname(obj_1),
+    e_meta = new_emeta,
+    emeta_cname = new_emeta_cname,
+    data_scale = get_data_scale(obj_1),
+    is_normalized = get_data_norm(obj_1)
+  )
+    
+    attr(new_object, "filters") = attr(obj_1, "filters")
+  
+  # Set the group designation of the new objects
+  if (!is.null(attr(obj_1, "group_DF"))) {
+    
+    # check that main effects are functionally the same
+    n_orig_groups <- attr(obj_1, "group_DF") %>%
+      dplyr::group_by(Group) %>%
+      attributes() %>%
+      `[[`("groups") %>%
+      nrow()
+    
+    n_combined_groups <- attr(obj_1, "group_DF") %>%
+      dplyr::left_join(
+        attr(obj_2, "group_DF"),
+        by = setNames(get_fdata_cname(obj_2), get_fdata_cname(obj_1))
+      ) %>%
+      dplyr::group_by(Group.x, Group.y) %>%
+      attributes() %>%
+      `[[`("groups") %>%
+      nrow()
+    
+    if (n_orig_groups != n_combined_groups) {
+      stop("The main effect structures of the two omicsData objects were not identical.")
+    }
+    
+    ## check covariates ##
+    # 1. Rename covariates in each fdata to a temp name
+    # 2. Join the two f_datas into a dataframe with the rename covariates
+    # 3. Group by the just the first objects covariates and then both the first and second,
+    # the number of groups should be the same in both cases if the covariate structure
+    # is the same.  If not, throw an error.
+    # 4. Run group_designation on the combined object with the first object's main effects/covariates.
+    covariates_1 <- attr(obj_1, "group_DF") %>%
+      attributes() %>%
+      `[[`("covariates") %>%
+      {
+        `[`(., -which(colnames(.) == get_fdata_cname(obj_1)))
+      } %>%
+      colnames()
+    
+    covariates_2 <- attr(obj_2, "group_DF") %>%
+      attributes() %>%
+      `[[`("covariates") %>%
+      {
+        `[`(., -which(colnames(.) == get_fdata_cname(obj_2)))
+      } %>%
+      colnames()
+    
+    if (all(!sapply(list(covariates_1, covariates_2), is.null))) {
+      # renaming ...
+      tmp_covar_names_1 <- paste0("_COVARS_1_", 1:length(covariates_1))
+      tmp_covar_names_2 <- paste0("_COVARS_2_", 1:length(covariates_2))
+      
+      rename_map_1 <- setNames(covariates_1, tmp_covar_names_1)
+      rename_map_2 <- setNames(covariates_2, tmp_covar_names_2)
+      
+      tmp_fdata1 <- obj_1$f_data %>%
+        dplyr::rename(!!!rename_map_1)
+      tmp_fdata2 <- obj_2$f_data %>%
+        dplyr::rename(!!!rename_map_2)
+      
+      # ... to perform a join ...
+      combined_fdatas <- tmp_fdata1 %>%
+        dplyr::left_join(
+          tmp_fdata2,
+          by = setNames(get_fdata_cname(obj_2), get_fdata_cname(obj_1))
+        )
+      
+      # ... and check that both objects have the same covariate structure.
+      n_orig_covariate_levels_1 <- combined_fdatas %>%
+        dplyr::group_by(
+          dplyr::across(dplyr::one_of(tmp_covar_names_1))
+        ) %>%
+        attributes() %>%
+        `[[`("groups") %>%
+        nrow()
+      
+      n_orig_covariate_levels_2 <- combined_fdatas %>%
+        dplyr::group_by(
+          dplyr::across(dplyr::one_of(tmp_covar_names_2))
+        ) %>%
+        attributes() %>%
+        `[[`("groups") %>%
+        nrow()
+      
+      n_comb_covariate_levels <- combined_fdatas %>%
+        dplyr::group_by(
+          dplyr::across(dplyr::one_of(c(tmp_covar_names_1, tmp_covar_names_2)))
+        ) %>%
+        attributes() %>%
+        `[[`("groups") %>%
+        nrow()
+      
+      if (n_orig_covariate_levels_1 != n_comb_covariate_levels |
+          n_orig_covariate_levels_2 != n_comb_covariate_levels) {
+        stop("The covariate structure of both omicsData objects was not identical.")
+      }
+    }
+    
+    main_effects <- attr(obj_1, "group_DF") %>%
+      attributes() %>%
+      `[[`("main_effects")
+    
+    message(sprintf(
+      "Grouping new object with main effects: %s.%s",
+      paste(main_effects, collapse = ", "),
+      if (is.null(covariates_1))
+        ""
+      else
+        sprintf("  Covariates: %s", paste(covariates_1, collapse = ", "))
+    ))
+    
+    new_object <- group_designation(
+      new_object,
+      main_effects = main_effects,
+      covariates = covariates_1
+    )
+  }
+  
+  return(new_object)
+}
+
 observeEvent(omicsData$objPP, {
   req(!is.null(isolate(omicsData$objPP)))
   
@@ -368,7 +634,7 @@ load_norm_observers <- function(new_tabs) {
       ## Populate Global normalization options from spans table
       observeEvent(input[[paste0(tab, "_use_spans")]], {
         selected <- input[[paste0(tab, "_spans_table_rows_selected")]]
-        req(!is.null(selected))
+        req(!is.null(selected) && !is.null(SPANS_res))
 
         tab <- tab
         # req(tab %in% ALL_DATATYPE_NAMES)
@@ -524,7 +790,7 @@ load_norm_observers <- function(new_tabs) {
     #                     selected = "Normalization Preview"
     #   )
     # })
-
+    
     ## Load normalization parameters and lock all inputs
     observeEvent(input[[paste0(tab, "_lock_norm")]], {
 
@@ -549,17 +815,18 @@ load_norm_observers <- function(new_tabs) {
 
           params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]])
 
-          omicsData$objNorm <- check_norm_possible(omicsData$objPP,
+          
+          noconv <- subset_noconv(as.slData(omicsData$objPP))
+          conv <- subset_conv(as.slData(omicsData$objPP))
+          
+          omicsData$objNorm <- check_norm_possible(noconv,
                                              subset_fn = input[[paste0(tab, "_subset_fn")]],
                                              norm_fn = input[[paste0(tab, "_norm_fn")]],
                                              params = params,
                                              apply_norm = TRUE
           )
-
-          if (is.null(omicsData$objNorm)) {
-            updatePrettySwitch(session, paste0(tab, "_lock_norm"), value = F)
-            return(NULL)
-          }
+          
+          omicsData$objNorm <- combine_omicsdata(omicsData$objNorm, conv)
 
           norm_settings[[tab]] <- list(
             settings = input[[paste0(tab, "_normalize_option")]],
@@ -1262,7 +1529,9 @@ assign_norm_output <- function(tab) {
     
     
     output[[paste0(tab, "_spans_res_UI")]] <- renderUI({
-      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata") && !is.null(SPANS_res[[tab]])) {
+      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata") && 
+          !is.null(SPANS_res) &&
+          !is.null(SPANS_res[[tab]])) {
         return(
           tabsetPanel(
             tabPanel(
@@ -1521,7 +1790,7 @@ assign_norm_output <- function(tab) {
     #'@details SPANS plot
     output[[paste0(tab, "_spans_plot")]] <- renderPlotly({
       
-      req(!is.null(SPANS_res[[tab]]))
+      req(!is.null(SPANS_res) && !is.null(SPANS_res[[tab]]))
       
       p <- plot(SPANS_res[[tab]], interactive = T)
       isolate(plots[[tab]][[paste0(tab, "_Normalization_spans_plot")]] <- p)
@@ -1531,6 +1800,9 @@ assign_norm_output <- function(tab) {
     
     #'@details Table of SPANS scores
     output[[paste0(tab, "_spans_table")]] <- renderDT({
+      
+      req(!is.null(SPANS_res))
+      
       datatable(SPANS_res[[tab]],
                 options = list(scrollX = TRUE),
                 selection = "single",
@@ -1549,36 +1821,20 @@ assign_norm_output <- function(tab) {
       
       req(input[["normalized"]] == "Yes" ||  get_data_norm(isolate(omicsData$objPP)) == F, cancelOutput = T)
       
-      e_data <- isolate(omicsData$objPP)$e_data
-      e_data_cname <- pmartR::get_edata_cname(isolate(omicsData$objPP))
-      plot_data <- melt(e_data, id = e_data_cname, na.rm = TRUE)
-      group_df <- get_group_DF(isolate(omicsData$objPP))
-      
-      if(!is.null(group_df)){
+      if(!is.null(get_group_DF(omicsData$objPP))){
         
-        plot_data <- left_join(plot_data, group_df, by = c("variable" = colnames(group_df)[1]))
-        plot_data <- arrange(plot_data, !!rlang::sym(colnames(group_df)[2]))
-        plot_data$variable <- factor(plot_data$variable, levels = unique(plot_data$variable))
-        color <- plot_data[[colnames(group_df)[2]]]
+        p <- plot_noconv(as.slData(omicsData$objPP), 
+                         color_by = "Group", order_by = "Group") + labs(
+          title = paste0("Un-Normalized: ", tab, " Data")
+        )
         
       } else {
-        color <- NULL
+        p <- plot_noconv(as.slData(omicsData$objPP)) + labs(
+          title = paste0("Un-Normalized: ", tab, " Data")
+        )
       }
       
-      title <- paste0("Un-Normalized: ", tab, " Data")
-      
-      p <- plot_ly(
-        data = plot_data,
-        x = plot_data$variable,
-        y = plot_data$value,
-        color = color,
-        type = "box"
-      ) %>%
-        layout(
-          title = title,
-          xaxis = list(title = "Samples"),
-          yaxis = list(title = "Values")
-        )
+      p <- p %>% ggplotly()
       
       isolate(plots[[tab]][[paste0(tab, "_Normalization_boxplots_pre")]] <- p)
       
@@ -1616,79 +1872,20 @@ assign_norm_output <- function(tab) {
       
       req(input[["normalized"]] == "Yes" ||  get_data_norm(isolate(omicsData$objPP)) == F, cancelOutput = T)
 
-      # isolate({
-      #   if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization", "SPANS - Proteomics only")) {
-      #     params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]])
-      #     
-      #     arg <- list(
-      #       settings = input[[paste0(tab, "_normalize_option")]],
-      #       subset_fn = input[[paste0(tab, "_subset_fn")]],
-      #       norm_fn = input[[paste0(tab, "_norm_fn")]],
-      #       params = params,
-      #       backtransform = as.logical(input[[paste0(tab, "_backtransform")]])
-      #     )
-      #     
-      #     req(!any(map_lgl(c(arg$subset_fn, arg$norm_fn, arg$backtransform), is.null)))
-      #     
-      #     norm_object <- check_norm_possible(
-      #       omicsData = isolate(omicsData$objPP),
-      #       subset_fn = arg$subset_fn,
-      #       norm_fn = arg$norm_fn,
-      #       params = arg$params,
-      #       backtransform = arg$backtransform,
-      #       apply_norm = TRUE
-      #     )
-      #     
-      #     req(!is.null(norm_object), cancelOutput = T)
-      #     # } else {
-      #     #   arg <- list(
-      #     #     settings = input[[paste0(tab, "_normalize_option")]],
-      #     #     method = input[[paste0(tab, "_loess_method")]],
-      #     #     span = input[[paste0(tab, "_loess_span")]]
-      #     #   )
-      #     #
-      #     #   req(!any(map_lgl(c(arg$settings, arg$method, arg$span), is.null)))
-      #     #
-      #     #   norm_object <- normalize_loess(
-      #     #     omicsData = isolate(omicsData$objPP),
-      #     #     method = arg$method,
-      #     #     span = arg$span
-      #     #   )
-      #   }
-      # })
-      
-      norm_object <- omicsData$objNorm
-      
-      e_data <- norm_object$e_data
-      e_data_cname <- pmartR::get_edata_cname(norm_object)
-      plot_data <- melt(e_data, id = e_data_cname, na.rm = TRUE)
-      group_df <- get_group_DF(norm_object)
-      
-      if(!is.null(group_df)){
+      if(!is.null(get_group_DF(omicsData$objNorm))){
         
-        plot_data <- left_join(plot_data, group_df, by = c("variable" = colnames(group_df)[1]))
-        plot_data <- arrange(plot_data, !!rlang::sym(colnames(group_df)[2]))
-        plot_data$variable <- factor(plot_data$variable, levels = unique(plot_data$variable))
-        color <- plot_data[[colnames(group_df)[2]]]
+        p <- plot_noconv(as.slData(omicsData$objNorm), 
+                         color_by = "Group", order_by = "Group") + labs(
+                           title = paste0("Normalized: ", tab, " Data")
+                         )
         
       } else {
-        color <- NULL
+        p <- plot_noconv(as.slData(omicsData$objNorm)) + labs(
+          title = paste0("Normalized: ", tab, " Data")
+        )
       }
       
-      title <- paste0("Normalized: ", tab, " Data")
-      
-      p <- plot_ly(
-        data = plot_data,
-        x = plot_data$variable,
-        y = plot_data$value,
-        color = color,
-        type = "box"
-      ) %>%
-        layout(
-          title = title,
-          xaxis = list(title = "Samples"),
-          yaxis = list(title = "Values")
-        )
+      p <- p %>% ggplotly()
       
       isolate(plots[[tab]][[paste0(tab, "_Normalization_boxplots_post")]] <- p)
       

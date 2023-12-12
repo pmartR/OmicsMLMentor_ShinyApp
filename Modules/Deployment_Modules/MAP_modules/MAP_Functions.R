@@ -81,7 +81,7 @@ if (MAP_ACTIVE) {
   
   
 } else {
-  hide(id = "loading-gray-overlay")
+
   MapConnect <- NULL
   
   cfg <- yaml::read_yaml(cfg_path)

@@ -61,9 +61,11 @@ observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
            )
     )
   
+  ## Include QC filters
+  compare_plus <- c(compare, map_chr(attr(omicsData$objPP, "filters"), 1))
   
-  if(!all(compare %in% map(attr(omicsData$objfilters, "filters"), 1)) ||
-     !all(map(attr(omicsData$objfilters, "filters"), 1) %in% compare) ||
+  if(!all(compare %in% map_chr(attr(omicsData$objfilters, "filters"), 1)) ||
+     !all(map_chr(attr(omicsData$objfilters, "filters"), 1) %in% compare_plus) ||
      ((length(settings_stored) != 0 || length(settings_current) != 0 ) &&
      !identical(settings_stored, settings_current))
      ){
@@ -1130,7 +1132,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         thresholds <- filter_settings[[name]]$imputefilt
         
         tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
-        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list("imputationFilt")))
+        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
         # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
 
         # tmp$e_data <- sldata_temp$e_data

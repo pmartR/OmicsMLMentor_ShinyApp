@@ -4,6 +4,7 @@ ui <- function(request) {
     useShinyjs(),
     use_prompt(),
     useShinydashboardPlus(),
+    introjsUI(),
     
     extendShinyjs(script = "./Helpers/shinyui.js", functions = c(
       "isTabdisabled", # For testing purposes
@@ -21,6 +22,7 @@ ui <- function(request) {
       # Hack to replicate the addTooltip functionality with prompter
       tags$script(HTML(addTooltip_handler_script)),
       
+      ## Css
       includeCSS("./Helpers/SLOPER.css")
     ),
     
@@ -46,36 +48,7 @@ ui <- function(request) {
       title = tags$span(tags$img(src = "slope_icon.png", style = "max-height:100%"), ""),
       id = "top_page",
       ##### LANDING TAB ######
-      navbarMenu(
-        "Welcome",
-        tabPanel(
-          "Instructions",
-          includeMarkdown("Frontend_Static_UI/datareqs.md")
-        ),
-        tabPanel("Example Data"),
-        tabPanel("Glossary",
-                 
-                 wellPanel(
-                   
-                   strong("Click graph for more information"),
-                   
-                   hr(),
-                   
-                   div(
-                     style = 'height:500px; overflow-y: scroll',
-                     
-                     br(),
-                     
-                     fluidRow(
-                       map(models, function(x) uiOutput(paste0("EM_", x)))
-                     )
-                     
-                   )
-                 )
-                 
-                 )
-      ),
-      
+      tabPanel("Welcome", welcome_tab()),
       tabPanel("Upload", upload_tab_overlord()),
       tabPanel("Quality Control", QC_tab_overlord()),
       tabPanel("Model Set-Up", Model_setup_tab_overlord()),
@@ -107,9 +80,27 @@ ui <- function(request) {
                         class = "btn-warning", 
                         style = "position:fixed;left:15px;bottom:15px")),
     
-    actionButton("model_reccomendations", 
-                        "Model Requirements",
-                        style = "position:absolute;top:3px;right:16px;z-index:1100;"),
+    hidden(actionButton("model_reccomendations", 
+                 "Model Requirements",
+                 width = "170px",
+                 style = "position:absolute;top:8px;right:325px;z-index:1100;")),
+    
+    actionButton("glossary_button", 
+                 "Glossary",
+                 width = "80px",
+                 style = "position:absolute;top:8px;right:235px;z-index:1100;"),
+    
+    actionButton("help_button", 
+                 "Help",
+                 width = "55px",
+                 style = "position:absolute;top:8px;right:170px;z-index:1100;"),
+    
+    actionButton("contact",
+                 "Contact Maintainer",
+                 width = "150px",
+                 style = "position:absolute;top:8px;right:10px;z-index:1100;"),
+    
+
     
     # uiOutput("developer_buttons"),
     

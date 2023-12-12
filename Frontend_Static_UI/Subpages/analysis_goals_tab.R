@@ -34,7 +34,7 @@ choiceNames_ag <- pmap(list(ag_text, p1_list, p2_list, choiceValues_ag),
     height <- 150
   }                   
   
-  div(id="pane",
+  div(id="paneag",
       wellPanel(
         text,
         br(),
@@ -45,7 +45,7 @@ choiceNames_ag <- pmap(list(ag_text, p1_list, p2_list, choiceValues_ag),
           img(src = paste0("Example_ag/", p2), width = "95%", height = "95%"
               )
         )
-      ), tags$style(type="text/css","#pane{font-size:14px;width:705px;}")
+      ), tags$style(type="text/css","#paneag{font-size:14px;width:705px;}")
   )
 })
 
