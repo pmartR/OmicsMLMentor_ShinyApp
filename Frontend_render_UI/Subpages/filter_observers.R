@@ -3,7 +3,9 @@
 observeEvent(input$em_select, once = T, {
   output$filter_page <- renderUI({
     filter_tab_temp(isolate(str_to_title(class(omicsData$objPP)[[1]])),
-                    input$keep_missing == "Yes")
+                    # F,
+                    input$keep_missing == "Yes",
+                    input$user_level_pick)
   })
 })
 
@@ -1460,15 +1462,23 @@ observeEvent(c(input$filter_filt_keep, input$filter_filt_impute,
 
 output$missing_options_filter_UI <- renderUI({
   
+  all_choices <-  c(
+    "Keep data as-is" = "keep",
+    "Estimate values in samples with no biomolecule detection" = "impute",
+    "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
+    "Remove biomolecules with incomplete detection" = "remove"
+  )
+  
+  handles_missing <- map_lgl(map(algo_rules, function(x) x$hard$any_is_na), 1)
+  
+  if(!(handles_missing[input$pick_model_EM])){
+    all_choices <- all_choices[-1]
+  }
+  
   pickerInput(
     "missing_options_filter",
     "Handling method:",
-    choices = c(
-      "Keep data as-is" = "keep",
-      "Estimate values in samples with no biomolecule detection" = "impute",
-      "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
-      "Remove biomolecules with incomplete detection" = "remove"
-    ),
+    choices = all_choices,
     selected = input$missing_options,
     multiple = T
   )
@@ -1591,11 +1601,18 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
     
     mols <- as.character(omicsData$objPP$e_data[, pmartR::get_edata_cname(omicsData$objPP)])
     
+    selected <- if(input$user_level_pick != "expert"){
+      grep("^con|nant$|con$", tolower(mols), value = T)
+    } else {
+      NULL
+    }
+    
     pickerInput(
       paste0(name, "_edata_customfilt_regex"),
       choices = mols,
       multiple = T,
-      options = list(`live-search` = TRUE, `actions-box` = TRUE)
+      options = list(`live-search` = TRUE, `actions-box` = TRUE),
+      selected = selected
     )
     
     # textInput(paste0(name, "_edata_customfilt_regex"), "Search by text or regex")

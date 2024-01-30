@@ -1,21 +1,21 @@
 
-destroy_advanced <- function(){
-  
-}
-
-destroy_unguided <- function(){
-  
-}
+# destroy_advanced <- function(){
+#   
+# }
+# 
+# destroy_unguided <- function(){
+#   
+# }
 
 observeEvent(input$welcome_confirm, {
   
-  if(input$welcome_confirm == "beginner"){
-    destroy_advanced()
-  } else if (input$welcome_confirm == "familiar") {
-    destroy_unguided()
-  } else {
-    NULL
-  }
+  # if(input$user_level_pick == "beginner"){
+  #   destroy_advanced()
+  # } else if (input$user_level_pick == "familiar") {
+  #   destroy_unguided()
+  # } else {
+  #   NULL
+  # }
   
   updateNavbarPage(session, "top_page", "Upload")
   

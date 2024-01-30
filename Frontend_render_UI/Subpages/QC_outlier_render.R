@@ -16,7 +16,7 @@ output$QC_rmd_metrics_UI <- renderUI({
     }
   }
   
-  pickerInput(
+  out <- pickerInput(
     "QC_rmd_metrics",
     label = "Select metrics for distance criteria:", 
     choices = c(
@@ -27,6 +27,21 @@ output$QC_rmd_metrics_UI <- renderUI({
     selected = selected
   )
   
+  if(input$user_level_pick == "beginner") out <- disabled(out)
+  
+  out
+  
+})
+
+output$outlier_remove_advanced_pval <- renderUI({
+  
+  nm <- str_to_title(class(isolate(omicsData$objPP))[[1]])
+  out <- numericInput(paste0( nm, "_pvalue_threshold"), 
+                      "P-value threshold for outliers:", 0.001, step = 0.001, max = 1, min = 0)
+  
+  if(input$user_level_pick == "beginner") out <- disabled(out)
+
+  out
 })
 
 output$QC_rmdfilt_sample_select_UI <- renderUI({
@@ -49,12 +64,26 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
   }
   temp_group <- group_designation(temp_dat, "Temp_col_all")
   
+  metrics <- if(input$user_level_pick == "beginner"){
+    
+    if("pepData" %in% class(omicsData$objQC) || 
+       "proData" %in% class(omicsData$objQC)){
+      c("MAD", "Kurtosis", "Skewness", "Correlation", "Proportion_Missing"
+      )
+    } else {
+      c("MAD", "Kurtosis", "Skewness", "Correlation")
+    }
+    
+  } else input$QC_rmd_metrics
+  
   rmd <- rmd_filter(temp_group, metrics = input$QC_rmd_metrics)
   
   QC_rmd$res <- rmd
   
+  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  
   out_idN <- summary(rmd,
-                     pvalue_threshold = input$QC_pvalue_threshold)$filt
+                     pvalue_threshold = pval)$filt
   
   all_samps <- rmd[[1]]
   
@@ -109,9 +138,11 @@ output$QC_rmdfilt_sample_remove_UI <- renderUI({
   # temp_group <- group_designation(temp_dat, "Temp_col_all")
   # 
   # rmd <- rmd_filter(temp_group, metrics = input$QC_rmd_metrics)
-  
+
+  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+    
   out_idN <- summary(rmd, 
-                     pvalue_threshold = input$QC_pvalue_threshold)$filt
+                     pvalue_threshold = pval)$filt
   
   all_samps <- rmd[[1]]
   
@@ -137,7 +168,9 @@ output$rmd_plot_qc_all <- renderPlot({
   
   req(QC_rmd$res)
   
-  plot(QC_rmd$res, pvalue_threshold = input$QC_pvalue_threshold) + 
+  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  
+  plot(QC_rmd$res, pvalue_threshold = pval) + 
     theme(legend.position = 0)
   
 })
@@ -218,8 +251,11 @@ observeEvent(input$all_outs_inspect_out, {
   
   rmd <- QC_rmd$res
   
+  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  
+  
   out_idN <- summary(rmd,
-                     pvalue_threshold = input$QC_pvalue_threshold)$filt
+                     pvalue_threshold = pval)$filt
   
   updatePickerInput(session, "QC_rmdfilt_sample_select", selected = out_idN)
   
@@ -229,8 +265,10 @@ observeEvent(input$all_outs_remove_out, {
   
   rmd <- QC_rmd$res
   
+  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  
   out_idN <- summary(rmd,
-                     pvalue_threshold = input$QC_pvalue_threshold)$filt
+                     pvalue_threshold = pval)$filt
   
   updatePickerInput(session, "QC_rmdfilt_sample_remove", selected = out_idN)
   

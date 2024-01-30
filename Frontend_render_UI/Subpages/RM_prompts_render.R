@@ -1,9 +1,9 @@
 
 ## Examples
 rm_text <- c(
-  HTML("Advanced users only: use user-specified settings<br/><br/>This option should only be used if the user is familiar with the model or is trying to recreate the settings used in a previous SLOPE session."),
-  HTML("Guided: Use default settings supported in literature<br/><br/>All settings will be pre-populated in the application for building the model."),
-  HTML("Guided: Optimize settings for best performance<br/><br/>Optimal settings will be determined using internal functions with visability and guidance at each step."),
+  HTML("Advanced users only: use user-specified settings"),
+  HTML("Guided: Use default settings supported in literature"),
+  HTML("Guided: Optimize settings for best performance"),
   HTML("Understand relationships within this dataset"),
   HTML("Apply model to new data")
 )
@@ -120,8 +120,8 @@ output$rm_prompt_hp_UI <- renderUI({
     disabled(radioButtons(
       "rm_prompts_hp",
       label = "",
-      choiceNames = choiceNames_rm[c(2,1,3)],
-      choiceValues = choiceValues_rm[c(2,1,3)],
+      choiceNames = choiceNames_rm[c(2:3,1)],
+      choiceValues = choiceValues_rm[c(2:3,1)],
       inline = T,
       selected = character(0)
     ))

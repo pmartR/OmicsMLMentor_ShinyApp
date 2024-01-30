@@ -68,7 +68,13 @@ analysis_goals <- function() {
                    collapsed = F,
                    
                    column(12,
-                   column(4, checkboxInput("skip_ag", "I know what model I want to run.")),
+                   column(4, 
+                          
+                          conditionalPanel("input.user_level_pick == 'expert'",
+                            {
+                            checkboxInput("skip_ag", "I know what model I want to run.")
+                          })
+                          ),
                    column(4,
                      
                      uiOutput("pick_model_UI"),

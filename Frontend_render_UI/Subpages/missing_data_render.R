@@ -69,8 +69,26 @@ output$missing_data_hist_biomolecule <- renderPlot({
 output$missing_data_hist_sample <- renderPlot({
   req(!is.null(omicsData$objQC$e_data))
   
+  mis_val <- missingval_result(omicsData$objQC)
+  
+  mis_val_presence <- 1 - mis_val$na.by.sample$num_NA/
+    (mis_val$na.by.sample$num_non_NA + mis_val$na.by.sample$num_NA)
+  
+  upper <- min(mean(mis_val_presence) + sd(mis_val_presence) * 2, 1)
+  lower <- max(mean(mis_val_presence) - sd(mis_val_presence) * 2, 0)
+  
   plot(missingval_result(omicsData$objQC), omicsData$objQC, 
        nonmissing = T, proportion = T)
+  
+  # if(lower < .9){
+  #   p + 
+  #     ggplot2::geom_hline(ggplot2::aes(yintercept = upper, linetype = "2 std upper bound"), show_guide = F) + 
+  #     ggplot2::geom_hline(ggplot2::aes(yintercept = lower, linetype = "2 std lower bound"), 
+  #                         show_guide = T) +
+  #     ggplot2::scale_linetype_manual(name= c(""), 
+  #                                    values = c("2 std upper bound" = "dashed",
+  #                                               "2 std lower bound" = "dashed"))
+  # } else p
   
 })
 

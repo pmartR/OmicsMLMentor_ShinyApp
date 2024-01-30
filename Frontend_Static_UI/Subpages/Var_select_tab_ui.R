@@ -50,7 +50,8 @@ var_select_tab <- function() {
                    )#)
                  }),
                  
-                 conditionalPanel("input.vscols_cats_done > 0", {
+                 conditionalPanel
+                 ("input.vscols_cats_done > 0 & input.user_level_pick != 'beginner'", {
                  # div( id = "int_col_collapse",
                    collapseBox(
                      "Specify Sample data interaction effects",

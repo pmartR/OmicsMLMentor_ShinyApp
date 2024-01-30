@@ -48,8 +48,8 @@ missing_data <- function(){
                  "Some biomolecules may not be detected in all samples.",
                  br(),
                  br(),
-                 paste0("VAL HERE", " models accept incomplete detection of biomolecules, however",
-                        " many models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
+                 paste0("Some unsupervised models accept incomplete detection of biomolecules, however",
+                        " unsupervised models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
                  
                  br(),
                  br(),

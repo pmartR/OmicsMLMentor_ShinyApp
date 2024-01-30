@@ -24,9 +24,7 @@ QC_outliers <- function(){
               style = "color:grey",
               class = "inline-wrapper-1",
               
-              
-              numericInput(paste0( tabname, "_pvalue_threshold"), 
-                           "P-value threshold for outliers:", 0.001, step = 0.001, max = 1, min = 0),
+              uiOutput("outlier_remove_advanced_pval"),
               
               
               ########## Update me laterrr ###############

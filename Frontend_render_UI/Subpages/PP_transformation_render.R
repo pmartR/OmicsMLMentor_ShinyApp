@@ -14,7 +14,22 @@ output$transform_picker_UI <- renderUI({
                   "Natural log" = "log")
   
   choices <- choices[!(choices %in% get_data_scale(omicsData$objQC))]
-  pickerInput("transform", "Transform data to:", choices = c("No transformation", choices))
+
+  if(input$user_level_pick == "beginner"){
+    
+    set <- if(get_data_scale(omicsData$objQC) == "log2") 
+      "No transformation" else "log2"
+    
+    out <- disabled(pickerInput("transform", "Transform data to:", 
+                       choices = c("No transformation", choices),
+                       selected = set))
+    
+  } else {
+    out <- pickerInput("transform", "Transform data to:", choices = c("No transformation", choices))
+  }
+  
+  out
+  
 })
 
 

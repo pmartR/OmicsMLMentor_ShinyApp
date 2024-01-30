@@ -28,7 +28,7 @@ norm_tab <- function(tabname) {
              
              uiOutput(paste0(tabname, "_normalize_sidepanel")),
 
-             actionButton("complete_norm", "Confirm Selections")
+             uiOutput("complete_norm_UI")
            ),
            
            column(

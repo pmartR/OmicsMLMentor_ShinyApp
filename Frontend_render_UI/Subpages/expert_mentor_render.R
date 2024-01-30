@@ -1,4 +1,7 @@
 
+## For some ranking automation
+automated_model_text <- reactiveVal()
+dashboard <- reactiveVal()
 
 tbl <- function(data, index, namecol)  {
   
@@ -6,10 +9,10 @@ tbl <- function(data, index, namecol)  {
   index <- deparse(substitute(index))
   namecol <- deparse(substitute(namecol))
   
-  # Convert to Character
-  col_names <- names(data)
-  data[,col_names] <- lapply(data[,col_names] , as.character)
- 
+  # # Convert to Character
+  # col_names <- names(data)
+  # data[,col_names] <- lapply(data[,col_names] , as.character)
+  # 
    # Loop over Rows
   for(i in 1:nrow(data)) {
     
@@ -95,62 +98,131 @@ tbl <- function(data, index, namecol)  {
   
 }
 
-output$EM_dashboard <- renderUI({
+## Make dashboard -- lots of elements to consider, so we use observe here
+observe({
   
-  suggests <- expert_mentor(omicsData$objModel)
+  req(!any(
+    map_lgl(
+      list(
+        input$skip_ag,
+        omicsData$objMSU,
+        omicsData$objModel,
+        input$feature_selection
+      ),
+      is.null
+    )
+  ))
+  
+  supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
+    (!input$skip_ag && input$ag_prompts == "supervised")
+  
+  any_missing <- any(is.na(omicsData$objMSU$e_data))
+  
+  if(input$user_level_pick == "beginner"){
+    suggests <- expert_mentor(omicsData$objModel,
+                              supervised = supervised
+    )
+  } else if (input$user_level_pick != "expert"){
+    
+    id_col <- which(colnames(omicsData$objModel$e_data) == 
+                      get_edata_cname(omicsData$objModel))
+    
+    samples_per_feature <- nrow(omicsData$objModel$e_data)/
+      min(get_group_table(omicsData$objModel)) > 300
+    
+    correlation <- any(cor(t(omicsData$objModel$e_data[-id_col])) > .90)
+    
+    ## Change based on algorithim for holdout
+    overfit <- min(get_group_table(omicsData$objModel)) < 5
+    
+    rmd <- any(rmd_filter(omicsData$objModel)$pvalue < 0.0001)
+    
+    ## Auto detect for some of these
+    suggests <- expert_mentor(omicsData$objModel,
+                              supervised = supervised,
+                              feature_selection = input$feature_selection,
+                              handles_missingness = input$handles_missingness,
+                              explainability = input$explainability,
+                              equation = input$equation,
+                              
+                              ## Autodetect
+                              high_dimensional_data = input$high_dimensional_data,
+                              samples_per_feature = samples_per_feature,
+                              correlation = correlation,
+                              prone_to_overfit = overfit,
+                              handles_outliers = rmd
+    )
+    
+    if(any(c(samples_per_feature, correlation, overfit, rmd))){
+      
+      conds <- c(
+        "Based on your data, the rankings for each model also consider:",
+        if(samples_per_feature) "Handling a large feature:sample ratio" else NULL,
+        if(correlation) "Managing highly correlated features" else NULL,
+        if(overfit) "Innately avoiding overfitting" else NULL,
+        if(rmd) "Robustly managing possible outliers" else NULL)
+      
+      automated_model_text(HTML(paste0(conds, collapse = "\n")))
+      
+    } else automated_model_text("NULL")
+    
+  } else {
+    
+    suggests <- expert_mentor(omicsData$objModel,
+                              supervised = supervised,
+                              feature_selection = input$feature_selection,
+                              samples_per_feature = input$samples_per_feature,
+                              explainability = input$explainability,
+                              equation = input$equation,
+                              correlation = input$correlation,
+                              prone_to_overfit = input$prone_to_overfit,
+                              handles_missingness = input$handles_missingness,
+                              high_dimensional_data = input$high_dimensional_data,
+                              handles_outliers = input$handles_outliers
+    )
+    
+  }
+  
   df <- summary(suggests)
+  
+  df <- df[df$supervised,] ## supervised/unsupervised
+  df <- df[df$n_levels,] ## Correct number of levels for analysis
+  df[2] <- unlist(suggests)
+  df <- df[-7]
+  
+  df[7] <- signif(df[7], 3)
+  df[8] <- signif(df[8], 3)
   
   missingness <- missingval_result(omicsData$objModel)$na.by.sample
   total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
   
-  df <- df[df$supervised,] ## supervised/unsupervised
-  df <- df[df$n_levels,] ## Correct number of levels for analysis
-  df <- df[-2]
-  df <- df[-6]
-  
   colnames(df) <- c(
     "Method",
+    "Score",
     paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"),
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
     paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
     paste0("Runs with a minimum group size of ", min(get_group_table(omicsData$objModel)), "?"),
-    paste0("Runs with a sample/predictor ratio of ", 
+    paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
-    paste0("Runs with ", sum(missingness$num_non_NA), "/", total, 
+    paste0("Performance with ", sum(missingness$num_non_NA), "/", total, 
            " (", signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints observed?" ),
-    "Results explain which predictors contribute most?",
-    "Method selects which predictors to use?",
-    "Results contain an equation for the prediction?"
+    "Relative interpretability of results?",
+    "Method keeps relatively best predictors to use?",
+    "Results contain an equation for the prediction?",
+    "Model innately avoids overfitting?",
+    "Model handles highly correlated features?",
+    "High dimensional?",
+    "Model handles outliers robustly?"
   )
-  
-  df$Score <- rowSums(df[-1])
-  
-  df_order <- c(
-    "Score",
-    "Method",
-    paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"), ## Automatic filter?
-    paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),  ## Automatic filter?
-    paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),  ## Automatic filter?
-    paste0("Runs with a minimum group size of ", min(get_group_table(omicsData$objModel)), "?"),  ## Automatic filter?
-    paste0("Runs with a sample/predictor ratio of ", 
-           ncol(omicsData$objModel$e_data) - 1, ":", 
-           nrow(omicsData$objModel$e_data), "?"),  ## Automatic filter?
-    paste0("Runs with ", sum(missingness$num_non_NA), "/", total, 
-           " (", signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints observed?" ),
-    "Method selects which predictors to use?",
-    "Results explain which predictors contribute most?",
-    "Results contain an equation for the prediction?"
-  )
-  
-  df <- as.data.frame(df)[df_order]
   
   if(!input$equal_sort){
     
-  order_input <- input$soft_sort
+    order_input <- input$soft_sort
     
-   order_cols <- df_order[3:length(df_order)]
-   names(order_cols) <- c(
+    order_cols <- df_order[3:length(df_order)]
+    names(order_cols) <- c(
       "N samples",
       "N classifications",
       "N predictors",
@@ -161,34 +233,57 @@ output$EM_dashboard <- renderUI({
       "Explainability",
       "Equation"
     )
-   
-   
-   df <- arrange(df, across(starts_with(as.character(order_cols[order_input])), desc))
+    
+    
+    df <- arrange(df, across(starts_with(as.character(order_cols[order_input])), desc))
     
   } else {
     df <- arrange(df, desc(Score))
   }
   
-  df$Method <- map_chr(df$Method, function(x) names(models_long_name)[which(models_long_name == x)])
+  df$Method <- names(models_long_name)[match(df$Method, models_long_name)]
   
-    ## Filts
-    filts <- c(
-      "Feature selection" = "Method selects which predictors to use?",
-      "Predictor weightings" = "Results explain which predictors contribute most?", 
-      "Generates equation" = "Results contain an equation for the prediction?"
-      )
-    
-    for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
-    
-    
-    if(isTruthy(input$skip_ag)){
-      df <- df[df$Method == input$pick_model, ]
-    }
-    
+  ## Filts
+  # filts <- c(
+  #   "Feature selection" = "Method selects which predictors to use?",
+  #   "Predictor weightings" = "Results explain which predictors contribute most?", 
+  #   "Generates equation" = "Results contain an equation for the prediction?"
+  #   )
+  
+  # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
+  
+  
+  if(isTruthy(input$skip_ag)){
+    df <- df[df$Method == input$pick_model, ]
+  }
+  
+  if(input$user_level_pick == "beginner"){
+    df <- df[1:3,]
+  } else if (input$user_level_pick == "familiar"){
+    df <- df[1:10,]
+  }
+  
+  # Convert to Character
+  col_names <- names(df)
+  df[,col_names] <- lapply(df[,col_names] , as.character)
+  
+  
   if(nrow(df) < 5){
-    df$Score <- as.character(df$Score)
     df[(nrow(df) + 1):5,] <- ""
   }
+
+  dashboard(df)
+  
+})
+
+
+output$EM_dashboard <- renderUI({
+  
+  text <- if(input$user_level_pick == "beginner"){
+      " - Top 3 shown"
+    } else if (input$user_level_pick == "familiar"){
+      " - Top 10 shown"
+    } else ""
   
   fluidPage(
     
@@ -202,13 +297,13 @@ output$EM_dashboard <- renderUI({
           class = "d-lg-flex align-items-lg-center py-4",
           tags$div(
             class = "h3 text-muted",
-            "Recommended Models"
+            paste("Recommended Models", text)
           )
         ),
         div(
           id = "top",
-          tbl(as.data.frame(df), "Method", NULL),
-          style = 'height:500px; overflow-y: scroll; overflow-x: scroll',
+          tbl(as.data.frame(dashboard()), "Method", NULL),
+          style = 'height:500px; overflow-y: scroll; overflow-x: scroll; width = 100%',
         )
       ))
   )
@@ -218,97 +313,15 @@ output$EM_dashboard <- renderUI({
 
 output$pick_EM_model_UI <- renderUI({
   
-  
-  ## until summary get fixed
-  if(input$ag_prompts != "supervised"){
-    choices <- models_long_name[models_long_name %in% c("kmeans", "pca", "umap", "hclust")]
-  } else {
-    choices <- models_long_name[!(models_long_name %in% c("kmeans", "pca", "umap", "hclust"))]
-  }
-  
   selected <- isolate(input$pick_model_EM)
+  
+  choices <- models_long_name[dashboard()$Method]
   
   ## until summary get fixed
   pickerInput("pick_model_EM", label = "Select a model:",
-              choices = choices, selected = selected
+              choices = choices[!is.na(choices)], 
+              selected = selected
               )
-  
-  # suggests <- expert_mentor(omicsData$objModel, 
-  #                           supervised = input$input$ag_prompts == "supervised")
-  # df <- summary(suggests)
-  # 
-  # missingness <- missingval_result(omicsData$objModel)$na.by.sample
-  # total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
-  # 
-  # if(input$input$ag_prompts == "supervised"){
-  #   df <- df[df$supervised,] ## supervised/unsupervised
-  # } else {
-  #   df <- df[!df$supervised,] ## supervised/unsupervised
-  # }
-  # 
-  # df <- df[-2]
-  # df <- df[-6]
-  # 
-  # colnames(df) <- c(
-  #   "Method",
-  #   paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"),
-  #   paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
-  #   paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
-  #   paste0("Runs with a minimum group size of ", min(get_group_table(omicsData$objModel)), "?"),
-  #   paste0("Runs with a sample/predictor ratio of ", 
-  #          ncol(omicsData$objModel$e_data) - 1, ":", 
-  #          nrow(omicsData$objModel$e_data), "?"),
-  #   paste0("Runs with ", sum(missingness$num_non_NA), "/", total, 
-  #          " (", signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints observed?" ),
-  #   "Results explain which predictors contribute most?",
-  #   "Method selects which predictors to use?",
-  #   "Results contain an equation for the prediction?"
-  # )
-  # 
-  # df$Score <- rowSums(df[-1])
-  # 
-  # df_order <- c(
-  #   "Score",
-  #   "Method",
-  #   paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"),
-  #   paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
-  #   paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
-  #   paste0("Runs with a minimum group size of ", min(get_group_table(omicsData$objModel)), "?"),
-  #   paste0("Runs with a sample/predictor ratio of ", 
-  #          ncol(omicsData$objModel$e_data) - 1, ":", 
-  #          nrow(omicsData$objModel$e_data), "?"),
-  #   paste0("Runs with ", sum(missingness$num_non_NA), "/", total, 
-  #          " (", signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints observed?" ),
-  #   "Method selects which predictors to use?",
-  #   "Results explain which predictors contribute most?",
-  #   "Results contain an equation for the prediction?"
-  # )
-  # 
-  # df <- as.data.frame(df)[df_order]
-  # df <- arrange(df, desc(Score))
-  # 
-  # df$Method <- map_chr(df$Method, function(x) names(models_long_name)[models_long_name == x])
-  # 
-  # ## Filts
-  # filts <- c(
-  #   "Feature selection" = "Method selects which predictors to use?",
-  #   "Predictor weightings" = "Results explain which predictors contribute most?", 
-  #   "Generates equation" = "Results contain an equation for the prediction?"
-  # )
-  # 
-  # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
-  # 
-  # if(isTruthy(input$skip_ag)){
-  #   df <- df[df$Method == input$pick_model, ]
-  # }
-  # 
-  # selected <- isolate(if(!is.null(input$pick_model_EM)) input$pick_model_EM else character(0))
-  # 
-  # pickerInput("pick_model_EM", label = "Select a model:",
-  #             choices = df$Method,
-  #             
-  #             )
-  
   
 })
 

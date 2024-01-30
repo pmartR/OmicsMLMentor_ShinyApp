@@ -1,9 +1,9 @@
-#' ## This needs to be modified for the overlord tab -- must skip this section
+#' ## This needs to be modified for the overlord <- -- must skip this section
 
 SPANS_res <- reactiveValues()
 
-
 subset_conv <- function(slData) {
+  
   na_trf_df = attributes(slData)$na_transform
   
   if (!is.null(na_trf_df)) {
@@ -12,11 +12,16 @@ subset_conv <- function(slData) {
       dplyr::filter(Handling != "Remove") %>% 
       dplyr::pull(get_edata_cname(slData))
     
-    nonconverted_biomols <- nonconverted_biomols[(nonconverted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]
+    nonconverted_biomols <- nonconverted_biomols[
+      (nonconverted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]
     
-    if (length(nonconverted_biomols) > 0) {
+    if (length(nonconverted_biomols) > 0 && 
+        length(nonconverted_biomols) != nrow(slData$e_data)) {
       cfilt <- pmartR::custom_filter(slData, e_data_remove = nonconverted_biomols)
       slData <- pmartR::applyFilt(cfilt, slData)
+    } else if (length(nonconverted_biomols) == nrow(slData$e_data)){
+      warning("No molecules have been converted. Returning NULL.")
+      return(NULL)
     }
   } else {
     warning("No na_transform attribute found. Returning original slData object.")
@@ -27,13 +32,14 @@ subset_conv <- function(slData) {
 
 subset_noconv <- function(slData) {
   na_trf_df = attributes(slData)$na_transform
-  
+
   if (!is.null(na_trf_df)) {
     converted_biomols <- na_trf_df %>% 
       dplyr::filter(Handling == "Convert") %>% 
       dplyr::pull(get_edata_cname(slData))
     
-    converted_biomols <- converted_biomols[(converted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]
+    converted_biomols <- converted_biomols[(
+      converted_biomols %in% slData$e_data[[get_edata_cname(slData)]])]
     
     if (length(converted_biomols) > 0) {
       cfilt <- pmartR::custom_filter(slData, e_data_remove = converted_biomols)
@@ -72,8 +78,6 @@ combine_omicsdata <- function(obj_1, obj_2){
   obj_1_fdata_colnames <- obj_1$f_data %>%
     dplyr::select(-dplyr::one_of(get_fdata_cname(obj_1))) %>%
     colnames()
-  
-  omicsData$objNorm <- subset_conv
   
   if (is.null(omicsData$objNorm)) {
     updatePrettySwitch(session, paste0(tab, "_lock_norm"), value = F)
@@ -283,22 +287,22 @@ observeEvent(omicsData$objPP, {
 
 #' ##### Function for glabal normalization #####
 #' # Grab params for global normalization
-get_params <- function(subset_fn) {
+get_params <- function(subset_fn, tab) {
 
   req(!is.null(subset_fn))
 
   # Grab params
   params <- list()
   if ("los" == subset_fn) {
-    params[["los"]] <- as.numeric(input[[paste0(gsub("_norm", "", input$top_page), "_los")]])
+    params[["los"]] <- as.numeric(input[[paste0(tab, "_los")]])
   } else if ("ppp" == subset_fn) {
-    params[["ppp"]] <- as.numeric(input[[paste0(gsub("_norm", "", input$top_page), "_ppp")]])
+    params[["ppp"]] <- as.numeric(input[[paste0(tab, "_ppp")]])
   } else if ("rip" == subset_fn) {
-    params[["rip"]] <- as.numeric(input[[paste0(gsub("_norm", "", input$top_page), "_rip")]])
+    params[["rip"]] <- as.numeric(input[[paste0(tab, "_rip")]])
   } else if ("ppp_rip" == subset_fn) {
-    rip <- as.numeric(input[[paste0(gsub("_norm", "", input$top_page), "_rip")]])
+    rip <- as.numeric(input[[paste0(tab, "_rip")]])
 
-    ppp <- as.numeric(input[[paste0(gsub("_norm", "", input$top_page), "_ppp")]])
+    ppp <- as.numeric(input[[paste0(tab, "_ppp")]])
 
     params[["ppp_rip"]] <- list(rip = rip, ppp = ppp)
   } else {
@@ -480,26 +484,26 @@ check_norm_possible <- function(...) {
   out
 }
 
+
+### Reactive val for triggering extra warning
+warn_user_bias <- reactiveVal()
+
 #' 
 #' #'@details Function which assigns the observers for unassigned data types
 #' #'for the normalization tab
-load_norm_observers <- function(new_tabs) {
+load_norm_observers <- function(tab) {
 
-  map(new_tabs, function(tab){
     if(tab %in% c("Prodata","Pepdata",  "Isobaricpepdata")){
       ## SPANS
       ### Run spans ###
       observeEvent(input[[paste0(tab, "_spans_start_button")]], {
         
         req(input[[paste0(tab, "_spans_start_button")]] > 0 &&
-              !is.null(input[[paste0(tab, "_spans_norm_fn")]]) &&
-              !is.null(input[[paste0(tab, "_spans_subset_fn")]]))
+              input$user_level_pick == "beginner" ||
+              (!is.null(input[[paste0(tab, "_spans_norm_fn")]]) &&
+              !is.null(input[[paste0(tab, "_spans_subset_fn")]])))
 
-        showNotification("Running SPANS. SPANS may take several minutes to complete. Navigation to other tabs is disabled while SPANS is running, please wait...",
-                         duration = NULL,
-                         closeButton = FALSE,
-                         id = paste0(tab, "_SPANS_note")
-        )
+        show("SPANS_busy")
 
         UI_elements <- paste0(tab, c(
           "_preview_normalization",
@@ -509,16 +513,24 @@ load_norm_observers <- function(new_tabs) {
           "_normalize_option"
         ))
 
-        map(UI_elements, hide)
+        map(UI_elements, disable)
 
         hide(selector = ".navbar-nav a")
 
         on.exit({
           # enable(paste0(tab, "_spans_start_button"))
           shinyjs::show(selector = ".navbar-nav a")
-          removeNotification(paste0(tab, "_SPANS_note"))
-          map(UI_elements, show)
-          updateBoxCollapse(session, paste0(tab, "_SPANS_sidebar"), close = "choose_params")
+          # removeNotification(paste0(tab, "_SPANS_note"))
+          map(UI_elements, enable)
+          updateBoxCollapse(session, id = "normalization_picker", 
+                            close = "picker")
+          updateBoxCollapse(session, paste0(tab, "_normalization_sidebar"), 
+                            open = "choose_params",
+                            close = "use_spans")
+          updateBoxCollapse(session, id = "normalization_mainpanel", 
+                            open = "spans_mainpanel",
+                            close = "normdata_mainpanel")
+          hide("SPANS_busy")
 
         })
 
@@ -526,84 +538,91 @@ load_norm_observers <- function(new_tabs) {
         updateBoxCollapse(session, paste0(tab, "_normalization_mainpanel"), close = "normdata_mainpanel")
         updateBoxCollapse(session, paste0(tab, "_spans_mainpanel"), open = "spans_mainpanel")
 
-        # Grab parameter inputs
-        params <- list()
-        if (any(c("los", "rip", "ppp", "ppp_rip") %in% input[[paste0(tab, "_spans_subset_fn")]])) {
-          if ("los" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
-            if (!any(is.na(text_parser(input[[paste0(tab, "_spans_los_other")]])))) {
-              params[["los"]] <- as.numeric(
-                c(
-                  input[[paste0(tab, "_spans_los")]],
-                  text_parser(input[[paste0(tab, "_spans_los_other")]])
-                )
-              )
-            } else {
-              params[["los"]] <- as.numeric(input[[paste0(tab, "_spans_los")]])
-            }
-          }
-
-          if ("ppp" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
-            if (!any(is.na(text_parser(input[[paste0(tab, "_spans_ppp_other")]])))) {
-              params[["ppp"]] <- as.numeric(
-                c(
-                  input[[paste0(tab, "_spans_ppp")]],
-                  text_parser(input[[paste0(tab, "_spans_ppp_other")]])
-                )
-              )
-            } else {
-              params[["ppp"]] <- as.numeric(input[[paste0(tab, "_spans_ppp")]])
-            }
-          }
-
-          if ("rip" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
-            if (!any(is.na(text_parser(input[[paste0(tab, "_spans_rip_other")]])))) {
-              params[["rip"]] <- as.numeric(
-                c(
-                  input[[paste0(tab, "_spans_rip")]],
-                  text_parser(input[[paste0(tab, "_spans_rip_other")]])
-                )
-              )
-            } else {
-              params[["rip"]] <- as.numeric(input[[paste0(tab, "_spans_rip")]])
-            }
-          }
-
-          if ("ppp_rip" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
-            if (!any(is.na(text_parser(input[[paste0(tab, "_spans_rip_other")]])))) {
-              rip <- as.numeric(
-                c(
-                  input[[paste0(tab, "_spans_rip")]],
-                  text_parser(input[[paste0(tab, "_spans_rip_other")]])
-                )
-              )
-            } else {
-              rip <- as.numeric(input[[paste0(tab, "_spans_rip")]])
-            }
-
-            if (!any(is.na(text_parser(input[[paste0(tab, "_spans_ppp_other")]])))) {
-              ppp <- as.numeric(
-                c(
-                  input[[paste0(tab, "_spans_ppp")]],
-                  text_parser(input[[paste0(tab, "_spans_ppp_other")]])
-                )
-              )
-            } else {
-              ppp <- as.numeric(input[[paste0(tab, "_spans_ppp")]])
-            }
-
-            params[["ppp_rip"]] <- map2(ppp, rip, function(ppp2, rip2) c(ppp2, rip2))
-          }
+        noconv <- subset_noconv(as.slData(omicsData$objPP))
+        
+        if(input$user_level_pick == "beginner"){
+          SPANS_res[[tab]] <- spans_procedure(noconv)
         } else {
-          params <- NULL
+          # Grab parameter inputs
+          params <- list()
+          if (any(c("los", "rip", "ppp", "ppp_rip") %in% input[[paste0(tab, "_spans_subset_fn")]])) {
+            if ("los" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
+              if (!any(is.na(text_parser(input[[paste0(tab, "_spans_los_other")]])))) {
+                params[["los"]] <- as.numeric(
+                  c(
+                    input[[paste0(tab, "_spans_los")]],
+                    text_parser(input[[paste0(tab, "_spans_los_other")]])
+                  )
+                )
+              } else {
+                params[["los"]] <- as.numeric(input[[paste0(tab, "_spans_los")]])
+              }
+            }
+            
+            if ("ppp" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
+              if (!any(is.na(text_parser(input[[paste0(tab, "_spans_ppp_other")]])))) {
+                params[["ppp"]] <- as.numeric(
+                  c(
+                    input[[paste0(tab, "_spans_ppp")]],
+                    text_parser(input[[paste0(tab, "_spans_ppp_other")]])
+                  )
+                )
+              } else {
+                params[["ppp"]] <- as.numeric(input[[paste0(tab, "_spans_ppp")]])
+              }
+            }
+            
+            if ("rip" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
+              if (!any(is.na(text_parser(input[[paste0(tab, "_spans_rip_other")]])))) {
+                params[["rip"]] <- as.numeric(
+                  c(
+                    input[[paste0(tab, "_spans_rip")]],
+                    text_parser(input[[paste0(tab, "_spans_rip_other")]])
+                  )
+                )
+              } else {
+                params[["rip"]] <- as.numeric(input[[paste0(tab, "_spans_rip")]])
+              }
+            }
+            
+            if ("ppp_rip" %in% input[[paste0(tab, "_spans_subset_fn")]]) {
+              if (!any(is.na(text_parser(input[[paste0(tab, "_spans_rip_other")]])))) {
+                rip <- as.numeric(
+                  c(
+                    input[[paste0(tab, "_spans_rip")]],
+                    text_parser(input[[paste0(tab, "_spans_rip_other")]])
+                  )
+                )
+              } else {
+                rip <- as.numeric(input[[paste0(tab, "_spans_rip")]])
+              }
+              
+              if (!any(is.na(text_parser(input[[paste0(tab, "_spans_ppp_other")]])))) {
+                ppp <- as.numeric(
+                  c(
+                    input[[paste0(tab, "_spans_ppp")]],
+                    text_parser(input[[paste0(tab, "_spans_ppp_other")]])
+                  )
+                )
+              } else {
+                ppp <- as.numeric(input[[paste0(tab, "_spans_ppp")]])
+              }
+              
+              params[["ppp_rip"]] <- map2(ppp, rip, function(ppp2, rip2) c(ppp2, rip2))
+            }
+          } else {
+            params <- NULL
+          }
+          
+          # Run spans
+          SPANS_res[[tab]] <- spans_procedure(
+            noconv,
+            norm_fn = input[[paste0(tab, "_spans_norm_fn")]],
+            subset_fn = input[[paste0(tab, "_spans_subset_fn")]],
+            params = params
+          )
         }
-
-        # Run spans
-        SPANS_res[[tab]] <- spans_procedure(
-          omicsData$objPP,
-          norm_fn = input[[paste0(tab, "_spans_norm_fn")]],
-          subset_fn = input[[paste0(tab, "_spans_subset_fn")]],
-          params = params
-        )
+        
       })
 
       ### SPANS defaults ###
@@ -682,6 +701,57 @@ load_norm_observers <- function(new_tabs) {
           )
         }
       })
+      
+      ## Populate Global normalization options from clicking the graph
+      observeEvent(event_data("plotly_click", source = "SPANS"), {
+        
+        
+        data <- event_data("plotly_click", source = "SPANS")
+        norm_method <- data$x
+        subset_method <- str_trim(gsub(" | .+", "", data$y))
+        parameters <- str_trim(gsub(".+ | ", "", data$y))
+        
+        # updateBoxCollapse(session,
+        #                   id = paste0(tab, "_normalization_sidebar"),
+        #                   open = "choose_params"
+        # )
+        
+        updatePickerInput(
+          session,
+          paste0(tab, "_subset_fn"),
+          selected = subset_method
+        )
+        
+        updatePickerInput(
+          session,
+          paste0(tab, "_norm_fn"),
+          selected = norm_method
+        )
+        
+        if (subset_method %in% c("los", "ppp", "rip")) {
+          updateNumericInput(
+            session,
+            paste0(tab, "_", subset_method),
+            value = parameters
+          )
+        } else if (subset_method == "ppp_rip") {
+          opts <- str_split(parameters, ";")[[1]]
+          
+          updateNumericInput(
+            session,
+            paste0(tab, "_ppp"),
+            value = opts[1]
+          )
+          
+          updateNumericInput(
+            session,
+            paste0(tab, "_rip"),
+            value = opts[2]
+          )
+        }
+        
+      })
+      
 
     }
 
@@ -693,8 +763,8 @@ load_norm_observers <- function(new_tabs) {
       req(input[[paste0(tab, "_inspect_norm")]] > 0)
 
 
-      params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]])
-
+      params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
+      
       eval <- inspect_norm(
         omicsData = omicsData$objPP,
         subset_fn = input[[paste0(tab, "_subset_fn")]],
@@ -718,10 +788,17 @@ load_norm_observers <- function(new_tabs) {
 
       if (!is.null(eval$p_location)) {
         msg <- if (eval$p_location < 0.05) {
-          div(style = "color:red", "There is evidence to suggest the centering effect of this normalization differs across groups, consider choosing another normalization.")
+          warn_user_bias(T)
+          div(style = "color:red", 
+              paste0("There is evidence to suggest the centering effect of ",
+                     "this normalization differs across groups, ",
+                     "consider choosing another normalization."))
         }
         else {
-          div("Weak or no evidence to suggest a difference in the centering effect of this normalization across groups.")
+          warn_user_bias(F)
+          div(paste0("Weak or no evidence to suggest a difference",
+                     " in the centering effect of this normalization ",
+                     "across groups."))
         }
 
         insertTab(
@@ -809,8 +886,32 @@ load_norm_observers <- function(new_tabs) {
         # "_loess_method",
         # "_loess_span"
       ))
-
+      
       if (input[[paste0(tab, "_lock_norm")]]) {
+        
+        updateBoxCollapse(session, id = "normalization_picker", close = "picker")
+        
+        if(!is.null(warn_user_bias()) && warn_user_bias() &&
+           input$user_level_pick == "beginner"){
+          
+          shinyalert("Are you sure?", 
+                     "Analysis suggests that this normalization has bias!",
+                     showCancelButton = T,
+                     showConfirmButton = T,
+                     
+                     callbackR = function(x){
+                       if(x){
+                         warn_user_bias(F)
+                         updatePrettySwitch(
+                           inputId = paste0(tab, "_lock_norm"), value = T)
+                       }
+                     }
+                     
+          )
+          
+          updatePrettySwitch(inputId = paste0(tab, "_lock_norm"), value = F)
+          return()
+        }
 
         if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization", "SPANS - Proteomics only")) {
 
@@ -827,7 +928,10 @@ load_norm_observers <- function(new_tabs) {
                                              apply_norm = TRUE
           )
           
-          omicsData$objNorm <- combine_omicsdata(omicsData$objNorm, conv)
+          if(!is.null(conv)){
+            
+            omicsData$objNorm <- combine_omicsdata(omicsData$objNorm, conv)
+          }
 
           norm_settings[[tab]] <- list(
             settings = input[[paste0(tab, "_normalize_option")]],
@@ -913,8 +1017,6 @@ load_norm_observers <- function(new_tabs) {
     # },
     # ignoreNULL = FALSE
     # )
-
-  })
 
 }
 
@@ -1167,7 +1269,9 @@ text_parser <- function(text) {
 ## Used to populate UI for spans testing options (used in line 361)
 populate_global_options <- function(output_name, input_name, tab) {
   output[[paste0(tab, output_name)]] <- renderUI({
+    
     condition <- tab %in% c("Prodata", "Pepdata", "Isobaricpepdata")
+    req(input$user_level_pick != "beginner")
     
     # LOS
     if (input_name == "_spans_los") {
@@ -1203,6 +1307,13 @@ populate_global_options <- function(output_name, input_name, tab) {
         fill <- defaults
       }
       
+      text_input <- if(input$user_level_pick == "expert"){
+        textInput(paste0(tab, input_name, "_other"),
+                  "Custom values (comma seperated):",
+                  placeholder = "E.g. 0.025, 0.25, 0.66"
+        )
+      } else NULL
+      
       # Checkbox input and tet input for custom values
       return(
         tagList(
@@ -1215,10 +1326,7 @@ populate_global_options <- function(output_name, input_name, tab) {
             inline = TRUE
           ),
           
-          textInput(paste0(tab, input_name, "_other"),
-                    "Custom values (comma seperated):",
-                    placeholder = "E.g. 0.025, 0.25, 0.66"
-          )
+          text_input
         )
       )
     } else {
@@ -1246,9 +1354,9 @@ assign_norm_output <- function(tab) {
               # SPANS panel, only available for proteomics
               collapseBox(
                 "Evaluate Normalization Options",
-                icon_id = paste0(tab, "_spans_norm_icon"),
-                icon = icon("exclamation-sign", lib = "glyphicon"),
-                icon_hidden = F,
+                # icon_id = paste0(tab, "_spans_norm_icon"),
+                # icon = icon("exclamation-sign", lib = "glyphicon"),
+                # icon_hidden = F,
                 value = "use_spans",
                 collapsed = F,
                 uiOutput(paste0(tab, "_spans_settings"))
@@ -1257,9 +1365,9 @@ assign_norm_output <- function(tab) {
               # Normalization parameters
               collapseBox(
                 "Select Normalization",
-                icon_id = paste0(tab, "_apply_norm_icon"),
-                icon = icon("exclamation-sign", lib = "glyphicon"),
-                icon_hidden = F,
+                # icon_id = paste0(tab, "_apply_norm_icon"),
+                # icon = icon("exclamation-sign", lib = "glyphicon"),
+                # icon_hidden = F,
                 value = "choose_params",
                 
                 pickerInput(
@@ -1317,9 +1425,9 @@ assign_norm_output <- function(tab) {
               # Normalization parameters
               collapseBox(
                 "Apply Normalization",
-                icon_id = paste0(tab, "_apply_norm_icon"),
-                icon = icon("exclamation-sign", lib = "glyphicon"),
-                icon_hidden = F,
+                # icon_id = paste0(tab, "_apply_norm_icon"),
+                # icon = icon("exclamation-sign", lib = "glyphicon"),
+                # icon_hidden = F,
                 value = "choose_params",
                 collapsed = F,
                 
@@ -1422,56 +1530,98 @@ assign_norm_output <- function(tab) {
     ## Spans UI in side panel ##
     output[[paste0(tab, "_spans_settings")]] <- renderUI({
       
+      picker_norm_fn <- pickerInput(
+        paste0(tab, "_spans_norm_fn"),
+        "Normalization Functions to Evaluate",
+        choices = c(
+          "Mean" = "mean",
+          "Median" = "median",
+          "Z-norm" = "zscore",
+          "Median Absolute Distance" = "mad"
+        ),
+        multiple = TRUE,
+        selected = c(
+          "Mean" = "mean",
+          "Median" = "median",
+          "Z-norm" = "zscore",
+          "Median Absolute Distance" = "mad"
+        )
+      )
+      
+      picker_subset_fn <- pickerInput(
+        paste0(tab, "_spans_subset_fn"),
+        "Subset Functions to Evaluate",
+        choices = c(
+          "No Subsetting" = "all",
+          "Top L order statistics (los)" = "los",
+          "Percentage present (ppp)" = "ppp",
+          "Complete" = "complete",
+          "Rank invariant (rip)" = "rip",
+          "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
+        ),
+        multiple = TRUE,
+        selected = c(
+          "No Subsetting" = "all",
+          "Top L order statistics (los)" = "los",
+          "Percentage present (ppp)" = "ppp",
+          "Complete" = "complete",
+          "Rank invariant (rip)" = "rip",
+          "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
+        )
+      )
+      
+      cl_inputs <- actionButton(paste0(tab, "_clear_input_spans"), "Clear Inputs")
+      ld_dft <- actionButton(paste0(tab, "_load_default_spans"), "Load Defaults")
+      
+      if(input$user_level_pick == "beginner"){
+        
+        picker_subset_fn <- div(
+          "SPANS will be run using default settings.",
+          br(),
+          br(),
+          "Normalization methods considered: Mean, Median, Z-norm, Median Absolute Deviation",
+          br(),
+          br(),
+          paste0("Subsets considered for assessment:", 
+                 " No subsetting,",
+                 " subset to features with top abundances per sample (los),",
+                 " subset to features consistently observed across samples (ppp), ",
+                 "subset to features observed without exception across all samples,",
+                 " subset to features observed without exception across all samples that have notable differences by prediction group (rip),",
+                 " subset to features consistently observed across samples that have notable differences by prediction group (ppp_rip)"
+                 ),
+          br(),
+          br(),
+          "By default, the thresholds for proportion of observations required for the ppp method are 0.05, 0.1, 0.2, 0.3.",
+          br(),
+          "By default, the p-value thresholds for the notable differences by prediction group required for the rip method are 0.1, 0.15, 0.2, 0.25.",
+          br(),
+          "When used together in the ppp_rip method, the default ppp thresholds are 0.1, 0.25, 0.5, and 0.75 and the default rip thresholds are 0.1, 0.15, 0.2, 0.25."
+        )
+        
+        picker_norm_fn <- NULL
+        cl_inputs <- NULL
+        ld_dft <- NULL
+      }
+      
       # Where proteomic, load spans options
       if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata")) {
+        
         out <- list(
-          actionButton(paste0(tab, "_clear_input_spans"), "Clear Inputs"),
-          actionButton(paste0(tab, "_load_default_spans"), "Load Defaults"),
+          cl_inputs,
+          ld_dft,
           hr(),
-          
-          pickerInput(
-            paste0(tab, "_spans_norm_fn"),
-            "Normalization Functions to Evaluate",
-            choices = c(
-              "Mean" = "mean",
-              "Median" = "median",
-              "Z-norm" = "zscore",
-              "Median Absolute Distance" = "mad"
-            ),
-            multiple = TRUE,
-            selected = c(
-              "Mean" = "mean",
-              "Median" = "median",
-              "Z-norm" = "zscore",
-              "Median Absolute Distance" = "mad"
-            )
-          ),
-          
-          # Subset function
-          pickerInput(
-            paste0(tab, "_spans_subset_fn"),
-            "Subset Functions to Evaluate",
-            choices = c(
-              "No Subsetting" = "all",
-              "Top L order statistics (los)" = "los",
-              "Percentage present (ppp)" = "ppp",
-              "Complete" = "complete",
-              "Rank invariant (rip)" = "rip",
-              "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
-            ),
-            multiple = TRUE,
-            selected = c(
-              "No Subsetting" = "all",
-              "Top L order statistics (los)" = "los",
-              "Percentage present (ppp)" = "ppp",
-              "Complete" = "complete",
-              "Rank invariant (rip)" = "rip",
-              "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
-            )
-          ),
+          picker_norm_fn,
+          picker_subset_fn,
           
           uiOutput(paste0(tab, "_spans_subset_fn_param_box")),
           hr(),
+          
+          hidden(div("Running SPANS - procedure may take several minutes, please wait...",
+                     id = "SPANS_busy",
+                     class = "fadein-out",
+                     style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
+          )),
           
           # Start button, disabled while inputs are incomplete
           uiOutput(paste0(tab, "_spans_start"))
@@ -1534,6 +1684,14 @@ assign_norm_output <- function(tab) {
           !is.null(SPANS_res) &&
           !is.null(SPANS_res[[tab]])) {
         return(
+          div(
+            
+            br(),
+            
+            "Best normalization(s) notated as methods with black dot(s) in the graph and first row(s) in the table.",
+            br(),
+            br(),
+            
           tabsetPanel(
             tabPanel(
               "Plot",
@@ -1545,8 +1703,9 @@ assign_norm_output <- function(tab) {
               br(),
               withSpinner(DTOutput(paste0(tab, "_spans_table"))),
               br(),
-              actionButton(paste0(tab, "_use_spans"), "Load Selected Result Parameters")
+              actionButton(paste0(tab, "_use_spans"), "Load selected result parameters")
             )
+          )
           )
         )
       } else if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata")) {
@@ -1629,28 +1788,37 @@ assign_norm_output <- function(tab) {
       # out <- list()
       input[[paste0(tab, "_clear_input_spans")]]
       
-      if (
+      cond <- 
+        ## Beginners don't need inputs
+        input$user_level_pick == "beginner" ||
+        
+        (
+        ## All the options are present
         !is.null(input[[paste0(tab, "_spans_subset_fn")]]) &&
         !is.null(input[[paste0(tab, "_spans_norm_fn")]]) &&
-        length(c(input[[paste0(tab, "_spans_subset_fn")]], input[[paste0(tab, "_spans_norm_fn")]])) > 2 &&
+        length(c(input[[paste0(tab, "_spans_subset_fn")]], 
+                 input[[paste0(tab, "_spans_norm_fn")]])) > 2 &&
+        
         (!("los" %in% input[[paste0(tab, "_spans_subset_fn")]]) ||
-         (
-           !is.null(input[[paste0(tab, "_spans_los")]]) ||
-           !any(is.na(text_parser(input[[paste0(tab, "_spans_los_other")]])))
-         )
+           (
+             !is.null(input[[paste0(tab, "_spans_los")]]) ||
+               !any(is.na(text_parser(input[[paste0(tab, "_spans_los_other")]])))
+           )
         ) &&
         (!(any(c("rip", "ppp_rip") %in% input[[paste0(tab, "_spans_subset_fn")]])) ||
-         (
-           !is.null(input[[paste0(tab, "_spans_rip")]])) ||
-         !any(is.na(text_parser(input[[paste0(tab, "_spans_rip_other")]])))
+           (
+             !is.null(input[[paste0(tab, "_spans_rip")]])) ||
+           !any(is.na(text_parser(input[[paste0(tab, "_spans_rip_other")]])))
         ) &&
         (!(any(c("ppp", "ppp_rip") %in% input[[paste0(tab, "_spans_subset_fn")]])) ||
-         (
-           !is.null(input[[paste0(tab, "_spans_ppp")]]) ||
-           !any(is.na(text_parser(input[[paste0(tab, "_spans_ppp_other")]])))
-         )
-        )
-      ) {
+           (
+             !is.null(input[[paste0(tab, "_spans_ppp")]]) ||
+               !any(is.na(text_parser(input[[paste0(tab, "_spans_ppp_other")]])))
+           )
+        ))
+      
+      
+      if (cond) {
         return(actionButton(paste0(tab, "_spans_start_button"), "Run SPANS"))
       } else {
         return(disabled(actionButton(paste0(tab, "_spans_start_button"), "Run SPANS")))
@@ -1727,6 +1895,7 @@ assign_norm_output <- function(tab) {
     }),
     
     output[[paste0(tab, "_norm_buttons")]] <- renderUI({
+      
       input[[paste0(tab, "_spans_start_button")]]
       
       req(!is.null(input[[paste0(tab, "_normalize_option")]]))
@@ -1794,6 +1963,7 @@ assign_norm_output <- function(tab) {
       req(!is.null(SPANS_res) && !is.null(SPANS_res[[tab]]))
       
       p <- plot(SPANS_res[[tab]], interactive = T)
+      p$x$source <- "SPANS"
       isolate(plots[[tab]][[paste0(tab, "_Normalization_spans_plot")]] <- p)
       
       p
@@ -1803,6 +1973,10 @@ assign_norm_output <- function(tab) {
     output[[paste0(tab, "_spans_table")]] <- renderDT({
       
       req(!is.null(SPANS_res))
+      
+      df <- SPANS_res[[tab]]
+      
+      df
       
       datatable(SPANS_res[[tab]],
                 options = list(scrollX = TRUE),
@@ -1845,13 +2019,6 @@ assign_norm_output <- function(tab) {
     # Post Norm
     output[[paste0(tab, "_normalized_boxplots_post_UI")]] <- renderUI({
       if (
-        # if add or preview happened AND != "No norm"
-        # (((!is.null(norm_settings[[tab]])) ||
-        #  (!is.null(input[[paste0(tab, "_preview_normalization")]]) &&
-        #   input[[paste0(tab, "_preview_normalization")]] > 0)) &&
-        # (!is.null(norm_settings[[tab]]))) &&
-        # !is.null(input[[paste0(tab, "_normalize_option")]]) &&
-        # input[[paste0(tab, "_normalize_option")]] != "No Normalization"
         !is.null(omicsData$objNorm)
       ) {
         return(plotlyOutput(paste0(tab, "_normalized_boxplots_post")))
@@ -1871,7 +2038,9 @@ assign_norm_output <- function(tab) {
     
     output[[paste0(tab, "_normalized_boxplots_post")]] <- renderPlotly({
       
-      req(input[["normalized"]] == "Yes" ||  get_data_norm(isolate(omicsData$objPP)) == F, cancelOutput = T)
+      req(input[["normalized"]] == "Yes" ||  
+            get_data_norm(isolate(omicsData$objPP)) == F, 
+          cancelOutput = T)
 
       if(!is.null(get_group_DF(omicsData$objNorm))){
         
@@ -1894,11 +2063,21 @@ assign_norm_output <- function(tab) {
     })
   )
   
+  output[["complete_norm_UI"]] <- renderUI({
+    
+    req((!is.null(input[[paste0(tab, "_normalize_option")]]) &&
+      input[[paste0(tab, "_normalize_option")]] == "No Normalization") || 
+          (!is.null(omicsData$objNorm) &&
+          pmartR:::get_data_norm(omicsData$objNorm)))
+    
+    actionButton("complete_norm", "Confirm Selections")
+    
+  })
+  
   ###
   
   outputOptions(output, paste0(tab, "_normalize_sidepanel"), suspendWhenHidden = FALSE)
   outputOptions(output, paste0(tab, "_normalize_option_UI"), suspendWhenHidden = FALSE)
 }
-
 
 

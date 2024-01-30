@@ -18,20 +18,9 @@ LQ_mols <- function(){
               
               "By default, biomolecules observed only once across all samples ",
               "are removed, as these rarely have meaningful contributions to models.",
-              " Remaining biomolecules are depicted in the plot on the right.",
-              " To keep these instead, please un-select the checkbox below.",
-              
-              br(), br(),
-              
-              div(
-                
-                checkboxInput(
-                  inputId = "QC_add_molfilt",
-                  label = "Remove single-observation biomolecules", 
-                  value = TRUE
-                )
-              
-            )
+              " Remaining biomolecules are depicted as the dashed line in the plot on the right.",
+          
+              uiOutput("QC_LQ_Advanced_UI")
             
         )
         

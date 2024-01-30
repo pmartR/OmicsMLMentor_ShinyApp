@@ -501,14 +501,12 @@ observeEvent(input$complete_filters, ignoreInit = T, {
 
 observeEvent(input$complete_norm, ignoreInit = T, {
   
-  print("norm")
-  
   if(!is.null(input$complete_norm) && input$complete_norm > 0){
     enable("show_protein_roll")
     disable("review_PP")
   }
   
-  tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+  tabname <- isolate(str_to_title(class(omicsData$objMSU)[[1]]))
   
   if(!is.null(omicsData$objNorm) && 
      input[[paste0(tabname, "_normalize_option")]] != "No Normalization"){

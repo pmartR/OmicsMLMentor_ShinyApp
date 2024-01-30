@@ -16,6 +16,8 @@ output$preview_all_data_UI <- renderUI({
   gen_tab_names <- unlist(map(names(reactive_dataholder), function(x) 
     if(!is.null(reactive_dataholder[[x]]$file)) return(x) else NULL))
   
+  gen_tab_names <- gen_tab_names[gen_tab_names != "e_data"]
+  
   ## make tabs
   tabs <- map(sort(gen_tab_names), function(lab){
     
@@ -180,6 +182,8 @@ observeEvent(input$vscols_options_done, {
   req(input$vscols_options_done > 0)
   
     updateBoxCollapse(session, "vs_collapse_left", close = "use_cols_vs", open = "factor_cols_vs")
+    if(input$user_level_pick == 'beginner') shinyjs::show("done_VS")
+    
 })
 
 observeEvent(input$vscols_cats_done, {

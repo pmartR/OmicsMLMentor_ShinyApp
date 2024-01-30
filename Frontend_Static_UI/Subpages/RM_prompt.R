@@ -18,6 +18,7 @@ Prompt_RM_UI <- function() {
                    strong("How would you like to use your model?"),
                    # textOutput("warn_few_samps_train"),
                    br(),
+                   br(),
                    uiOutput("rm_prompt_train_UI"),
                    
                    # tags$head(tags$style("#warn_few_samps_train{color: red;
@@ -28,15 +29,17 @@ Prompt_RM_UI <- function() {
                    
                    br(),
                    
-                   conditionalPanel("typeof input.rm_prompts_train !== 'undefined' && input.rm_prompts_train.length > 0", {
+                   conditionalPanel(
+                     "typeof input.rm_prompts_train !== 'undefined' && input.rm_prompts_train.length > 0", {
                      
                      div(
                      strong("What settings would you like to use for your model?"),
+                     br(),
                      textOutput("warn_few_samps_settings"),
                      br(),
                      uiOutput("rm_prompt_hp_UI"),
                      tags$head(tags$style("#warn_few_samps_settings{color: red;
-                                 font-size: 20px;
+                                 font-size: 14px;
                                  font-style: italic;
                                  }"
                      )

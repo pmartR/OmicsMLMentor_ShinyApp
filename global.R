@@ -95,7 +95,7 @@ TABS_CHANGE_STATE <- c(
   "Pre-Processing", "Run Model", "Download"
 )
 
-models <- names(algo_rules)
+# models <- names(algo_rules)
 
 models_long_name <- c(
   `Linear support vector machine` = "lsvm",
@@ -110,8 +110,15 @@ models_long_name <- c(
   `Hierarchical clustering` = "hclust",
   `Principal Components Analysis` = "pca",
   `Uniform Manifold Approximation and Projection (UMAP)` = "umap",
-  `Gradient boosted tree` = "gbtree"
+  `Gradient boosted tree` = "gbtree",
+  `K-nearest neighbors` = "knn"
 )
+
+models_supervised <- models_long_name[map_lgl(models_long_name, 
+                             function(x) algo_rules[[x]]$hard$supervised)]
+
+models_unsupervised <- models_long_name[!map_lgl(models_long_name, 
+                                              function(x) algo_rules[[x]]$hard$supervised)]
 
 #' #'@details Statistical integration methods and corresponding tooltip
 #' VALID_STATSINTEG_ANALYSES = list(

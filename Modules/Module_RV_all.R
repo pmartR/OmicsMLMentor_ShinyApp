@@ -28,6 +28,15 @@ observeEvent(omicsData$objMSU, {
   omicsData$objPP <- omicsData$objMSU
 })
 
+## Track selected model and response
+Model_spec <- reactiveValues(
+  model = NULL,
+  response = NULL
+)
+
+## Track current popup
+popup <- reactiveValues()
+
 ## VS -- Viewer for reduced data rows and VS page in general
 preview_keep_cols <- reactiveValues(result = NULL)
 

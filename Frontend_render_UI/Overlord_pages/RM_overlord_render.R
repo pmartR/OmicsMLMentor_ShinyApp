@@ -43,7 +43,7 @@ output$RM_ui <- renderUI({
         ),
         
         column(1, 
-               disabled(
+               # disabled(
                actionBttn(
                  inputId = "show_parameters",
                  label = HTML("Parameter<br/>Optimization"),
@@ -51,7 +51,7 @@ output$RM_ui <- renderUI({
                  color = "default",
                  size = "s"
                )
-               )
+               # )
         ),
         
         column(
@@ -62,7 +62,7 @@ output$RM_ui <- renderUI({
         
         
         column(1, 
-               disabled(
+               # disabled(
                actionBttn(
                  inputId = "show_runmodel",
                  label = HTML("Model<br/>Evaluation"),
@@ -70,7 +70,7 @@ output$RM_ui <- renderUI({
                  color = "default",
                  size = "s"
                )
-               )
+               # )
         ),
         
         column(
@@ -439,8 +439,8 @@ observeEvent(input$complete_RM_prompts, ignoreInit = T, {
   
   if(!is.null(input$complete_RM_prompts) && input$complete_RM_prompts > 0){
     enable("show_TrainSize")
-    disable("show_parameters")
-    disable("show_runmodel")
+    # disable("show_parameters")
+    # disable("show_runmodel")
     disable("review_RM")
   }
   
@@ -476,7 +476,7 @@ observeEvent(input$complete_TS_RM, ignoreInit = T, {
 
   if(!is.null(input$complete_TS_RM) && input$complete_TS_RM > 0){
     enable("show_parameters")
-    disable("show_runmodel")
+    # disable("show_runmodel")
     disable("review_RM")
   }
 

@@ -1,13 +1,8 @@
 
-
+### Picker for experts
 output$pick_model_UI <- renderUI({
   
   req(input$skip_ag)
-  
-  models <- models_long_name
-  
-  ## Add to rules ideally
-  models_supervised <- map_lgl(models, function(x) algo_rules[[x]]$hard$supervised)
   
   models_supervised_text <-  map_chr(
     as.character(models_supervised), 
@@ -19,14 +14,17 @@ output$pick_model_UI <- renderUI({
         )
     )
   
-  selected <- isolate(if(!is.null(input$pick_model)) input$pick_model else character(0))
+  selected <- isolate(if(!is.null(input$pick_model)) 
+    input$pick_model else character(0))
   
   pickerInput("pick_model", label = "Select a model:",
-              choices = names(models), 
+              choices = names(models_long_name), 
               selected = selected,
               choicesOpt = list(
-                disabled = if(is.null(omicsData$objMSU$f_data)) models_supervised else NULL,
-                subtext = if(is.null(omicsData$objMSU$f_data)) models_supervised_text else NULL
+                disabled = if(is.null(omicsData$objMSU$f_data)) 
+                  models_supervised else NULL,
+                subtext = if(is.null(omicsData$objMSU$f_data)) 
+                  models_supervised_text else NULL
                 )
   )
   
@@ -69,16 +67,24 @@ output$f_data_response_picker_UI <- renderUI({
   selected <- isolate(if(is.null(input$f_data_response_picker)) logical(0) else {
     input$f_data_response_picker
   })
-  
-  pickerInput(
-    "f_data_response_picker",
-    "Which sample column(s) would you like to predict?",
-    choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
-    multiple = T,
-    selected = selected,
-    options = list( `live-search` = TRUE, "max-options" = 2),
-    width = "30%"
+  div(
+    strong("Which sample column(s) would you like to predict?"),
+    # br(),
+    pickerInput(
+      "f_data_response_picker",
+      "",
+      choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
+      multiple = T,
+      selected = selected,
+      options = list( `live-search` = TRUE, "max-options" = 2),
+      width = "60%"
+    )
   )
+})
+
+output$ag_advanced_UI_select_model <- renderUI({
+  # req(input$user_level_pick == "expert")
+  checkboxInput("skip_ag", "I know what model I want to run.")
 })
 
 output$pick_model_group_pick_UI <- renderUI({
@@ -103,7 +109,8 @@ output$pick_model_group_pick_UI <- renderUI({
     choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
     multiple = T,
     selected = selected,
-    options = list( `live-search` = TRUE, "max-options" = 2)
+    options = list( `live-search` = TRUE, "max-options" = 2),
+    width = "60%"
   )
 })
 

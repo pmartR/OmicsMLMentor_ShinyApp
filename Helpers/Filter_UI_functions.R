@@ -1,4 +1,4 @@
-filter_tab_temp <- function(tabname, keep_missing) {
+filter_tab_temp <- function(tabname, keep_missing, user_level) {
   
   # if(!is.null(input$keep_missing)){
   #   # no_mol_filt <- T
@@ -66,6 +66,10 @@ filter_tab_temp <- function(tabname, keep_missing) {
     
   }
   
+  if(user_level == "beginner"){
+    sampfilt_UI <- sampfilt_UI[sampfilt_UI != "customfilt"]
+  }
+  
   
   ## Page overall UI
   tabPanel("Filters",
@@ -77,7 +81,8 @@ filter_tab_temp <- function(tabname, keep_missing) {
                # biomolecule filters
                select_biofilter_UI(tabname, biofilt_UI),
                # sample filters
-               select_sampfilter_UI(tabname, sampfilt_UI)
+               if(length(sampfilt_UI) > 0) 
+                 select_sampfilter_UI(tabname, sampfilt_UI) else NULL
              ), # ,# parent collapse
              
              actionButton("apply_filters", "Apply selected filters"),

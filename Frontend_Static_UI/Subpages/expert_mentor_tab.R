@@ -31,6 +31,8 @@ EM_tab <- function() {
                  ),
                  
                  
+                 conditionalPanel(
+                   "input.user_level_pick != 'beginner'",
                  collapseBox(
                    "Advanced Settings", 
                    icon_id = "em-advset",
@@ -71,25 +73,61 @@ EM_tab <- function() {
                    
                      
                      column(6,
-                      wellPanel("Model must have:",
+                      wellPanel("Rank models considering these elements:",
                                 
-                                checkboxInput(inputId = "Feature selection",
-                                              "Feature selection"),
-                                # 
-                                checkboxInput(inputId = "Generates equation",
-                                              "Generates equation"),
-                                # 
-                                # checkboxInput(inputId = "missingness",  
-                                #               "Handles missingness"),
-                                # 
-                                checkboxInput(inputId = "Predictor weightings",
-                                              "Predictor weightings")
-                                # 
-                                # checkboxInput(inputId = "pred_sample_ratio",  
-                                #               "Handles many predictors"),
-                                # 
-                                # checkboxInput(inputId = "n_levels",  
-                                #               "Predicts 2+ response groups"),
+                                checkboxInput(
+                                  inputId = "feature_selection",
+                                  "Keep only the best predictors in the model",
+                                  value = T),
+                                
+                                checkboxInput(
+                                  inputId = "explainability",
+                                  "Generate easily interpretable results",
+                                  value = T),
+
+                                checkboxInput(
+                                  inputId = "equation",
+                                  "Generates an equation for determining a prediction",
+                                  value = T),
+
+                                checkboxInput(
+                                  inputId = "handles_missingness",
+                                  "Handle any missingness",
+                                  value = T),
+
+                                
+                                checkboxInput(
+                                  inputId = "high_dimensional_data",
+                                  "high_dimensional_data",
+                                  value = T
+                                  ),
+                                
+                                conditionalPanel(
+                                  "input.user_level != 'expert'",
+                                  
+                                  div(
+                                    checkboxInput(
+                                      inputId = "samples_per_feature",
+                                      "Handle a large feature:sample ratio",
+                                      value = T),
+                                    
+                                    checkboxInput(
+                                      inputId = "prone_to_overfit",
+                                      "Innately avoid overfitting",
+                                      value = T),
+                                    
+                                    checkboxInput(
+                                      inputId = "correlation",
+                                      "Manage highly correlated features",
+                                      value = T),
+                                    
+                                    checkboxInput(
+                                      inputId = "handles_outliers",
+                                      "Robustly manage possible outliers",
+                                      value = T)
+                                    
+                                    
+                                  ))
                                 
                       ) )
 
@@ -143,7 +181,7 @@ EM_tab <- function() {
                    #   
                    #   )
                    
-                 )
+                 ))
                  
                ), # parent collapse
                div(id = "check_em", class = "tooltip-wrapper",
