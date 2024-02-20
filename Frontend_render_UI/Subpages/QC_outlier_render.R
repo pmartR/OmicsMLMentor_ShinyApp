@@ -37,7 +37,7 @@ output$outlier_remove_advanced_pval <- renderUI({
   
   nm <- str_to_title(class(isolate(omicsData$objPP))[[1]])
   out <- numericInput(paste0( nm, "_pvalue_threshold"), 
-                      "P-value threshold for outliers:", 0.001, step = 0.001, max = 1, min = 0)
+                      "P-value threshold for outliers:", 0.0001, step = 0.0001, max = 1, min = 0)
   
   if(input$user_level_pick == "beginner") out <- disabled(out)
 
@@ -80,7 +80,7 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
   
   QC_rmd$res <- rmd
   
-  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
   
   out_idN <- summary(rmd,
                      pvalue_threshold = pval)$filt
@@ -139,7 +139,7 @@ output$QC_rmdfilt_sample_remove_UI <- renderUI({
   # 
   # rmd <- rmd_filter(temp_group, metrics = input$QC_rmd_metrics)
 
-  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
     
   out_idN <- summary(rmd, 
                      pvalue_threshold = pval)$filt
@@ -168,7 +168,7 @@ output$rmd_plot_qc_all <- renderPlot({
   
   req(QC_rmd$res)
   
-  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
   
   plot(QC_rmd$res, pvalue_threshold = pval) + 
     theme(legend.position = 0)
@@ -251,7 +251,7 @@ observeEvent(input$all_outs_inspect_out, {
   
   rmd <- QC_rmd$res
   
-  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
   
   
   out_idN <- summary(rmd,
@@ -265,7 +265,7 @@ observeEvent(input$all_outs_remove_out, {
   
   rmd <- QC_rmd$res
   
-  pval <- if(input$user_level_pick == "beginner") 0.001 else input$QC_pvalue_threshold
+  pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
   
   out_idN <- summary(rmd,
                      pvalue_threshold = pval)$filt

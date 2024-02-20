@@ -284,7 +284,7 @@ output$RM_ui <- renderUI({
             # ),
             
             br(),
-            Prompt_RM_UI()
+            Prompt_RM_UI_unsup()
             
           ),
           
@@ -450,18 +450,34 @@ observeEvent(input$complete_RM_prompts, ignoreInit = T, {
              cancelButtonText = "Review results",
              callbackR = function(value){
                if(value){
-                 shinyjs::hide(id = "rm_prompt_box")
-                 shinyjs::show(id = "train_box")
-                 shinyjs::hide(id = "param_box")
-                 shinyjs::hide(id = "RM_box")
-                 shinyjs::hide(id = "RM_result_box")
                  
-                 
-                 shinyjs::removeClass("show_model_options", "blueoutline")
-                 shinyjs::addClass("show_TrainSize", "blueoutline")
-                 shinyjs::removeClass("show_parameters", "blueoutline")
-                 shinyjs::removeClass("show_runmodel", "blueoutline")
-                 shinyjs::removeClass("review_RM", "blueoutline")
+                 if(input$pick_model_EM %in% models_unsupervised){
+                   shinyjs::hide(id = "rm_prompt_box")
+                   shinyjs::hide(id = "train_box")
+                   shinyjs::show(id = "param_box")
+                   shinyjs::hide(id = "RM_box")
+                   shinyjs::hide(id = "RM_result_box")
+                   
+                   
+                   shinyjs::removeClass("show_model_options", "blueoutline")
+                   shinyjs::removeClass("show_TrainSize", "blueoutline")
+                   shinyjs::addClass("show_parameters", "blueoutline")
+                   shinyjs::removeClass("show_runmodel", "blueoutline")
+                   shinyjs::removeClass("review_RM", "blueoutline")
+                 } else {
+                   shinyjs::hide(id = "rm_prompt_box")
+                   shinyjs::show(id = "train_box")
+                   shinyjs::hide(id = "param_box")
+                   shinyjs::hide(id = "RM_box")
+                   shinyjs::hide(id = "RM_result_box")
+                   
+                   
+                   shinyjs::removeClass("show_model_options", "blueoutline")
+                   shinyjs::addClass("show_TrainSize", "blueoutline")
+                   shinyjs::removeClass("show_parameters", "blueoutline")
+                   shinyjs::removeClass("show_runmodel", "blueoutline")
+                   shinyjs::removeClass("review_RM", "blueoutline")
+                 }
                }
              })
   

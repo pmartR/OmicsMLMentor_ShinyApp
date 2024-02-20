@@ -1240,20 +1240,40 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   
   if(is.null(omicsData$objfilters)) omicsData$objfilters <- omicsData$objPP
   
-  output$before_filter_summary <- renderDT({summary(before)},
-                                           options = list(dom = "tipr"))
+  output$before_filter_summary <- renderDT({
+    
+    df <- summary(before)
+    df <- df[-1,]
+    
+    row.names(df) <- gsub("e_data", "Abundance data", row.names(df))
+    row.names(df) <- gsub("f_data", "Sample data", row.names(df))
+    row.names(df) <- gsub("e_meta", "Biomolecule data", row.names(df))
+    row.names(df) <- gsub("sss \\(", "ss \\(", row.names(df))
+    
+    df
+    
+    }, options = list(dom = "tipr"))
   
-  output$after_filter_summary <- renderDT({summary(omicsData$objfilters)},
-                                          options = list(dom = "tipr"))
+  output$after_filter_summary <- renderDT({
+    
+    df <- summary(omicsData$objfilters)
+    df <- df[-1,]
+    
+    row.names(df) <- gsub("e_data", "Abundance data", row.names(df))
+    row.names(df) <- gsub("f_data", "Sample data", row.names(df))
+    row.names(df) <- gsub("e_meta", "Biomolecule data", row.names(df))
+    row.names(df) <- gsub("sss \\(", "ss \\(", row.names(df))
+    
+    df
+    
+    }, options = list(dom = "tipr"))
   
   # Modal
   showModal(
     modalDialog(
       size = "l",
       title = "Filters Applied to Data:",
-        tabsetPanel(
-          tabPanel(
-            name,
+          div(
             fluidRow(
               column(10,
                      align = "center", offset = 1,
@@ -1273,7 +1293,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                     )
               )
           )
-      ))
+      )
       # fluidRow(
       #   column(10,
       #          align = "center", offset = 1,
@@ -1692,7 +1712,7 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
     map_list <- c("MAD", "Kurtosis", "Skewness", "Corr", "Proportion_Missing")
     alt_notation <-  c("MAD", "Kurtosis", "Skewness", "Correlation", "Proportion_Missing")
     metric_set <- unlist(list(
-      "Median Absolute Distance"="MAD", 
+      "Median Absolute Deviation"="MAD", 
       "Kurtosis", 
       "Skewness", 
       "Correlation", 
@@ -1805,13 +1825,44 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       if(!is.null(isolate(get_group_DF(omicsData$objPP)))){
         p1 <- plot(isolate(omicsData$objPP), color_by = "Group", order_by = "Group") +
           labs(title = "Before handling missingness")
-        p2 <- plot_noconv(tmp, color_by = "Group", order_by = "Group") +
-          labs(title = "After handling missingness")
+        
+        if(all(unlist(tmp$e_data[-1]) %in% c(0, 1))){
+          
+          ## Still need group designation for color, order
+          df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
+          p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+            geom_col() + theme_bw() + 
+            labs(
+              title = "After handling missingness",
+              fill = "Conversion",
+              y = "Number of biomolecules",
+              x = "Sample",
+              ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+          
+        } else {
+          p2 <- plot_noconv(tmp, color_by = "Group", order_by = "Group") +
+            labs(title = "After handling missingness")
+        }
+
       } else {
         p1 <- plot(isolate(omicsData$objPP)) +
           labs(title = "Before handling missingness")
-        p2 <- plot_noconv(tmp) +
-          labs(title = "After handling missingness")
+        
+        
+        if(all(unlist(tmp$e_data[-1]) %in% c(0, 1))){
+          df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
+          p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+            geom_col() + theme_bw() + 
+            labs(
+              title = "After handling missingness",
+              fill = "Conversion",
+              y = "Number of biomolecules",
+              x = "Sample",
+            ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+        } else {
+          p2 <- plot_noconv(tmp) +
+            labs(title = "After handling missingness")
+        }
       }
 
       wrap_plots(p1, p2, guides = "collect")

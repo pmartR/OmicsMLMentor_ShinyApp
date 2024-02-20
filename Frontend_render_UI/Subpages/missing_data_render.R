@@ -69,7 +69,16 @@ output$missing_data_hist_biomolecule <- renderPlot({
 output$missing_data_hist_sample <- renderPlot({
   req(!is.null(omicsData$objQC$e_data))
   
-  mis_val <- missingval_result(omicsData$objQC)
+  temp_dat <- omicsData$objQC
+  
+  if(is.null(omicsData$objQC$f_data)){
+    temp_dat$f_data <- data.frame(
+      SampleId = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      Temp_col_all = "All"
+    )
+  }
+  
+  mis_val <- missingval_result(temp_dat)
   
   mis_val_presence <- 1 - mis_val$na.by.sample$num_NA/
     (mis_val$na.by.sample$num_non_NA + mis_val$na.by.sample$num_NA)
@@ -77,7 +86,7 @@ output$missing_data_hist_sample <- renderPlot({
   upper <- min(mean(mis_val_presence) + sd(mis_val_presence) * 2, 1)
   lower <- max(mean(mis_val_presence) - sd(mis_val_presence) * 2, 0)
   
-  plot(missingval_result(omicsData$objQC), omicsData$objQC, 
+  plot(missingval_result(temp_dat), temp_dat, 
        nonmissing = T, proportion = T)
   
   # if(lower < .9){

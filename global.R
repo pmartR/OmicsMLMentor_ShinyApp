@@ -28,6 +28,7 @@ suppressPackageStartupMessages({
   library(ggdendro)
   library(dendextend)
   library("rintrojs")
+  library(factoextra)
   
   library(dplyr) # dplyr always at bottom, to avoid function collisions.
   library(purrr)
@@ -171,7 +172,7 @@ NULLSELECT_ = "__nullselect__"
 #     "Correlation density" = "cdensity"
 #   ),
 #   RMD_FILTER_CHOICES = list(
-#     "Median Absolute Distance"="MAD", 
+#     "Median Absolute Deviation"="MAD", 
 #     "Kurtosis", 
 #     "Skewness", 
 #     "Correlation", 

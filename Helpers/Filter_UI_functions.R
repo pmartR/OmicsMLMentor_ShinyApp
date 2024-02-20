@@ -409,7 +409,7 @@ select_sampfilter_UI <- function(
       ),
       column(
         7,
-        numericInput(paste0(tabname, "_pvalue_threshold"), "P-value threshold:", 0.001, step = 0.001, max = 1, min = 0),
+        numericInput(paste0(tabname, "_pvalue_threshold"), "P-value threshold:", 0.0001, step = 0.0001, max = 1, min = 0),
         div(
           id = paste0(tabname, "_rmd_metrics_js"), 
           style = "color:grey",

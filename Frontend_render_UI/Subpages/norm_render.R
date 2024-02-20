@@ -631,7 +631,7 @@ load_norm_observers <- function(tab) {
           "Mean" = "mean",
           "Median" = "median",
           "Z-norm" = "zscore",
-          "Median Absolute Distance" = "mad"
+          "Median Absolute Deviation" = "mad"
         ))
         updatePickerInput(session, paste0(tab, "_spans_subset_fn"),
                           selected = c(
@@ -761,12 +761,29 @@ load_norm_observers <- function(tab) {
 
       # req(tab %in% ALL_DATATYPE_NAMES)
       req(input[[paste0(tab, "_inspect_norm")]] > 0)
+      
+      temp_dat <- omicsData$objPP
+      
+      if(is.null(temp_dat$f_data) || is.null(get_group_DF(temp_dat))){
+        
+        if(!is.null(temp_dat$f_data)){
+          temp_dat$f_data$Temp_col_all <- "All"
+        } else {
+          temp_dat$f_data <- data.frame(
+            SampleId = colnames(temp_dat$e_data)[
+              colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+            Temp_col_all = "All"
+          )
+        }
+        temp_dat <- group_designation(temp_dat, "Temp_col_all")
+        
+      }
 
 
       params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
       
       eval <- inspect_norm(
-        omicsData = omicsData$objPP,
+        omicsData = temp_dat,
         subset_fn = input[[paste0(tab, "_subset_fn")]],
         norm_fn = input[[paste0(tab, "_norm_fn")]],
         params = params
@@ -785,16 +802,15 @@ load_norm_observers <- function(tab) {
         inputId = paste0(tab, "_normalize_boxplot_tabset"),
         target = "Scale Bias"
       )
-
+      
       if (!is.null(eval$p_location)) {
-        msg <- if (eval$p_location < 0.05) {
+        msg <- if (!is.na(eval$p_location) && eval$p_location < 0.05) {
           warn_user_bias(T)
           div(style = "color:red", 
               paste0("There is evidence to suggest the centering effect of ",
                      "this normalization differs across groups, ",
                      "consider choosing another normalization."))
-        }
-        else {
+        } else {
           warn_user_bias(F)
           div(paste0("Weak or no evidence to suggest a difference",
                      " in the centering effect of this normalization ",
@@ -805,6 +821,7 @@ load_norm_observers <- function(tab) {
           inputId = paste0(tab, "_normalize_boxplot_tabset"),
           target = "Normalization Preview",
           position = "after",
+          select = T,
           tab = tabPanel(
             "Location Bias",
             br(),
@@ -827,7 +844,7 @@ load_norm_observers <- function(tab) {
       }
 
       if (!is.null(eval$p_scale)) {
-        msg <- if (eval$p_scale < 0.05) {
+        msg <- if (!is.na(eval$p_scale) && eval$p_scale < 0.05) {
           div(style = "color:red", "There is evidence to suggest the scaling effect of this normalization differs across groups, consider choosing another normalization.")
         }
         else {
@@ -838,6 +855,7 @@ load_norm_observers <- function(tab) {
           inputId = paste0(tab, "_normalize_boxplot_tabset"),
           target = "Normalization Preview",
           position = "after",
+          select = T,
           tab = tabPanel(
             "Scale Bias",
             br(),
@@ -858,6 +876,10 @@ load_norm_observers <- function(tab) {
           "Scale Bias"
         )
       }
+      
+      
+      updateBoxCollapse(session, "normalization_mainpanel", 
+                        open = "normdata_mainpanel")
     })
 
     ## Preview normalization with selected parameters
@@ -1377,7 +1399,7 @@ assign_norm_output <- function(tab) {
                     "Mean" = "mean",
                     "Median" = "median",
                     "Z-norm" = "zscore",
-                    "Median Absolute Distance" = "mad"
+                    "Median Absolute Deviation" = "mad"
                   ),
                   options = pickerOptions(maxOptions = 1),
                   multiple = TRUE
@@ -1438,7 +1460,7 @@ assign_norm_output <- function(tab) {
                     "Mean" = "mean",
                     "Median" = "median",
                     "Z-norm" = "zscore",
-                    "Median Absolute Distance" = "mad"
+                    "Median Absolute Deviation" = "mad"
                   ),
                   options = pickerOptions(maxOptions = 1),
                   multiple = TRUE
@@ -1537,14 +1559,14 @@ assign_norm_output <- function(tab) {
           "Mean" = "mean",
           "Median" = "median",
           "Z-norm" = "zscore",
-          "Median Absolute Distance" = "mad"
+          "Median Absolute Deviation" = "mad"
         ),
         multiple = TRUE,
         selected = c(
           "Mean" = "mean",
           "Median" = "median",
           "Z-norm" = "zscore",
-          "Median Absolute Distance" = "mad"
+          "Median Absolute Deviation" = "mad"
         )
       )
       
@@ -1753,6 +1775,25 @@ assign_norm_output <- function(tab) {
         return(do.call(tagList, out))
       }
       
+      if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
+        
+        out <- list(
+          strong("Normalization unavailable for Presence/absence data."),
+          br(),
+          
+          disabled(pickerInput(paste0(tab, "_normalize_option"),
+                               label = "",
+                               choices = norm_choices,
+                               selected = "No Normalization",
+                               multiple = TRUE,
+                               options = pickerOptions(maxOptions = 1)
+          ))
+        )
+        
+        return(do.call(tagList, out))
+        
+      }
+      
       
       ## Isobaric data
       if (tab == "Isobaric") {
@@ -1902,7 +1943,11 @@ assign_norm_output <- function(tab) {
       
       lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = FALSE)
       # preview <- actionButton(paste0(tab, "_preview_normalization"), "Preview")
-      bias <- actionButton(paste0(tab, "_inspect_norm"), "Evaluate Normalization Bias")
+      bias <- if(input$pick_model_EM %in% models_supervised){
+        actionButton(paste0(tab, "_inspect_norm"), "Evaluate Normalization Bias")
+      } else NULL
+      
+      
       tooltip <- div(
         id = paste0(tab, "_norm_buttons_icon"), style = "color:deepskyblue;display:inline-block",
         add_prompt(icon("question-sign", lib = "glyphicon"), message = ttext[["NORM_BUTTON_DISABLED"]])
@@ -1925,7 +1970,8 @@ assign_norm_output <- function(tab) {
         !cond_global) {
         lock <- disabled(lock)
         # preview <- disabled(preview)
-        bias <- disabled(bias)
+        if(!is.null(bias))
+          bias <- disabled(bias)
       } else {
         tooltip <- hidden(tooltip)
       }
@@ -1996,7 +2042,19 @@ assign_norm_output <- function(tab) {
       
       req(input[["normalized"]] == "Yes" ||  get_data_norm(isolate(omicsData$objPP)) == F, cancelOutput = T)
       
-      if(!is.null(get_group_DF(omicsData$objPP))){
+      if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
+        df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
+        p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+          geom_col() + theme_bw() + 
+          labs(
+            paste0("Un-Normalized: ", tab, " Data"),
+            fill = "Conversion",
+            y = "Number of biomolecules",
+            x = "",
+          ) + 
+          theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+      
+      } else if(!is.null(get_group_DF(omicsData$objPP))){
         
         p <- plot_noconv(as.slData(omicsData$objPP), 
                          color_by = "Group", order_by = "Group") + labs(

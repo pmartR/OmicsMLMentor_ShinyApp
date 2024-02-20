@@ -40,7 +40,7 @@ supervised_tab <- function() {
             value = "select_sl",
             
             div(
-              "Selected model summary",
+              "Selected model",
               uiOutput("model_summary")
             ),
             
@@ -52,7 +52,6 @@ supervised_tab <- function() {
               value = 0,
               step = 1
             ),
-            
             
             # numericInput(
             #   "vi_thresh",
@@ -75,7 +74,25 @@ supervised_tab <- function() {
                 # style = "primary"
               )
             # )
+          ),
+          
+          collapseBox(
+            collapsed = T,
+            value = "select_vi",
+
+            "Variable importance options",
+
+            numericInput(
+              "vi_thresh",
+              "Show features with variable importance above:",
+              min = 0, max = 1, value = 0.5,
+              step = 0.1
+            ),
+
+            actionButton("feature_select_posthoc",
+                         "Build reduced model with features above specified threshold")
           )
+          
         ),
         
         hidden(actionButton("complete_RM", "Complete analysis"))
@@ -92,93 +109,26 @@ supervised_tab <- function() {
           id = "sl_preview_collapse",
           collapseBox(
             
-            titletext = "Visualize model results",
+            titletext = "Visualize model accuracy",
             collapsed = F,
             
             value = "results_RM",
             
             br(),
             
-            tabsetPanel(
-              
-              id = "performance_tabset",
-              
-              # tabPanel(
-              #   "Training Performance Metrics",
-              #   splitLayout(
-              #     DTOutput("train_metrics"),
-              #     uiOutput("roc_plot_train")
-              #   )
-              # ),
-              
-              # tabPanel(
-              #   "Testing Performance Metrics",
-              #   splitLayout(
-              #     DTOutput("test_metrics"),
-              #     uiOutput("roc_plot_test")
-              #   )
-              # ),
-              
-              # tabPanel(
-              #   "Data comparison -- Training vs. Testing",
-              #   # splitLayout(
-              #   #   DTOutput("test_metrics"),
-              #   #   uiOutput("roc_plot_test")
-              #   # )
-              # ),
-              
-              tabPanel(
-                "True positive performance",
-                # splitLayout(
-                #   DTOutput("test_metrics"),
-                #   uiOutput("roc_plot_test")
-                # )
-                br(),
-                plotOutput("roc_curve")
-              ),
-              
-              tabPanel(
-                "Prediction vs. truth",
-                # splitLayout(
-                #   DTOutput("test_metrics"),
-                #   uiOutput("roc_plot_test")
-                # )
-                br(),
-                plotOutput("prediction_bar")
-              ),
-              
-              tabPanel(
-                "Classification accuracy",
-                # splitLayout(
-                #   DTOutput("test_metrics"),
-                #   uiOutput("roc_plot_test")
-                # )
-                br(),
-                plotOutput("confusion_heatmap")
-              ),
-              
-              tabPanel(
-                "Confidence in sample predictions - bar",
-                # splitLayout(
-                #   DTOutput("test_metrics"),
-                #   uiOutput("roc_plot_test")
-                # )
-                br(),
-                plotOutput("confidence_bar")
-              ),
-              
-              tabPanel(
-                "Confidence in sample predictions - scatter",
-                # splitLayout(
-                #   DTOutput("test_metrics"),
-                #   uiOutput("roc_plot_test")
-                # )
-                br(),
-                plotOutput("confidence_scatter"),
-                br(),
-                uiOutput("true_pos_picker_ui")
-              )
-            )
+            uiOutput("performance_tabset_UI")
+          ),
+          
+          collapseBox(
+
+            titletext = "Visualize feature contributions",
+            collapsed = T,
+
+            value = "results_VI",
+
+            br(),
+
+            uiOutput("VI_tabset_UI")
           )
         )
       ) # main column
@@ -186,6 +136,95 @@ supervised_tab <- function() {
   ) # tabPanel
   
 }
+
+output$performance_tabset_UI <- renderUI({
+  
+  out <- tabsetPanel(
+    
+    id = "performance_tabset",
+    
+    # tabPanel(
+    #   "Training Performance Metrics",
+    #   splitLayout(
+    #     DTOutput("train_metrics"),
+    #     uiOutput("roc_plot_train")
+    #   )
+    # ),
+    
+    # tabPanel(
+    #   "Testing Performance Metrics",
+    #   splitLayout(
+    #     DTOutput("test_metrics"),
+    #     uiOutput("roc_plot_test")
+    #   )
+    # ),
+    
+    # tabPanel(
+    #   "Data comparison -- Training vs. Testing",
+    #   # splitLayout(
+    #   #   DTOutput("test_metrics"),
+    #   #   uiOutput("roc_plot_test")
+    #   # )
+    # ),
+    
+    tabPanel(
+      "True positive performance",
+      # splitLayout(
+      #   DTOutput("test_metrics"),
+      #   uiOutput("roc_plot_test")
+      # )
+      br(),
+      withSpinner(plotOutput("roc_curve"))
+    ),
+    
+    tabPanel(
+      "Prediction vs. truth",
+      # splitLayout(
+      #   DTOutput("test_metrics"),
+      #   uiOutput("roc_plot_test")
+      # )
+      br(),
+      withSpinner(plotOutput("prediction_bar"))
+    ),
+    
+    tabPanel(
+      "Classification accuracy",
+      # splitLayout(
+      #   DTOutput("test_metrics"),
+      #   uiOutput("roc_plot_test")
+      # )
+      br(),
+      withSpinner(plotOutput("confusion_heatmap"))
+    ),
+    
+    tabPanel(
+      "Confidence in sample predictions - bar",
+      # splitLayout(
+      #   DTOutput("test_metrics"),
+      #   uiOutput("roc_plot_test")
+      # )
+      br(),
+      withSpinner(plotOutput("confidence_bar"))
+    ),
+    
+    tabPanel(
+      "Confidence in sample predictions - scatter",
+      # splitLayout(
+      #   DTOutput("test_metrics"),
+      #   uiOutput("roc_plot_test")
+      # )
+      br(),
+      withSpinner(plotOutput("confidence_scatter")),
+      br(),
+      uiOutput("true_pos_picker_ui")
+    )
+  )
+  
+  if(is.null(omicsData$objRM)){
+    out <- "Please run model to see results"
+  }
+  out
+})
 
 unsupervised_tab <- function() {
   
@@ -314,7 +353,9 @@ observeEvent(input$run_sl, {
     shinyjs::hide("RM_busy")
   })
 
-  if(input$ag_prompts == "supervised"){
+  method <- input$pick_model_EM
+
+  if(method %in% models_supervised){
 
     ## Get correct response variable
     if(isTruthy(input$skip_ag)){
@@ -332,15 +373,13 @@ observeEvent(input$run_sl, {
                         response_types = rep(rt, length(response)))
 
     ## Get correct train/test split
-    if(input$numb_test == "Proportion"){
-      ntest <- floor(input$nTest_prop * ncol(runner$e_data[-1]))
-    } else {
-      ntest <- input$nTest_count
-    }
-
-    ## Get model method
-    # method <- models_long_name[input$pick_model_EM] ## While summary getting fixed
-    method <- input$pick_model_EM
+    if(!is.null(input$numb_test)){
+      if(input$numb_test == "Proportion"){
+        ntest <- floor(input$nTest_prop * ncol(runner$e_data[-1]))
+      } else {
+        ntest <- input$nTest_count
+      }
+    } else ntest <- 0
 
     ## Get custom/optimized parameters
     custom_args <- list()
@@ -388,11 +427,25 @@ observeEvent(input$run_sl, {
       )
     }
     
+    if(holdout_valid() && input$rm_prompts_hp == "tuned"){
+      cvMethod <- input$cv_hp_option
+      nFolds <- input$nFolds_hp
+    } else if(holdout_valid() && input$rm_prompts_hp != "tuned"){
+      cvMethod <- input$cv_perform_option
+      nFolds <- input$nFolds_cv
+    } else if(!holdout_valid() && input$rm_prompts_hp == "tuned"){
+      cvMethod <- input$cv_hp_option
+      nFolds <- input$nFolds_hp
+    } else if(!holdout_valid() && input$rm_prompts_hp != "tuned"){
+      cvMethod <- input$cv_perform_option
+      nFolds <- input$nFolds_cv
+    }
+    
     list_args <- list(
       slData = runner,
       slMethod = method,
-      cvMethod = input$training_type,
-      nFolds = input$nFolds,
+      cvMethod = cvMethod,
+      nFolds = nFolds,
       nTest = ntest
       # viThreshold = input$vi_thresh ## Need feature_selection results first??
     )
@@ -592,8 +645,14 @@ output$unsup_picker_UI <- renderUI({
                                  get_edata_cname(omicsData$objPP)))]
 
   req(length(colors) > 0)
+  
+  choices <- if(method == "pca"){
+    colors
+  } else {
+    c("Parameter clusters", colors)
+  }
 
-  pickerInput("color_by_unsup", "Color by:", choices = c("Parameter clusters", colors))
+  pickerInput("color_by_unsup", "Color by:", choices = choices)
 
 })
 
@@ -601,7 +660,7 @@ output$unsup_slider_UI <- renderUI({
   
   req(input$pick_model_EM == "hclust")
   
-  sliderInput("expand_y", "Adjust graph cut-off", min = 0, max = 1, value = 0.5)
+  sliderInput("expand_y", "Adjust sample name margin", min = 0, max = 1, value = 0.5)
   
 })
 
@@ -624,29 +683,38 @@ output$structure_plot <- renderPlot({
 
   if(method == "kmeans"){
 
-    browser()
     clusters <- tidyclust::extract_centroids(omicsData$objRM)
+    
+    ## How to snag contributing points out of this? Add hovers too
+    clust <- omicsData$objRM$fit$fit$fit$cluster
+    temp <- as.data.frame(omicsData$objRM$pre$mold$predictors)
+    
+    return(fviz_cluster(omicsData$objRM$fit$fit$fit, data = temp,
+                 # palette = c("#2E9FDF", "#00AFBB"),
+                 geom = "point",
+                 ellipse.type = "convex", 
+                 ggtheme = theme_bw()
+    ))
+    
 
-
-
-    centers <- tibble(
-      cluster = factor(1:3),
-      num_points = c(100, 150, 50),  # number points in each cluster
-      x1 = c(5, 0, -3),              # x1 coordinate of cluster center
-      x2 = c(-1, 1, -2)              # x2 coordinate of cluster center
-    )
-
-    labelled_points <-
-      centers %>%
-      mutate(
-        x1 = map2(num_points, x1, rnorm),
-        x2 = map2(num_points, x2, rnorm)
-      ) %>%
-      select(-num_points) %>%
-      unnest(cols = c(x1, x2))
-
-    ggplot(labelled_points, aes(x1, x2, color = cluster)) +
-      geom_point(alpha = 0.3)
+    # centers <- tibble(
+    #   cluster = factor(1:3),
+    #   num_points = c(100, 150, 50),  # number points in each cluster
+    #   x1 = c(5, 0, -3),              # x1 coordinate of cluster center
+    #   x2 = c(-1, 1, -2)              # x2 coordinate of cluster center
+    # )
+    # 
+    # labelled_points <-
+    #   centers %>%
+    #   mutate(
+    #     x1 = map2(num_points, x1, rnorm),
+    #     x2 = map2(num_points, x2, rnorm)
+    #   ) %>%
+    #   select(-num_points) %>%
+    #   unnest(cols = c(x1, x2))
+    # 
+    # ggplot(labelled_points, aes(x1, x2, color = cluster)) +
+    #   geom_point(alpha = 0.3) + theme_bw() + theme(text = element_text(size = 12))
 
   } else if (method == "hclust"){
 
@@ -688,7 +756,7 @@ output$structure_plot <- renderPlot({
 
     }
     
-    plot_ggdendro_multi(dend, branch.size = 0.5, expand.y = input$expand_y)
+    return(plot_ggdendro_multi(dend, branch.size = 0.5, expand.y = input$expand_y))
     # hclust_fit %>%
     #   extract_centroids(num_clusters = 2)
 
@@ -717,10 +785,11 @@ output$structure_plot <- renderPlot({
     }
 
     if(length(color_by) > 0){
-      ggplot(df, aes(x = PC1, y = PC2, color = !!color_by)) + geom_point(size = 3) + theme_bw()
+      return(ggplot(df, aes(x = PC1, y = PC2, color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw())
     } else {
       ## Where is R2?
-      ggplot(df, aes(x = PC1, y = PC2)) + geom_point(size = 3) + theme_bw()
+      return(ggplot(df, aes(x = PC1, y = PC2)) + geom_point(size = 3) + theme_bw())
     }
 
   } else {
@@ -746,10 +815,12 @@ output$structure_plot <- renderPlot({
     }
 
     if(length(color_by) > 0){
-      ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + geom_point(size = 3) + theme_bw()
+      return(ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw())
     } else {
       ## Where is R2?
-      ggplot(df, aes(x = UMAP1, y = UMAP2)) + geom_point(size = 3) + theme_bw()
+      return(ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
+               geom_point(size = 3) + theme_bw())
     }
 
   }

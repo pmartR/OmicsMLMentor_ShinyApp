@@ -34,14 +34,17 @@ output$pick_model_UI <- renderUI({
 output$ag_prompt_UI <- renderUI({
   
   out <- if(is.null(omicsData$objMSU$f_data)){
-    disabled(radioButtons(
-      "ag_prompts",
-      label = "",
-      choiceNames = choiceNames_ag[c(1, 4)],
-      choiceValues = choiceValues_ag[c(1, 4)],
-      inline = T,
-      selected = choiceNames_ag[c(4)]
-    ))
+    div(
+      "Note: When sample data is uploaded, additional options are available.",
+      radioButtons(
+        "ag_prompts",
+        label = "",
+        choiceNames = choiceNames_ag[4],
+        choiceValues = choiceValues_ag[4],
+        inline = T,
+        selected = choiceNames_ag[c(4)]
+      )
+    )
   } else {
     
     selected <- isolate(if(is.null(input$ag_prompts)) character(0) else {
@@ -127,20 +130,24 @@ observeEvent(input$ag_prompts, {
 
 observeEvent(input$ag_done, {
   
-  if(isTruthy(input$skip_ag)){
-    response <- input$pick_model_group_pick
-  } else {
-    response <- input$f_data_response_picker
-  }
-  
-  if(!is.null(response)){
+  if(input$ag_prompts == "supervised"){
+    
+    if(isTruthy(input$skip_ag)){
+      response <- input$pick_model_group_pick
+    } else {
+      response <- input$f_data_response_picker
+    }
+    
     omicsData$objMSU <- group_designation(omicsData$objMSU, 
                                           main_effects = response)
+    
+    omicsData$objModel <- as.slData(omicsData$objMSU, 
+                                    response_cols = response)
+    
+  } else {
+    omicsData$objModel <- as.slData(omicsData$objMSU)
   }
-  
-  omicsData$objModel <- as.slData(omicsData$objMSU, 
-                                response_cols = response)
-  
+
 })
 
 observeEvent(input$ag_done, {

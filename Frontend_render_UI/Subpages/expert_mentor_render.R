@@ -113,12 +113,31 @@ observe({
     )
   ))
   
+  temp_dat <- omicsData$objMSU
+  
+  if(get_data_scale(temp_dat) == "abundance"){
+    temp_dat <- edata_transform(temp_dat, "log2")
+  }
+  
+  if(is.null(omicsData$objQC$f_data)){
+    temp_dat$f_data <- data.frame(
+      SampleId = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      Temp_col_all = "All"
+    )
+    temp_group <- group_designation(temp_dat, "Temp_col_all")
+  }
+  
+  
   supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
     (!input$skip_ag && input$ag_prompts == "supervised")
   
   any_missing <- any(is.na(omicsData$objMSU$e_data))
   
+  
+  
   if(input$user_level_pick == "beginner"){
+    
+    
     suggests <- expert_mentor(omicsData$objModel,
                               supervised = supervised
     )
@@ -184,6 +203,16 @@ observe({
   }
   
   df <- summary(suggests)
+  
+  decisions_soft <- attributes(suggests)$soft_rules_filter %>% 
+    dplyr::bind_rows() %>%
+    dplyr::mutate(method = names(slopeR::algo_rules)) %>%
+    dplyr::select(method, dplyr::everything())
+  
+  decisions_hard <- attributes(suggests)$hard_rules_filter %>% 
+    dplyr::bind_rows() %>%
+    dplyr::mutate(method = names(slopeR::algo_rules)) %>%
+    dplyr::select(method, dplyr::everything())
   
   df <- df[df$supervised,] ## supervised/unsupervised
   df <- df[df$n_levels,] ## Correct number of levels for analysis
@@ -285,12 +314,13 @@ output$EM_dashboard <- renderUI({
       " - Top 10 shown"
     } else ""
   
-  fluidPage(
-    
-    br(),
+  # fluidPage(
+  #   
+  #   br(),
     
     fluidRow(
       
+      column(12,
       tags$div(
         class = "container mt-5",
         tags$div(
@@ -303,10 +333,10 @@ output$EM_dashboard <- renderUI({
         div(
           id = "top",
           tbl(as.data.frame(dashboard()), "Method", NULL),
-          style = 'height:500px; overflow-y: scroll; overflow-x: scroll; width = 100%',
+          style = 'height:500px; overflow-y: scroll; overflow-x: scroll; width = 90%',
         )
-      ))
-  )
+      )))
+  # )
   
   
 })

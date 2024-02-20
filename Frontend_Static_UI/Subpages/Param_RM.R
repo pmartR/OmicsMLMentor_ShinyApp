@@ -2,7 +2,7 @@
 ## ?dials::cost_complexity() can help with optimizing parameters ##
 ## https://www.tidymodels.org/start/tuning/ ##
 
-param_RM_UI <- function() {
+param_RM_UI <- function(tuning) {
   tabPanel("Parameter Optimization",
            value = "PO_RM",
            class = "collapse_page",
@@ -78,9 +78,7 @@ param_RM_UI <- function() {
                  
                  uiOutput("optimization_summary"), ## Number of levels ^ number of selected parameters
                  
-                 disabled(actionButton("param_opti", "Optimize selected parameters")),
-                 
-                 actionButton("done_param_option", "Done")
+                 uiOutput("param_opti_UI")
                )
 
              ), # parent collapse

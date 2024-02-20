@@ -12,12 +12,22 @@ observeEvent(input$done_crossval_option, {
   shinyjs::show("complete_TS_RM")
 })
 
+## Options -- holdout_valid => no cv_perform; rm_prompts_hp = tuned cv_hp valid
+## Options -- !holdout_valid => cv_perform; rm_prompts_hp = tuned cv_hp valid
+
+## Unique plots: tuning or cv_perform -> fold distribution
+  ## Would be super cool if we could get this to be consistent 
+  ## with how the folds are determined in backend
+
+## Unique text: holdout valid -- split of holdout and training 
+              ##in number of samples and percentage
+
+
 output$TS_preview_plot <- renderPlot({
   
   data <- omicsData$objPP
   
-  req(!is.null(input$cv_perform_option) || 
-        !is.null(input$numb_test) || 
+  req(!is.null(input$cv_perform_option) || !is.null(input$numb_test) || 
         !is.null(input$cv_hp_option))
   
   group_info <- get_group_DF(data)
@@ -33,39 +43,56 @@ output$TS_preview_plot <- renderPlot({
       test_data <- group_info %>% group_by(Group) %>% slice_sample(prop = prop_count)
     }
     
-    group_info$Status <- "Training data"
+    group_info$Status <- "Tuning data"
     
-    group_info$Status[group_info[[1]] %in% test_data[[1]]] <- "Evaluation data"
-    
-    group_info$Validation <- as.numeric(as.factor(group_info$Status))
-    
-    out <- ggplot(group_info, aes(x = Status, fill = Group)) + 
-      geom_bar() +
-      theme_bw() + labs(x = "", fill = "", y = "Number of samples")
-    
-    ## No holdout and tuning -- cv hp applied
-  } else if(holdout_valid() && input$rm_prompts_hp != "tuned"){
-    if(input$numb_test == "Proportion"){
-      req(!is.na(input$nTest_prop))
-      test_data <- group_info %>% group_by(Group) %>% slice_sample(prop = input$nTest_prop)
-    } else {
-      req(!is.na(input$nTest_count))
-      prop_count <- input$nTest_count/nrow(group_info)
-      test_data <- group_info %>% group_by(Group) %>% slice_sample(prop = prop_count)
-    }
-    
-    group_info$Status <- "Training data"
-    
-    group_info$Status[group_info[[1]] %in% test_data[[1]]] <- "Evaluation data"
+    group_info$Status[group_info[[1]] %in% test_data[[1]]] <- "Holdout data"
     
     group_info$Validation <- as.numeric(as.factor(group_info$Status))
     
-    out <- ggplot(group_info, aes(x = Status, fill = Group)) + 
+    out1 <- ggplot(group_info, aes(x = Status, fill = Group)) + 
       geom_bar() +
-      theme_bw() + labs(x = "", fill = "", y = "Number of samples")
+      theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
+                        subset = "Holdout split")
     
-    ## not tuning and no holdout -- cv perform applied
-  } else if (!holdout_valid() && input$rm_prompts_hp != "tuned") {
+    group_info_training <- group_info[group_info$Status == "Tuning data",]
+    
+    group_info_training$Status <- "Tuning data"
+    
+    ## Facit plots for training folds
+    req(!is.null(input$cv_hp_option))
+    
+    folds <- rsample::vfold_cv(
+      group_info_training,
+      v = input$nFolds_hp,
+      repeats = 1,
+      strata = "Group"
+    )
+    
+    plotter <- map2_dfr(folds$splits, folds$id, function(df, id){
+      df <- as.data.frame(df)
+      df$fold <- id
+      df
+    })
+    
+    out <- ggplot(plotter, aes(x = Group, fill = Group)) + 
+      geom_bar(show.legend = F) + facet_wrap(~fold) + 
+      theme_bw() + labs(x = "", y = "Number of samples")
+    
+    # group_info$Status <- "Training data"
+    # 
+    # group_info$Status[group_info[[1]] %in% test_data[[1]]] <- "Evaluation data"
+    # 
+    # group_info$Validation <- as.numeric(as.factor(group_info$Status))
+    # 
+    # out <- ggplot(group_info, aes(x = Status, fill = Group)) + 
+    #   geom_bar() +
+    #   theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
+    #                     subtitle = text)
+    
+    out <- wrap_plots(out1, out)
+    
+    ## not tuning with holdout
+  } else if (holdout_valid() && input$rm_prompts_hp != "tuned") {
     
     if(input$cv_perform_option == "loocv"){
       test_data <- sample(group_info$SampleID, 1)
@@ -87,17 +114,45 @@ output$TS_preview_plot <- renderPlot({
       theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
                         subtitle = text)
     
-    ## not tuning and no holdout -- cv perform applied
-  } else if (!holdout_valid() && input$rm_prompts_hp == "tuned") {
+    ## tuning and no holdout -- cv hp tuning applied
+  } else if (input$rm_prompts_hp == "tuned") {
    
+    req(!is.null(input$cv_hp_option))
     if(input$cv_hp_option == "loocv"){
       test_data <- sample(group_info$SampleID, 1)
       text <- "Resampled across all samples"
     } else {
-      req(!is.na(input$nFolds_cv))
-      test_data <- group_info %>% group_by(Group) %>% slice_sample(prop = 1/input$nFolds_cv)
-      text <- paste0("For each of ", input$nFolds_cv, " folds")
+      req(!is.na(input$nFolds_hp))
+      test_data <- group_info %>% group_by(Group) %>% slice_sample(prop = 1/input$nFolds_hp)
+      text <- paste0("For each of ", input$nFolds_hp, " folds")
     }
+    
+    if(input$cv_perform_option == "loocv"){
+      test_data <- sample(group_info$SampleID, 1)
+      text <- "Resampled across all samples"
+    } else {
+      req(!is.na(input$nFolds_hp))
+      test_data <- group_info %>% group_by(Group) %>% 
+        slice_sample(prop = 1/input$nFolds_hp)
+      text <- paste0("For each of ", input$nFolds_hp, " folds")
+    }
+    
+    folds <- rsample::vfold_cv(
+      group_info,
+      v = input$nFolds_hp,
+      repeats = 1,
+      strata = "Group"
+    )
+    
+    plotter <- map2_dfr(folds$splits, folds$id, function(df, id){
+      df <- as.data.frame(df)
+      df$fold <- id
+      df
+    })
+    
+    out <- ggplot(plotter, aes(x = Group, fill = Group)) + 
+      geom_bar(show.legend = F) + facet_wrap(~fold) + 
+      theme_bw() + labs(x = "", y = "Number of samples")
     
     group_info$Status <- "Training data"
     
@@ -109,6 +164,36 @@ output$TS_preview_plot <- renderPlot({
       geom_bar() +
       theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
                         subtitle = text)
+    
+  } else if (input$rm_prompts_hp != "tuned") {
+    
+    if(input$cv_perform_option == "loocv"){
+      test_data <- sample(group_info$SampleID, 1)
+      text <- "Resampled across all samples"
+    } else {
+      req(!is.na(input$nFolds_cv))
+      test_data <- group_info %>% group_by(Group) %>% 
+        slice_sample(prop = 1/input$nFolds_cv)
+      text <- paste0("For each of ", input$nFolds_cv, " folds")
+    }
+    
+    folds <- rsample::vfold_cv(
+      group_info,
+      v = input$nFolds_cv,
+      repeats = 1,
+      strata = "Group"
+    )
+    
+    plotter <- map2_dfr(folds$splits, folds$id, function(df, id){
+      df <- as.data.frame(df)
+      df$fold <- id
+      df
+    })
+    
+    out <- ggplot(plotter, aes(x = Group, fill = Group)) + 
+      geom_bar(show.legend = F) + facet_wrap(~fold) + 
+      theme_bw() + labs(x = "", y = "Number of samples")
+    
     
   }
 
@@ -164,7 +249,7 @@ output$holdout_set <- renderUI({
 
 output$crossval_perform <- renderUI({
   
-  req(!holdout_valid() && input$rm_prompts_hp != "tuned")
+  req(input$rm_prompts_hp != "tuned")
   
   wellPanel(
     br(),
@@ -178,8 +263,8 @@ output$crossval_perform <- renderUI({
       "What kind of subsetting should be used?",
       
       choices = list(
-        "Evaluate multiple models with single samples left out (leave-one-out)" = "loocv",
-        "Evaluate multiple models with multiple samples left out (K-fold)" = "kfcv"
+        "Evaluate multiple models with single fold left out (K-fold)" = "kfcv",
+        "Evaluate multiple models with single sample left out (leave-one-out)" = "loocv"
       ),
       width = "100%"
     ),
@@ -188,7 +273,7 @@ output$crossval_perform <- renderUI({
     
     conditionalPanel(
       "input.cv_perform_option == 'kfcv'",
-      numericInput("nFolds_cv", "Number of samples to use in subset", value = 5, min = 2, max = 10)
+      numericInput("nFolds_cv", "Number of folds", value = 5, min = 2, max = 10)
     ),
     
     br(),
@@ -262,8 +347,8 @@ output$crossval_hp <- renderUI({
       "What kind of subsetting should be used?",
       
       choices = list(
-        "Evaluate multiple models with single samples left out for testing (leave-one-out)" = "loocv",
-        "Evaluate multiple models with multiple samples left out for testing (K-fold)" = "kfcv"
+        "Evaluate multiple models with single fold left out (K-fold)" = "kfcv",
+        "Evaluate multiple models with single sample left out (leave-one-out)" = "loocv"
       ),
       width = "100%"
     ),
@@ -272,7 +357,7 @@ output$crossval_hp <- renderUI({
     
     conditionalPanel(
       "input.cv_hp_option == 'kfcv'",
-      numericInput("nFolds_hp", "Number of samples to use in subset", value = 5, min = 2, max = 10)
+      numericInput("nFolds_hp", "Number of folds", value = 5, min = 2, max = 10)
     ),
     
     br(),

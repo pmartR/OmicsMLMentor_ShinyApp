@@ -4,8 +4,8 @@ rm_text <- c(
   HTML("Advanced users only: use user-specified settings"),
   HTML("Guided: Use default settings supported in literature"),
   HTML("Guided: Optimize settings for best performance"),
-  HTML("Understand relationships within this dataset"),
-  HTML("Apply model to new data")
+  HTML("Being able to understand relationships within the data"),
+  HTML("Making a model that would perform well on future data")
 )
 
 files_rm <- list.files("./www/Example_rm")
@@ -36,23 +36,23 @@ holdout_valid <- reactive({
   method <- input$pick_model_EM
   
   ## Some reccomend function
-  reccomend_func <- function(nsamp, method){
+  rec_func <- function(nsamp, method){
     
     rec_minimum <- switch(
       method,
-      lsvm = 5,
-      psvm = 5,
-      rsvm = 5,
-      multi = 5,
-      multilasso = 5,
-      logistic = 5,
-      loglasso = 5,
-      rf = 5,
-      kmeans = 5, ## For cluster optimization, might have to snag group stufff
+      lsvm = 20,
+      psvm = 20,
+      rsvm = 20,
+      multi = 20,
+      multilasso = 20,
+      logistic = 20,
+      loglasso = 20,
+      rf = 20,
+      kmeans = 20, ## For cluster optimization, might have to snag group stufff
       hclust = 0,
       pca = 0,
       umap = 0,
-      gbtree = 5,
+      gbtree = 20,
     )
     
     if(.3*nsamp < rec_minimum){
@@ -61,7 +61,7 @@ holdout_valid <- reactive({
     
   }
   
-  reccomend_func(nsamp, method)
+  rec_func(nsamp, method)
   
 })
 
@@ -85,17 +85,6 @@ choiceNames_rm <- pmap(list(rm_text, files_rm),
                        })
 
 output$rm_prompt_train_UI <- renderUI({
-  
-  # out <- if(is.null(omicsData$objPP$f_data)){
-  #   disabled(radioButtons(
-  #     "rm_prompts_train",
-  #     label = "",
-  #     choiceNames = choiceNames_rm[4:5],
-  #     choiceValues = choiceValues_rm[4:5],
-  #     inline = T,
-  #     selected = character(0)
-  #   ))
-  # } else {
     
     selected <- isolate(if(is.null(input$rm_prompts_train)) character(0) else {
       input$rm_prompts_train
@@ -116,7 +105,24 @@ output$rm_prompt_train_UI <- renderUI({
 
 output$rm_prompt_hp_UI <- renderUI({
   
-  out <- if(is.null(omicsData$objPP$f_data)){
+  out <- if(input$ag_prompts == "unsupervised"){
+    
+    selected <- isolate(if(is.null(input$rm_prompts_hp)) character(0) else {
+      input$rm_prompts_hp
+    })
+    
+    ## It'd be nice if this was able to disable rather than remove -- TO DO
+    radioButtons(
+      "rm_prompts_hp",
+      label = "",
+      choiceNames = choiceNames_rm[c(3,1)],
+      choiceValues = choiceValues_rm[c(3,1)],
+      inline = T,
+      selected = selected
+    )
+    
+    
+  } else if(is.null(omicsData$objPP$f_data)){
     disabled(radioButtons(
       "rm_prompts_hp",
       label = "",
@@ -135,22 +141,27 @@ output$rm_prompt_hp_UI <- renderUI({
        !is.null(input$rm_prompts_train) && 
        input$rm_prompts_train == choiceValues_rm[5]){
       
+      slice <- if(input$user_level_pick == "beginner") 2 else c(2,1)
+      
       ## It'd be nice if this was able to disable rather than remove -- TO DO
       radioButtons(
         "rm_prompts_hp",
         label = "",
-        choiceNames = choiceNames_rm[c(2,1)],
-        choiceValues = choiceValues_rm[c(2,1)],
+        choiceNames = choiceNames_rm[slice],
+        choiceValues = choiceValues_rm[slice],
         inline = T,
         selected = selected
       )
       
     } else {
+      
+      slice <- if(input$user_level_pick == "beginner") 2:3 else c(2:3,1)
+      
       radioButtons(
         "rm_prompts_hp",
         label = "",
-        choiceNames = choiceNames_rm[c(2,1,3)],
-        choiceValues = choiceValues_rm[c(2,1,3)],
+        choiceNames = choiceNames_rm[slice],
+        choiceValues = choiceValues_rm[slice],
         inline = T,
         selected = selected
       )
@@ -165,7 +176,8 @@ output$rm_prompt_hp_UI <- renderUI({
 # })
 
 output$warn_few_samps_settings <- renderText({
-  req(!holdout_valid() && input$rm_prompts_train == "train")
+  req(!holdout_valid() && 
+        input$rm_prompts_train == "train")
   paste0("Warning: The number of samples in your dataset is too small ",
          "to estimate robust measurements across new datasets and utilize ",
          "model optimizations. Model optimization option has been removed.")
