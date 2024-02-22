@@ -1,5 +1,5 @@
 TS_RM_UI <- function() {
-  tabPanel("Holdout and ",
+  tabPanel("Training structure",
            value = "TS_RM",
            class = "collapse_page",
            column(

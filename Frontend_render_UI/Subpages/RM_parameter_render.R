@@ -67,19 +67,19 @@ rf_params <- function(){
   
   div(
     numericInput("trees", "Number of trees in forest", min = 1L, 
-                 max = 2000L, value = 500),
+                 max = 2000L, value = 500, width = "100%"),
     if(input$rm_prompts_hp == "tuned") 
       checkboxInput("optimize_trees", "Optimize?", value = F),
     br(),
     
     numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
-                 max = 40L, value = min_n),
+                 max = 40L, value = min_n, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_min_n", "Optimize?", value = F),
     br(),
     
     numericInput("mtry", "Number of predictors to evaluate at each split", min = 1L, 
-                 max = 50L, value = mtry),
+                 max = 50L, value = mtry, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mtry", "Optimize?", value = F)
     
@@ -101,13 +101,13 @@ lsvm_params <- function(){
   
   div(
     numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
-                 max = 5, value = 1),
+                 max = 5, value = 1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_cost", "Optimize?", value = F),
     br(),
     
     numericInput("svm_margin", "A positive number for the epsilon in the SVM insensitive loss function (regression only)", min = 0, 
-                 max = 0.2, value = 0.1),
+                 max = 0.2, value = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_svm_margin", "Optimize?", value = F),
 
@@ -132,18 +132,18 @@ psvm_params <- function(){
   
   div(
     numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
-                 max = 5, value = 1),
+                 max = 5, value = 1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_cost", "Optimize?", value = F),
     br(),
     
     numericInput("svm_margin", "A positive number for the epsilon in the SVM insensitive loss function (regression only)", min = 0, 
-                 max = 0.2, value = 0.1),
+                 max = 0.2, value = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_svm_margin", "Optimize?", value = F),
     
     numericInput("scale_factor", "The scaling parameter of the polynomial and tangent kernel is a convenient way of normalizing patterns without the need to modify the data itself", min = 0,
-                 max = 10, value = 1),
+                 max = 10, value = 1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_scale_factor", "Optimize?", value = F),
     
@@ -153,7 +153,7 @@ psvm_params <- function(){
     # checkboxInput("optimize_scale_factor", "Optimize?", value = F),
     
     numericInput("degree", "A positive number for polynomial degree", min = 1, 
-                 max = 3, value = 1),
+                 max = 3, value = 1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_degree", "Optimize?", value = F),
     
@@ -175,19 +175,19 @@ rsvm_params <- function(){
   
   div(
     numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
-                 max = 5, value = 2),
+                 max = 5, value = 2, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_cost", "Optimize?", value = F),
     br(),
     
     numericInput("svm_margin", "A positive number for the epsilon in the SVM insensitive loss function (regression only)", min = 0, 
-                 max = 0.2, value = 0.1),
+                 max = 0.2, value = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_svm_margin", "Optimize?", value = F),
     br(),
     
     numericInput("rbf_sigma", "The inverse kernel width used by the kernel", min = 10^-10, 
-                 max = 1, value = 1),
+                 max = 1, value = 1, width = "100%"),
     br(),
     ## sigest
     if(input$rm_prompts_hp == "tuned")
@@ -212,13 +212,13 @@ logistic_params <- function(){
   
   div(
     numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 0, step = 0.1),
+                 max = 1, value = 0, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
     
     numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
-                 max = 1, value = 0, step = 0.1),
+                 max = 1, value = 0, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mix", "Optimize?", value = F),
     
@@ -241,13 +241,13 @@ loglasso_params <- function(){
   
   div(
     numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 1, step = 0.1),
+                 max = 1, value = 1, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
     
     numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
-                 max = 1, value = 1, step = 0.1),
+                 max = 1, value = 1, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mix", "Optimize?", value = F),
     
@@ -270,13 +270,13 @@ multi_params <- function(){
   
   div(
     numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 0, step = 0.1),
+                 max = 1, value = 0, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
     
     numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
-                 max = 1, value = 0, step = 0.1),
+                 max = 1, value = 0, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mix", "Optimize?", value = F),
     
@@ -293,13 +293,13 @@ multilasso_params <- function(){
 
   div(
     numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 1, step = 0.1),
+                 max = 1, value = 1, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
     
     numericInput("mixture", "A numeric parameter function representing the relative amount of penalties (e.g. L1, L2, etc) in regularized models", min = 0, 
-                 max = 1, value = 1, step = 0.1),
+                 max = 1, value = 1, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mix", "Optimize?", value = F),
     
@@ -346,19 +346,19 @@ gbtree_params <- function(){
 
   div(
     numericInput("trees", "Number of trees in boosted ensemble", min = 1L, 
-                 max = 2000L, value = 50),
+                 max = 2000L, value = 50, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_trees", "Optimize?", value = F),
     br(),
     
     numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
-                 max = 40L, value = 50),
+                 max = 40L, value = 50, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_min_n", "Optimize?", value = F),
     br(),
     
     numericInput("mtry", "Number of predictors to evaluate at each split", min = 1L, 
-                 max = 50L, value = 20),
+                 max = 50L, value = 20, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mtry", "Optimize?", value = F),
     br(),
@@ -369,31 +369,31 @@ gbtree_params <- function(){
     # br(),
     
     numericInput("tree_depth", "Number of predictors to evaluate at each split", min = 1L, 
-                 max = 15L, value = 6),
+                 max = 15L, value = 6, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_tree_depth", "Optimize?", value = ),
     br(),
     
     numericInput("loss_reduction", "Number of predictors to evaluate at each split", min = -10, 
-                 max = 1.5, value = 0),
+                 max = 1.5, value = 0, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_loss_reduction", "Optimize?", value = F),
     br(),
     
     numericInput("learn_rate", "Number of predictors to evaluate at each split", min = -10, 
-                 max = -1, value = -2),
+                 max = -1, value = -2, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_learn_rate", "Optimize?", value = F),
     br(),
     
     numericInput("stop_iter", "Number of predictors to evaluate at each split", min = 3L, 
-                 max = 20L, value = 8L),
+                 max = 20L, value = 8L, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_stop_iter", "Optimize?", value = F),
     br(),
     
     numericInput("sample_prop", "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting", min = 0, 
-                 max = 1, value = .7),
+                 max = 1, value = .7, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_sample_prop", "Optimize?", value = F)
     
@@ -409,7 +409,7 @@ kmeans_params <- function(){
   
   div(
     numericInput("num_clust", "Number of clusters", value = 2, 
-                 min = 1, max = ncol(omicsData$objPP$e_data[-1])),
+                 min = 1, max = ncol(omicsData$objPP$e_data[-1]), width = "100%"),
     
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_num_clust", "Optimize?", value = F)
@@ -425,7 +425,7 @@ hclust_params <- function(){
     if(input$user_level_pick == "beginner"){
       
         pickerInput("linkage_method", "Linkage method", 
-                    choices = c("complete"))
+                    choices = c("complete"), width = "100%")
     } else {
       pickerInput("linkage_method", "Linkage method", 
                   choices = c("ward.D",
@@ -435,7 +435,7 @@ hclust_params <- function(){
                               "average",
                               "mcquitty",
                               "median",
-                              "centroid"))
+                              "centroid"), width = "100%")
     },
     
     if(input$rm_prompts_hp == "tuned")
@@ -449,7 +449,9 @@ hclust_params <- function(){
     
     conditionalPanel("input.height_clust == 'Height'", {
       div(
-      numericInput("cut_height", "Dendogram height to define clusters from", value = 0.5),
+      numericInput("cut_height", 
+                   "Dendogram height to define clusters from", 
+                   value = 0.5, width = "100%"),
       if(input$rm_prompts_hp == "tuned")
         checkboxInput("optimize_height", "Optimize?", value = F)
       )
@@ -458,9 +460,11 @@ hclust_params <- function(){
     conditionalPanel("input.height_clust == 'Number of clusters'", {
       div(
         numericInput("num_clust", "Number of clusters", value = 2, 
-                     min = 1, max = ncol(omicsData$objPP$e_data[-1])),
+                     min = 1, max = ncol(omicsData$objPP$e_data[-1]), 
+                     width = "100%"),
         if(input$rm_prompts_hp == "tuned")
-          checkboxInput("optimize_num_clust", "Optimize?", value = F)
+          checkboxInput("optimize_num_clust", "Optimize?", 
+                        value = F, width = "100%")
       )
     })
   )

@@ -29,7 +29,7 @@ output$RM_ui <- renderUI({
         column(1, 
                disabled(actionBttn(
                  inputId = "show_TrainSize",
-                 label = HTML("Holdout and<br/>Crossvalidation<br/>"),
+                 label = HTML("Training<br/>Structure<br/>"),
                  style = "jelly", 
                  color = "default",
                  size = "s"

@@ -76,22 +76,7 @@ supervised_tab <- function() {
             # )
           ),
           
-          collapseBox(
-            collapsed = T,
-            value = "select_vi",
-
-            "Variable importance options",
-
-            numericInput(
-              "vi_thresh",
-              "Show features with variable importance above:",
-              min = 0, max = 1, value = 0.5,
-              step = 0.1
-            ),
-
-            actionButton("feature_select_posthoc",
-                         "Build reduced model with features above specified threshold")
-          )
+          uiOutput("Variable_importance_ui")
           
         ),
         
@@ -121,7 +106,7 @@ supervised_tab <- function() {
           
           collapseBox(
 
-            titletext = "Visualize feature contributions",
+            titletext = "Visualize variable importance",
             collapsed = T,
 
             value = "results_VI",
@@ -136,6 +121,169 @@ supervised_tab <- function() {
   ) # tabPanel
   
 }
+
+output$Variable_importance_ui <- renderUI({
+  req(!is.null(omicsData$objRM))
+  
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  
+  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .80)
+  
+  collapseBox(
+    collapsed = F,
+    value = "select_vi",
+
+    "Post-hoc feature selection",
+
+    numericInput(
+      "vi_thresh",
+      "Build reduced model with variable importance above:",
+      min = 0, max = max(vi_info$var_import), value = signif(set_val, 3),
+      step = 0.001,
+      width = "100%"
+    ),
+    
+    br(),
+    
+    textOutput("preview_n_features"),
+    
+    br(),
+
+    actionButton("feature_select_posthoc",
+                 "Build reduced model")
+  )
+  
+})
+
+output$preview_n_features <- renderText({
+  req(!is.null(omicsData$objRM) && !is.null(input$vi_thresh))
+  
+  vi_cutoff <- input$vi_thresh
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  
+  kept_features <- nrow(vi_info[vi_info$var_import >= vi_cutoff,])
+  removed_features <- nrow(vi_info[vi_info$var_import < vi_cutoff,])
+  
+  paste0("At current cut-off, ", kept_features, " features will be kept and ", 
+         removed_features, " features will be excluded from the reduced model.")
+  
+})
+
+output$VI_tabset_UI <- renderUI({
+  
+  if(is.null(omicsData$objRM)) return("Please run model to view variable importance")
+  
+  full_tabset <- tabPanel(
+    
+    "Full model",
+    
+    div(
+      
+      br(),
+      plotlyOutput("Variable_importance_plot"),
+      br(),
+      
+      sliderInput(
+        "full_vi",
+        "Show the top X features:",
+                  min = 3,
+                  max = min(nrow(attr(omicsData$objRM, "vi_info")), 50),
+                  value = 10
+      )
+      
+    )
+    
+  )
+  
+  reduced_tabset <- if(!is.null(omicsData$objRM_reduced)){
+    
+    tabPanel(
+    
+      "Reduced model",
+      
+    div(
+      
+      br(),
+      plotlyOutput("Variable_importance_plot_reduced"),
+      br(),
+      
+      sliderInput(
+        "reduced_vi",
+        "Show the top X features:",
+        min = 3,
+        max = min(nrow(attr(omicsData$objRM_reduced, "vi_info")), 50),
+        value = 10
+      )
+      
+    ))
+    
+  } else NULL
+  
+  do.call(tabsetPanel, list(id = "vi_plots", full_tabset, reduced_tabset))
+  
+})
+
+output$Variable_importance_plot <- renderPlotly({
+  
+  plotting_df <- left_join(attr(omicsData$objRM, "feature_info"), 
+                           attr(omicsData$objRM, "vi_info"), 
+                           by = c(names_compact = "var_name"))
+  
+  plotting_df <- arrange(plotting_df, desc(var_import))
+  plotting_df <- plotting_df[1:input$full_vi,]
+  
+  plotting_df$names_orig <- factor(plotting_df$names_orig, 
+                                   levels = plotting_df$names_orig)
+  
+  ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
+    geom_col() +
+    ggplot2::theme_bw() + 
+    ggplot2::labs(x = "", y = "Variable importance") +
+    scale_x_discrete(label=function(x){
+      map_chr(x, function(x2){
+        if(nchar(x2) > 15){
+          paste0(strtrim(x2, 15), "...")
+        } else x2
+      })
+    }) +
+    theme(
+      # plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+      # axis.title = element_text(size = 12, face = "bold"),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+    )
+  
+})
+
+output$Variable_importance_plot_reduced <- renderPlotly({
+  
+  plotting_df <- left_join(attr(omicsData$objRM_reduced, "feature_info"), 
+                           attr(omicsData$objRM_reduced, "vi_info"), 
+                           by = c(names_compact = "var_name"))
+  
+  plotting_df <- arrange(plotting_df, desc(var_import))
+  plotting_df <- plotting_df[1:input$reduced_vi,]
+  
+  plotting_df$names_orig <- factor(plotting_df$names_orig, 
+                                   levels = plotting_df$names_orig)
+  
+  ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
+    geom_col() +
+    ggplot2::theme_bw() + 
+    ggplot2::labs(x = "", y = "Variable importance") +
+    scale_x_discrete(label=function(x){
+      map_chr(x, function(x2){
+        if(nchar(x2) > 15){
+          paste0(strtrim(x2, 15), "...")
+        } else x2
+      })
+    }) +
+    theme(
+      # plot.title = element_text(size = 14, face = "bold", hjust = 0.5),
+      # axis.title = element_text(size = 12, face = "bold"),
+      axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
+    )
+  
+})
 
 output$performance_tabset_UI <- renderUI({
   
@@ -447,13 +595,12 @@ observeEvent(input$run_sl, {
       cvMethod = cvMethod,
       nFolds = nFolds,
       nTest = ntest
-      # viThreshold = input$vi_thresh ## Need feature_selection results first??
     )
     
     list_args <- c(list_args, custom_args)
     
     
-    omicsData$objRM <- do.call(slopeR::fit, list_args)
+    omicsData$objRM <- do.call(slopeR::variable_importance, list_args)
     
     # omicsData$objRM <- slopeR::fit(runner,
     #                           slMethod = method,
@@ -525,6 +672,122 @@ observeEvent(input$run_sl, {
 
 })
 
+
+observeEvent(input$feature_select_posthoc, {
+  
+  ## Check normalization application
+  shinyjs::show("RM_busy")
+  
+  on.exit({
+    shinyjs::hide("RM_busy")
+  })
+  
+  method <- input$pick_model_EM
+  
+  # if(method %in% models_supervised){
+    
+    ## Get correct response variable
+    if(isTruthy(input$skip_ag)){
+      response <- input$pick_model_group_pick
+    } else {
+      response <- input$f_data_response_picker
+    }
+    
+    ## Run with correct response variable type
+    class_responses <- apply(omicsData$objPP$f_data[response], 2, class)
+    rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
+    
+    runner <- as.slData(omicsData$objPP,
+                        response_cols = response,
+                        response_types = rep(rt, length(response)))
+    
+    ## Get correct train/test split
+    if(!is.null(input$numb_test)){
+      if(input$numb_test == "Proportion"){
+        ntest <- floor(input$nTest_prop * ncol(runner$e_data[-1]))
+      } else {
+        ntest <- input$nTest_count
+      }
+    } else ntest <- 0
+    
+    ## Get custom/optimized parameters
+    custom_args <- list()
+    
+    if(method == "rf"){
+      custom_args <- list(
+        trees = input$trees,
+        min_n = input$min_n,
+        mtry = input$mtry
+      )
+    } else if (method == "lsvm"){
+      custom_args <- list(
+        cost = input$cost,
+        margin = input$svm_margin
+      )
+    } else if (method == "psvm"){
+      custom_args <- list(
+        cost = input$cost,
+        margin = input$svm_margin,
+        degree = input$degree,
+        scale_factor = input$scale_factor
+      )
+    } else if (method == "rsvm"){
+      custom_args <- list(
+        cost = input$cost,
+        margin = input$svm_margin,
+        rbf_sigma = input$rbf_sigma
+      )
+    } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
+      custom_args <- list(
+        penalty = input$penalty,
+        mixture = input$mixture
+      )
+    } else if (method == "gbtree"){
+      custom_args <- list(
+        trees = input$trees,
+        min_n = input$min_n,
+        mtry = input$mtry,
+        # cost_complexity,
+        tree_depth = input$tree_depth,
+        loss_reduction = input$loss_reduction,
+        learn_rate = input$learn_rate,
+        stop_iter = input$stop_iter,
+        sample_size = input$sample_prop
+      )
+    }
+    
+    if(holdout_valid() && input$rm_prompts_hp == "tuned"){
+      cvMethod <- input$cv_hp_option
+      nFolds <- input$nFolds_hp
+    } else if(holdout_valid() && input$rm_prompts_hp != "tuned"){
+      cvMethod <- input$cv_perform_option
+      nFolds <- input$nFolds_cv
+    } else if(!holdout_valid() && input$rm_prompts_hp == "tuned"){
+      cvMethod <- input$cv_hp_option
+      nFolds <- input$nFolds_hp
+    } else if(!holdout_valid() && input$rm_prompts_hp != "tuned"){
+      cvMethod <- input$cv_perform_option
+      nFolds <- input$nFolds_cv
+    }
+    
+    list_args <- list(
+      slData = runner,
+      slRes = omicsData$objRM,
+      slMethod = method,
+      cvMethod = cvMethod,
+      nFolds = nFolds,
+      nTest = ntest,
+      viThreshold = input$vi_thresh
+    )
+    
+    list_args <- c(list_args, custom_args)
+    
+    
+    omicsData$objRM_reduced <- do.call(slopeR::variable_importance, list_args)
+  
+    shinyjs::show("complete_RM")
+
+})
 
 output$true_pos_picker_ui <- renderUI({
   

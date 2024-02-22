@@ -7,9 +7,22 @@ observeEvent(input$rec_split, {
   
 })
 
-observeEvent(input$done_crossval_option, {
-  updateBoxCollapse(session, id = "TS_side_collapse", close = "train_param_RM")
-  shinyjs::show("complete_TS_RM")
+observeEvent(c(input$holdout_done, input$cv_perform_done, input$cv_hp_done), {
+  
+  inspect_items <- c(!is.null(input$holdout_done), 
+    !is.null(input$cv_perform_done), 
+    !is.null(input$cv_hp_done))
+  
+  items <- list(input$holdout_done, 
+                input$cv_perform_done, 
+                input$cv_hp_done
+                )[inspect_items]
+  
+  if(all(items > 0)){
+    updateBoxCollapse(session, id = "TS_side_collapse", close = "train_param_RM")
+    shinyjs::show("complete_TS_RM")
+  }
+  
 })
 
 ## Options -- holdout_valid => no cv_perform; rm_prompts_hp = tuned cv_hp valid
@@ -210,7 +223,7 @@ output$nTest_count_ui <- renderUI({
   ## Ideally update this based on model requirements as well
   numericInput("nTest_count", "Approximate number of samples for evaluation data", 
                value = floor(ncol(omicsData$objPP$e_data)*.3), 
-               min = 1, max = (ncol(omicsData$objPP$e_data)) - 2)
+               min = 20, max = (ncol(omicsData$objPP$e_data)) - 2)
   
 })
 
