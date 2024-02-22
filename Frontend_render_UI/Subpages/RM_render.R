@@ -104,17 +104,8 @@ supervised_tab <- function() {
             uiOutput("performance_tabset_UI")
           ),
           
-          collapseBox(
-
-            titletext = "Visualize variable importance",
-            collapsed = T,
-
-            value = "results_VI",
-
-            br(),
-
-            uiOutput("VI_tabset_UI")
-          )
+          uiOutput("VI_tabset_UI_collapse")
+        
         )
       ) # main column
     ) # fluidRow
@@ -122,8 +113,27 @@ supervised_tab <- function() {
   
 }
 
+output[["VI_tabset_UI_collapse"]] <- renderUI({
+  
+  
+  req(!is.null(omicsData$objRM) && !is.null(attr(omicsData$objRM, "vi_info")))
+  
+  collapseBox(
+    
+    titletext = "Visualize variable importance",
+    collapsed = F,
+    
+    value = "results_VI",
+    
+    br(),
+    
+    uiOutput("VI_tabset_UI")
+  )
+  
+})
+
 output$Variable_importance_ui <- renderUI({
-  req(!is.null(omicsData$objRM))
+  req(!is.null(omicsData$objRM) && !is.null(attr(omicsData$objRM, "vi_info")))
   
   vi_info <- attr(omicsData$objRM, "vi_info")
   
@@ -137,7 +147,7 @@ output$Variable_importance_ui <- renderUI({
 
     numericInput(
       "vi_thresh",
-      "Build reduced model with variable importance above:",
+      "Build reduced model with variable importance equal to or above:",
       min = 0, max = max(vi_info$var_import), value = signif(set_val, 3),
       step = 0.001,
       width = "100%"
@@ -148,6 +158,12 @@ output$Variable_importance_ui <- renderUI({
     textOutput("preview_n_features"),
     
     br(),
+    
+    hidden(div("Performing analysis, please wait...",
+               id = "RM_busy_reduced",
+               class = "fadein-out",
+               style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
+    )),
 
     actionButton("feature_select_posthoc",
                  "Build reduced model")
@@ -599,8 +615,16 @@ observeEvent(input$run_sl, {
     
     list_args <- c(list_args, custom_args)
     
-    
-    omicsData$objRM <- do.call(slopeR::variable_importance, list_args)
+    omicsData$objRM <- tryCatch({
+      do.call(slopeR::variable_importance, list_args)
+    }, error = function(e){
+      if(str_detect(e$message, "No variable importance method implemented for method")){
+        do.call(slopeR::fit, list_args)
+      } else {
+        browser()
+        NULL
+      }
+    })
     
     # omicsData$objRM <- slopeR::fit(runner,
     #                           slMethod = method,
@@ -676,16 +700,26 @@ observeEvent(input$run_sl, {
 observeEvent(input$feature_select_posthoc, {
   
   ## Check normalization application
-  shinyjs::show("RM_busy")
+  shinyjs::show("RM_busy_reduced")
   
   on.exit({
-    shinyjs::hide("RM_busy")
+    shinyjs::hide("RM_busy_reduced")
   })
   
   method <- input$pick_model_EM
   
-  # if(method %in% models_supervised){
+  ## Do feature selection here, otherwise can't get vi_info from 
+  # variable_importance since no viThreshold argument
+  prior_info <- left_join(attr(omicsData$objRM, "feature_info"), 
+            attr(omicsData$objRM, "vi_info"), 
+            by = c(names_compact = "var_name"))
+  e_data_keep <- prior_info$names_orig[prior_info$var_import >= input$vi_thresh]
     
+  temp_omics <- omicsData$objPP
+  
+  temp_omics <- applyFilt(custom_filter(temp_omics, e_data_keep = e_data_keep),
+                          temp_omics)
+  
     ## Get correct response variable
     if(isTruthy(input$skip_ag)){
       response <- input$pick_model_group_pick
@@ -694,10 +728,10 @@ observeEvent(input$feature_select_posthoc, {
     }
     
     ## Run with correct response variable type
-    class_responses <- apply(omicsData$objPP$f_data[response], 2, class)
+    class_responses <- apply(temp_omics$f_data[response], 2, class)
     rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
     
-    runner <- as.slData(omicsData$objPP,
+    runner <- as.slData(temp_omics,
                         response_cols = response,
                         response_types = rep(rt, length(response)))
     
@@ -772,16 +806,13 @@ observeEvent(input$feature_select_posthoc, {
     
     list_args <- list(
       slData = runner,
-      slRes = omicsData$objRM,
       slMethod = method,
       cvMethod = cvMethod,
       nFolds = nFolds,
-      nTest = ntest,
-      viThreshold = input$vi_thresh
+      nTest = ntest
     )
     
     list_args <- c(list_args, custom_args)
-    
     
     omicsData$objRM_reduced <- do.call(slopeR::variable_importance, list_args)
   

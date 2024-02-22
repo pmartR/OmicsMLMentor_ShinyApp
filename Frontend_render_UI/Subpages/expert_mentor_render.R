@@ -133,12 +133,15 @@ observe({
   
   any_missing <- any(is.na(omicsData$objMSU$e_data))
   
-  
+  ## Required for expert mentor
+  temp_omic <- omicsData$objModel
+  if(get_data_scale(temp_omic) == "abundance"){
+    temp_omic <- edata_transform(temp_omic, "log2")
+  }
   
   if(input$user_level_pick == "beginner"){
     
-    
-    suggests <- expert_mentor(omicsData$objModel,
+    suggests <- expert_mentor(temp_omic,
                               supervised = supervised
     )
   } else if (input$user_level_pick != "expert"){
@@ -154,10 +157,10 @@ observe({
     ## Change based on algorithim for holdout
     overfit <- min(get_group_table(omicsData$objModel)) < 5
     
-    rmd <- any(rmd_filter(omicsData$objModel)$pvalue < 0.0001)
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
     
     ## Auto detect for some of these
-    suggests <- expert_mentor(omicsData$objModel,
+    suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
                               feature_selection = input$feature_selection,
                               handles_missingness = input$handles_missingness,
@@ -187,7 +190,7 @@ observe({
     
   } else {
     
-    suggests <- expert_mentor(omicsData$objModel,
+    suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
                               feature_selection = input$feature_selection,
                               samples_per_feature = input$samples_per_feature,

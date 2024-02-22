@@ -100,8 +100,8 @@ lsvm_params <- function(){
   # dials::svm_margin() #### is the trans argument needed here?
   
   div(
-    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
-                 max = 5, value = 1, width = "100%"),
+    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = 1e-10, 
+                 max = 1e5, value = 1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_cost", "Optimize?", value = F),
     br(),
@@ -131,8 +131,8 @@ psvm_params <- function(){
   
   
   div(
-    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
-                 max = 5, value = 1, width = "100%"),
+    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = 1e-10, 
+                 max = 1e5, value = 1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_cost", "Optimize?", value = F),
     br(),
@@ -142,8 +142,8 @@ psvm_params <- function(){
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_svm_margin", "Optimize?", value = F),
     
-    numericInput("scale_factor", "The scaling parameter of the polynomial and tangent kernel is a convenient way of normalizing patterns without the need to modify the data itself", min = 0,
-                 max = 10, value = 1, width = "100%"),
+    numericInput("scale_factor", "The scaling parameter of the polynomial and tangent kernel is a convenient way of normalizing patterns without the need to modify the data itself", min = 1e-10,
+                 max = 1e-10, value = 1e-1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_scale_factor", "Optimize?", value = F),
     
@@ -174,8 +174,9 @@ rsvm_params <- function(){
   # dials::rbf_sigma()
   
   div(
-    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = -10, 
-                 max = 5, value = 2, width = "100%"),
+    numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", 
+                 min = 1e-10, 
+                 max = 1e5, value = 1e2, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_cost", "Optimize?", value = F),
     br(),
@@ -186,12 +187,14 @@ rsvm_params <- function(){
       checkboxInput("optimize_svm_margin", "Optimize?", value = F),
     br(),
     
-    numericInput("rbf_sigma", "The inverse kernel width used by the kernel", min = 10^-10, 
-                 max = 1, value = 1, width = "100%"),
-    br(),
-    ## sigest
+    numericInput("rbf_sigma", "The inverse kernel width used by the kernel", min = 1e-10, 
+                 max = 1e0, value = 1, width = "100%"),
+    
     if(input$rm_prompts_hp == "tuned")
-      checkboxInput("optimize_rbf_sigma", "Optimize?", value = F)
+      checkboxInput("optimize_rbf_sigma", "Optimize?", value = F),
+    
+    br()
+    ## sigest
     
   )
 
@@ -211,8 +214,8 @@ logistic_params <- function(){
   # ?dials::weight_func
   
   div(
-    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 0, step = 0.1, width = "100%"),
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
+                 max = 0, value = 0, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
@@ -240,8 +243,8 @@ loglasso_params <- function(){
   # ?dials::weight_func
   
   div(
-    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 1, step = 0.1, width = "100%"),
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
+                 max = 1e0, value = 1, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
@@ -269,8 +272,8 @@ multi_params <- function(){
   # ?dials::weight_func
   
   div(
-    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 0, step = 0.1, width = "100%"),
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
+                 max = 1e0, value = 0, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
@@ -292,8 +295,8 @@ multilasso_params <- function(){
   # ## Figure out which ones can be tuned
 
   div(
-    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 0, 
-                 max = 1, value = 1, step = 0.1, width = "100%"),
+    numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
+                 max = 1e1, value = 1, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),
@@ -352,7 +355,7 @@ gbtree_params <- function(){
     br(),
     
     numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
-                 max = 40L, value = 50, width = "100%"),
+                 max = 40L, value = 20, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_min_n", "Optimize?", value = F),
     br(),
@@ -363,36 +366,38 @@ gbtree_params <- function(){
       checkboxInput("optimize_mtry", "Optimize?", value = F),
     br(),
     
-    # numericInput("cost_complexity", "Number of predictors to evaluate at each split", min = -10, 
-    #              max = -1, value = 5),
-    # checkboxInput("optimize_cost_complexity", "Optimize?", value = F),
-    # br(),
+    numericInput("cost_complexity", "The cost-complexity parameter in classical CART models", min = 1e-10,
+                 max = 1e-1, value = 1e-5),
+    if(input$rm_prompts_hp == "tuned")
+      checkboxInput("optimize_cost_complexity", "Optimize?", value = F),
+    br(),
     
-    numericInput("tree_depth", "Number of predictors to evaluate at each split", min = 1L, 
+    numericInput("tree_depth", "The maximum depth of the tree", min = 1L, 
                  max = 15L, value = 6, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_tree_depth", "Optimize?", value = ),
     br(),
     
-    numericInput("loss_reduction", "Number of predictors to evaluate at each split", min = -10, 
-                 max = 1.5, value = 0, width = "100%"),
+    numericInput("loss_reduction", "The reduction in the loss function required to split further", min = 1e-10, 
+                 max = 10^1.5, value = 1e0, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_loss_reduction", "Optimize?", value = F),
     br(),
     
-    numericInput("learn_rate", "Number of predictors to evaluate at each split", min = -10, 
-                 max = -1, value = -2, width = "100%"),
+    numericInput("learn_rate", "Scale factor for the contribution of each tree", min = 1e-10, 
+                 max = 1e-1, value = 1e-2, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_learn_rate", "Optimize?", value = F),
     br(),
     
-    numericInput("stop_iter", "Number of predictors to evaluate at each split", min = 3L, 
+    numericInput("stop_iter", "Number of iterations without an improvement in the objective function occur before training should be halted.", min = 3L, 
                  max = 20L, value = 8L, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_stop_iter", "Optimize?", value = F),
     br(),
     
-    numericInput("sample_prop", "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting", min = 0, 
+    numericInput("sample_prop", "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting", 
+                 min = 0, 
                  max = 1, value = .7, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_sample_prop", "Optimize?", value = F)

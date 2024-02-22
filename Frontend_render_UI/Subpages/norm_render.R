@@ -845,9 +845,12 @@ load_norm_observers <- function(tab) {
 
       if (!is.null(eval$p_scale)) {
         msg <- if (!is.na(eval$p_scale) && eval$p_scale < 0.05) {
-          div(style = "color:red", "There is evidence to suggest the scaling effect of this normalization differs across groups, consider choosing another normalization.")
+          warn_user_bias(T)
+          div(style = "color:red", 
+              "There is evidence to suggest the scaling effect of this normalization differs across groups, consider choosing another normalization.")
         }
         else {
+          warn_user_bias(F)
           div("Weak or no evidence to suggest a difference in the scaling effect of this normalization across groups.")
         }
 
@@ -950,7 +953,7 @@ load_norm_observers <- function(tab) {
                                              apply_norm = TRUE
           )
           
-          if(!is.null(conv)){
+          if(!is.null(conv) && !identical(noconv, conv)){
             
             omicsData$objNorm <- combine_omicsdata(omicsData$objNorm, conv)
           }

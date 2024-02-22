@@ -66,7 +66,22 @@ observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
   ## Include QC filters
   compare_plus <- c(compare, map_chr(attr(omicsData$objPP, "filters"), 1))
   
-  if(!all(compare %in% map_chr(attr(omicsData$objfilters, "filters"), 1)) ||
+  cond1 <- !all(compare %in% map_chr(attr(omicsData$objfilters, "filters"), 1))
+  
+  ## Check if difference is due to silly molecule filt
+  if(
+    cond1 &&
+    setdiff(compare, 
+            map_chr(attr(omicsData$objfilters, "filters"), 1)
+            ) == "moleculeFilt"){
+    
+    num <- input[[paste0(name, "_mol_min_num")]]
+    df <- molecule_filter(omicsData$objPP)
+    if(nrow(df) == nrow(df[df$Num_Observations >= num,])) cond1 <- F
+    
+  }
+  
+  if(cond1 ||
      !all(map_chr(attr(omicsData$objfilters, "filters"), 1) %in% compare_plus) ||
      ((length(settings_stored) != 0 || length(settings_current) != 0 ) &&
      !identical(settings_stored, settings_current))
