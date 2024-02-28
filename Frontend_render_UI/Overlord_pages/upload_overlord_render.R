@@ -71,9 +71,10 @@ observeEvent(input$check_group_cols, ignoreInit = T, {
     enable("review_upload")
   }
   
+  
   tryCatch({
-    
-    cv_filter(omicsData$obj)
+    if(!inherits(omicsData$obj, "seqData"))
+      cv_filter(omicsData$obj)
     
     shinyalert(title = "Success!", "Continue to next page or review results?",
                showCancelButton = T, closeOnEsc = F, 

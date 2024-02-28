@@ -626,6 +626,18 @@ observeEvent(input$run_sl, {
       }
     })
     
+    temp <-  tryCatch({
+      do.call(slopeR::variable_importance, list_args)
+    }, error = function(e){
+      if(str_detect(e$message, "No variable importance method implemented for method")){
+        do.call(slopeR::fit, list_args)
+      } else {
+        browser()
+        NULL
+      }
+    })
+    temp
+    
     # omicsData$objRM <- slopeR::fit(runner,
     #                           slMethod = method,
     #                           cvMethod = input$training_type,

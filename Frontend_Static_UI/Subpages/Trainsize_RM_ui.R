@@ -74,7 +74,14 @@ TS_RM_UI <- function() {
                collapseBox("Visualize training/testing split",
                            collapsed = F,
                            value = "TS_preview",
-                           withSpinner(plotOutput("TS_preview_plot"))
+                           
+                           tabsetPanel(
+                             id = "training_tabset",
+                             tabPanel(
+                               "Training structure",
+                               withSpinner(plotOutput("TS_preview_plot"))
+                             )
+                           )
                )             )
            ) # column 8
   )

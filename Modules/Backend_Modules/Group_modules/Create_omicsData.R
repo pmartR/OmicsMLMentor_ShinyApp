@@ -57,7 +57,7 @@ observeEvent(input$check_group_cols, {
   if(is.null(reactive_dataholder[["f_data"]]$file)){
     od$f_data <- NULL
   }
-  
+
   omicsData$obj <-  od
   
 })

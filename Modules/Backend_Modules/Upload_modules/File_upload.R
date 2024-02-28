@@ -160,52 +160,52 @@ FileInputServer <- function(id,
           store_data$filename <- "Example file"
           store_data$file <- default_factor(data_grab)
           
-          if(pmartRdata_prefix == "pro_"){
-            
-            
-            ###
-            ## Update sample names and f_data columns
-            
-            # Covid strains -- COV2_IT, COV2_WA, Mock
-            # Time points -- 12, 24, 36 hour increments
-            
-            ## Strain, timepoint
-            
-            ##
-            
-            if(label == "e_data"){
-              colnames(store_data$file) <- gsub("Phenotype1", "COV2_IT", colnames(store_data$file))
-              colnames(store_data$file) <- gsub("Phenotype2", "COV2_WA", colnames(store_data$file))
-              colnames(store_data$file) <- gsub("Phenotype3", "Mock", colnames(store_data$file))
-              
-              colnames(store_data$file) <- gsub("A$", "12hr", colnames(store_data$file))
-              colnames(store_data$file) <- gsub("B$", "36hr", colnames(store_data$file))
-            }
-            
-            if(label == "f_data"){
-            
-              store_data$file$SampleID <- gsub("Phenotype1", "COV2_IT", store_data$file$SampleID)
-              store_data$file$SampleID <- gsub("Phenotype2", "COV2_WA", store_data$file$SampleID)
-              store_data$file$SampleID <- gsub("Phenotype3", "Mock", store_data$file$SampleID)
-              
-              store_data$file$SampleID <- gsub("A$", "12hr", store_data$file$SampleID)
-              store_data$file$SampleID <- gsub("B$", "36hr", store_data$file$SampleID)
-              
-              
-              colnames(store_data$file) <- gsub("^Phenotype$", "Strain", colnames(store_data$file))
-              colnames(store_data$file) <- gsub("^SecondPhenotype$", "Timepoint", colnames(store_data$file))
-              colnames(store_data$file) <- gsub("^Characteristic$", "Initial conc (mg/ml)", colnames(store_data$file))
-              
-              store_data$file$Strain <- gsub("Phenotype1", "COV2_IT", store_data$file$Strain)
-              store_data$file$Strain <- gsub("Phenotype2", "COV2_WA", store_data$file$Strain)
-              store_data$file$Strain <- gsub("Phenotype3", "Mock", store_data$file$Strain)
-              
-              store_data$file$Timepoint <- gsub("A$", "12hr", store_data$file$Timepoint)
-              store_data$file$Timepoint <- gsub("B$", "36hr", store_data$file$Timepoint)
-
-            }
-            
-          }
+          # if(pmartRdata_prefix == "pro_"){
+          #   
+          #   
+          #   ###
+          #   ## Update sample names and f_data columns
+          #   
+          #   # Covid strains -- COV2_IT, COV2_WA, Mock
+          #   # Time points -- 12, 24, 36 hour increments
+          #   
+          #   ## Strain, timepoint
+          #   
+          #   ##
+          #   
+          #   if(label == "e_data"){
+          #     colnames(store_data$file) <- gsub("Phenotype1", "COV2_IT", colnames(store_data$file))
+          #     colnames(store_data$file) <- gsub("Phenotype2", "COV2_WA", colnames(store_data$file))
+          #     colnames(store_data$file) <- gsub("Phenotype3", "Mock", colnames(store_data$file))
+          #     
+          #     colnames(store_data$file) <- gsub("A$", "12hr", colnames(store_data$file))
+          #     colnames(store_data$file) <- gsub("B$", "36hr", colnames(store_data$file))
+          #   }
+          #   
+          #   if(label == "f_data"){
+          #   
+          #     store_data$file$SampleID <- gsub("Phenotype1", "COV2_IT", store_data$file$SampleID)
+          #     store_data$file$SampleID <- gsub("Phenotype2", "COV2_WA", store_data$file$SampleID)
+          #     store_data$file$SampleID <- gsub("Phenotype3", "Mock", store_data$file$SampleID)
+          #     
+          #     store_data$file$SampleID <- gsub("A$", "12hr", store_data$file$SampleID)
+          #     store_data$file$SampleID <- gsub("B$", "36hr", store_data$file$SampleID)
+          #     
+          #     
+          #     colnames(store_data$file) <- gsub("^Phenotype$", "Strain", colnames(store_data$file))
+          #     colnames(store_data$file) <- gsub("^SecondPhenotype$", "Timepoint", colnames(store_data$file))
+          #     colnames(store_data$file) <- gsub("^Characteristic$", "Initial conc (mg/ml)", colnames(store_data$file))
+          #     
+          #     store_data$file$Strain <- gsub("Phenotype1", "COV2_IT", store_data$file$Strain)
+          #     store_data$file$Strain <- gsub("Phenotype2", "COV2_WA", store_data$file$Strain)
+          #     store_data$file$Strain <- gsub("Phenotype3", "Mock", store_data$file$Strain)
+          #     
+          #     store_data$file$Timepoint <- gsub("A$", "12hr", store_data$file$Timepoint)
+          #     store_data$file$Timepoint <- gsub("B$", "36hr", store_data$file$Timepoint)
+          # 
+          #   }
+          #   
+          # }
           
           appendTab(preview_tabset, 
                     select = T,

@@ -113,18 +113,18 @@ observe({
     )
   ))
   
-  temp_dat <- omicsData$objMSU
+  temp_omic <- omicsData$objModel
   
-  if(get_data_scale(temp_dat) == "abundance"){
-    temp_dat <- edata_transform(temp_dat, "log2")
+  if(get_data_scale(temp_omic) == "abundance"){
+    temp_omic <- edata_transform(temp_omic, "log2")
   }
   
-  if(is.null(omicsData$objQC$f_data)){
-    temp_dat$f_data <- data.frame(
-      SampleId = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+  if(is.null(omicsData$objQC$f_data) && supervised){
+    temp_omic$f_data <- data.frame(
+      SampleId = colnames(temp_omic$e_data)[colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
       Temp_col_all = "All"
     )
-    temp_group <- group_designation(temp_dat, "Temp_col_all")
+    temp_omic <- group_designation(temp_omic, "Temp_col_all")
   }
   
   
@@ -132,12 +132,6 @@ observe({
     (!input$skip_ag && input$ag_prompts == "supervised")
   
   any_missing <- any(is.na(omicsData$objMSU$e_data))
-  
-  ## Required for expert mentor
-  temp_omic <- omicsData$objModel
-  if(get_data_scale(temp_omic) == "abundance"){
-    temp_omic <- edata_transform(temp_omic, "log2")
-  }
   
   if(input$user_level_pick == "beginner"){
     
@@ -292,7 +286,7 @@ observe({
   if(input$user_level_pick == "beginner"){
     df <- df[1:3,]
   } else if (input$user_level_pick == "familiar"){
-    df <- df[1:10,]
+    df <- df[1:min(c(nrow(df), 10)),]
   }
   
   # Convert to Character
@@ -336,7 +330,7 @@ output$EM_dashboard <- renderUI({
         div(
           id = "top",
           tbl(as.data.frame(dashboard()), "Method", NULL),
-          style = 'height:500px; overflow-y: scroll; overflow-x: scroll; width = 90%',
+          style = 'height:600px; overflow-y: scroll; overflow-x: scroll; width = 90%',
         )
       )))
   # )

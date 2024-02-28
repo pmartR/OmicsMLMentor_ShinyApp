@@ -491,11 +491,49 @@ pca_params <- function(){
 
 output[["model_specific_parameters"]] <- renderUI({
   
+  req(!is.null(omicsData$objPP) && 
+        !is.null(input$pick_model_EM) &&
+        !is.null(input$rm_prompts_hp) &&
+        (!is.null(input$pick_model_group_pick) || 
+           !is.null(input$f_data_response_picker))
+        )
+  
   # fun <- as.character(models_long_name[names(models_long_name) == input$pick_model_EM]) ## while unsup summary is being fixed
   fun <- input$pick_model_EM
   
   function_str <- paste0(fun, "_params()")
   
-  eval(parse(text = function_str))
-
+  out <- eval(parse(text = function_str))
+  
 })
+
+outputOptions(output, "model_specific_parameters", suspendWhenHidden = FALSE)
+
+# observeEvent(input$pick_model_EM, {
+#   
+#   fun <- input$pick_model_EM
+#   list_parm_strings <- c()
+#   
+#   if(method == "rf"){
+#     list_parm_strings <- c("trees", "min_n", "mtry")
+#   } else if (method == "lsvm"){
+#     list_parm_strings <- c("cost", "svm_margin")
+#   } else if (method == "psvm"){
+#     list_parm_strings <- c("cost", "svm_margin", "degree", "scale_factor")
+#   } else if (method == "rsvm"){
+#     list_parm_strings <- c("cost", "svm_margin", "rbf_sigma")
+#   } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
+#     list_parm_strings <- c("penalty", "mixture")
+#   } else if (method == "gbtree"){
+#     
+#     list_parm_strings <- c("trees", "min_n", "mtry", "tree_depth",
+#                            "loss_reduction", "learn_rate", "stop_iter",
+#                            "sample_prop")
+#   }
+#   
+#   map(list_parm_strings, function(str){
+#     outputOptions(output, "model_specific_parameters", suspendWhenHidden = FALSE)
+#   })
+#   
+# })
+

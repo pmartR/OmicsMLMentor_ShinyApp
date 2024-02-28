@@ -36,6 +36,17 @@ apply_filt_flags <- reactive({
   
 })
 
+
+output$cv_threshold_UI <- renderUI({
+  
+  max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
+  nm <- str_to_title(class(omicsData$objMSU)[[1]])
+  
+  numericInput(paste0(nm, "_cv_threshold"), 
+               "Maximum CV", value = min(150, max_cv - 1), 
+               step = 1, min = 0, max = max_cv)
+})
+
 ## if UI applied filters are different than stored, don't allow to continue until applied
 ## For more robustness -- check applied filter settings against stored settings
 observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
@@ -1092,8 +1103,9 @@ observeEvent(omicsData$objMSU, {
   
   ## Catch for this is on groups upload
   tryCatch({
-    if(!inherits(omicsData$objMSU, "RNA-seq")){
+    if(!inherits(omicsData$objMSU, "seqData")){
       max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
+      nm <- paste(str_to_title(class(omicsData$objPP)[[1]]), "_cv_threshold")
       filter_flags[["max_cv"]][[str_to_title(class(omicsData$objPP)[[1]])]] <- max_cv
     }
   }, error = function(e){""})

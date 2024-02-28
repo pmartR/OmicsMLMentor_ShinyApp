@@ -38,7 +38,7 @@ EM_tab <- function() {
                    icon_id = "em-advset",
                    icon = icon("exclamation-sign", lib = "glyphicon"),
                    value = "em_advset_box",
-                   collapsed = F,
+                   collapsed = T,
                    
                    #### To be re-implementing with weightings
                    column(6,
@@ -201,7 +201,7 @@ EM_tab <- function() {
                wellPanel(
                  
                  div(
-                   style = 'height:600px',
+                   style = 'height:700px',
                    
                    br(),
                    

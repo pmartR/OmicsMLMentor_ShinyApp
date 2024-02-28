@@ -334,20 +334,37 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
   }
   params <- norm_object$parameters$normalization
 
+  if (!is.null(params$location)) {
   # p value and dataframe of normalization factors for location
   p_location <- pmartR:::kw_rcpp(matrix(params$location, nrow = 1),
                                  group = as.character(group)
   )
   loc_params <- stack(params$location) %>%
     rename("VAL__" = values) # very possible someone has the column name 'values' in their data, so rename
+  } else {
+    p_location <- NULL
+  }
 
   # p value and dataframe of normalization factors for scale, if there are scale parameters
   if (!is.null(params$scale)) {
-    p_scale <- pmartR:::kw_rcpp(matrix(params$scale, nrow = 1),
-                                group = as.character(group)
-    )
-    scale_params <- stack(params$scale) %>%
-      rename("VAL__" = values)
+    if(norm_fn == "zero_one_scale"){
+      p_scale <- pmartR:::kw_rcpp(matrix(params$scale[2,] - params$scale[1,], 
+                                         nrow = 1),
+                                  group = as.character(group)
+      )
+      scale_params <- data.frame(
+        VAL__ = params$scale[2,] - params$scale[1,],
+        ind = colnames(params$scale)
+      )
+      
+    } else {
+      p_scale <- pmartR:::kw_rcpp(matrix(params$scale, nrow = 1),
+                                  group = as.character(group)
+      )
+      scale_params <- stack(params$scale) %>%
+        rename("VAL__" = values)
+    }
+    
   } else {
     p_scale <- NULL
   }
@@ -356,6 +373,8 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
 
   # plot by group if the object has group assignments
   if (!is.null(attributes(omicsData)$group_DF)) {
+    
+    if (!is.null(params$location)) {
     # dataframe with group information
     loc_df <- attributes(omicsData)$group_DF %>%
       left_join(loc_params, by = setNames("ind", get_fdata_cname(omicsData)))
@@ -381,6 +400,7 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
         xaxis = list(title = "Group"),
         yaxis = list(title = "Location Parameter Value")
       )
+    } else loc_boxplot <- NULL
 
     # same as above but for scale
     if (!is.null(params$scale)) {
@@ -407,19 +427,21 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
 
     # if no group df simply make the location and scale dataframes and erase the normalization factor boxplots
   } else {
-    loc_df <- omicsData$f_data %>%
-      left_join(loc_params,
-                by = setNames("ind", get_fdata_cname(omicsData))
+    if (!is.null(params$location)) {
+      loc_df <- omicsData$f_data %>%
+        left_join(loc_params,
+                  by = setNames("ind", get_fdata_cname(omicsData))
+        )
+      append_locs <- geom_point(
+        data = loc_df,
+        aes(
+          x = !!rlang::sym(get_fdata_cname(omicsData)),
+          y = VAL__,
+          size = 7
+        ),
+        shape = 7, color = "red"
       )
-    append_locs <- geom_point(
-      data = loc_df,
-      aes(
-        x = !!rlang::sym(get_fdata_cname(omicsData)),
-        y = VAL__,
-        size = 7
-      ),
-      shape = 7, color = "red"
-    )
+    }
 
     # these are irrelevant if theres no grouping structure
     loc_boxplot <- scale_boxplot <- NULL
@@ -940,7 +962,7 @@ load_norm_observers <- function(tab) {
 
         if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization", "SPANS - Proteomics only")) {
 
-          params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]])
+          params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
 
           
           noconv <- subset_noconv(as.slData(omicsData$objPP))
@@ -1463,7 +1485,8 @@ assign_norm_output <- function(tab) {
                     "Mean" = "mean",
                     "Median" = "median",
                     "Z-norm" = "zscore",
-                    "Median Absolute Deviation" = "mad"
+                    "Median Absolute Deviation" = "mad",
+                    "Zero-to-one scaling" = "zero_one_scale"
                   ),
                   options = pickerOptions(maxOptions = 1),
                   multiple = TRUE

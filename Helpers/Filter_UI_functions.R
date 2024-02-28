@@ -228,7 +228,8 @@ select_biofilter_UI <- function(
       ),
       column(
         6,
-        numericInput(paste0(tabname, "_cv_threshold"), "Maximum CV", 150, step = 1, min = 0),
+        uiOutput("cv_threshold_UI"),
+        # numericInput(paste0(tabname, "_cv_threshold"), "Maximum CV", 150, step = 1, min = 0),
         radioGroupButtons(
           inputId = paste0(tabname, "_cvfilt_use_groups"),
           label = "Use groups to calculate CV?",

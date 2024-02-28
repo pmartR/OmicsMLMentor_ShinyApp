@@ -140,16 +140,6 @@ output$TS_preview_plot <- renderPlot({
       text <- paste0("For each of ", input$nFolds_hp, " folds")
     }
     
-    if(input$cv_perform_option == "loocv"){
-      test_data <- sample(group_info$SampleID, 1)
-      text <- "Resampled across all samples"
-    } else {
-      req(!is.na(input$nFolds_hp))
-      test_data <- group_info %>% group_by(Group) %>% 
-        slice_sample(prop = 1/input$nFolds_hp)
-      text <- paste0("For each of ", input$nFolds_hp, " folds")
-    }
-    
     folds <- rsample::vfold_cv(
       group_info,
       v = input$nFolds_hp,
@@ -166,17 +156,6 @@ output$TS_preview_plot <- renderPlot({
     out <- ggplot(plotter, aes(x = Group, fill = Group)) + 
       geom_bar(show.legend = F) + facet_wrap(~fold) + 
       theme_bw() + labs(x = "", y = "Number of samples")
-    
-    group_info$Status <- "Training data"
-    
-    group_info$Status[group_info[[1]] %in% test_data[[1]]] <- "Evaluation data"
-    
-    group_info$Validation <- as.numeric(as.factor(group_info$Status))
-    
-    out <- ggplot(group_info, aes(x = Status, fill = Group)) + 
-      geom_bar() +
-      theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
-                        subtitle = text)
     
   } else if (input$rm_prompts_hp != "tuned") {
     
@@ -286,8 +265,17 @@ output$crossval_perform <- renderUI({
     
     conditionalPanel(
       "input.cv_perform_option == 'kfcv'",
-      numericInput("nFolds_cv", "Number of folds", value = 5, min = 2, max = 10)
+      numericInput("nFolds_cv", "Number of folds", value = 5, 
+                   min = 2, max = 20)
     ),
+    
+    br(),
+    
+    hidden(div("Calculating fold recommendation, please wait...",
+               id = "perform_nfold_busy",
+               class = "fadein-out",
+               style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
+    )),
     
     br(),
     
@@ -297,9 +285,21 @@ output$crossval_perform <- renderUI({
   )
 })
 
-observeEvent(input$cv_perform_rec, {
+cv_eval <- reactiveValues(result = NULL)
+
+observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
   
-  browser()
+  req(input$cv_perform_rec > 0 || input$cv_hp_rec > 0)
+  
+  show("perform_nfold_busy")
+  show("tune_nfold_busy")
+  
+  on.exit({
+    hide("perform_nfold_busy")
+    hide("tune_nfold_busy")
+  })
+  
+  method <- input$pick_model_EM
   
   ## Get correct response variable
   if(isTruthy(input$skip_ag)){
@@ -317,30 +317,97 @@ observeEvent(input$cv_perform_rec, {
                       response_cols = response,
                       response_types = rep(rt, length(response)))
   group_info <- get_group_DF(omicsData$objPP)
-  max_nfold <- min(floor(get_group_table(omicsData$objPP)/3))
   
-  if(is.null(input$numb_test)){
-    test_data <- 0
-  } else {
-    if(input$numb_test == "Proportion"){
-      req(!is.na(input$nTest_prop))
-      test_data <- group_info %>% group_by(Group) %>% 
-        slice_sample(prop = input$nTest_prop) %>% length()
-    } else {
-      req(!is.na(input$nTest_count))
-      prop_count <- input$nTest_count/nrow(group_info)
-      test_data <- group_info %>% group_by(Group) %>% 
-        slice_sample(prop = prop_count) %>% length()
-    }
+  ## Cap the top of folds to test
+  max_nfold <- floor(sum(get_group_table(omicsData$objPP))/2)
+  
+  ## Get default parameters
+  custom_args <- list()
+  
+  if(method == "rf"){
+    custom_args <- list(
+      trees = input$trees,
+      min_n = input$min_n,
+      mtry = input$mtry
+    )
+  } else if (method == "lsvm"){
+    custom_args <- list(
+      cost = input$cost,
+      margin = input$svm_margin
+    )
+  } else if (method == "psvm"){
+    custom_args <- list(
+      cost = input$cost,
+      margin = input$svm_margin,
+      degree = input$degree,
+      scale_factor = input$scale_factor
+    )
+  } else if (method == "rsvm"){
+    custom_args <- list(
+      cost = input$cost,
+      margin = input$svm_margin,
+      rbf_sigma = input$rbf_sigma
+    )
+  } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
+    custom_args <- list(
+      penalty = input$penalty,
+      mixture = input$mixture
+    )
+  } else if (method == "gbtree"){
+    custom_args <- list(
+      trees = input$trees,
+      min_n = input$min_n,
+      mtry = input$mtry,
+      # cost_complexity,
+      tree_depth = input$tree_depth,
+      loss_reduction = input$loss_reduction,
+      learn_rate = input$learn_rate,
+      stop_iter = input$stop_iter,
+      sample_size = input$sample_prop
+    )
   }
   
-  res <- map(1:max_nfold, function(fold){
-    evaluate_cv( 
-      slData = data, 
-      nFolds = fold,
-      slMethod = input$pick_model_EM,
-      nTest = test_data
+  (max_nfold - 2)/6
+  
+  list_args <- list(
+    slData = data,
+    slMethod = method,
+    nFolds = 2:max_nfold,
+    pTest = 0.2
+  )
+  
+  list_args <- c(list_args, custom_args)
+  
+  cv_eval$result <- do.call(slopeR::eval_cv_grid, list_args)
+  
+  best_fold <- cv_eval$result$nFolds[which.min(cv_eval$result$acc_sds)]
+  
+  updateNumericInput(session, "nFolds_cv", value = best_fold)
+  updateNumericInput(session, "nFolds_hp", value = best_fold)
+  
+})
+
+observeEvent(cv_eval$result, {
+  req(!is.null(cv_eval$result))
+  
+  appendTab(
+    "training_tabset",
+    select = T,
+    tabPanel(
+      "Fold stability",
+      plotlyOutput("cv_eval_plot")
     )
+    )
+  
+  output$cv_eval_plot <- renderPlotly({
+    p <- plot(cv_eval$result) + theme_bw() + 
+      scale_x_continuous(breaks = cv_eval$result$nFolds)
+    
+    ggplotly(p) %>%
+      layout(
+        showlegend = F
+      )
+    
   })
 })
 
@@ -370,8 +437,16 @@ output$crossval_hp <- renderUI({
     
     conditionalPanel(
       "input.cv_hp_option == 'kfcv'",
-      numericInput("nFolds_hp", "Number of folds", value = 5, min = 2, max = 10)
+      numericInput("nFolds_hp", "Number of folds", value = 5, min = 2, max = 20)
     ),
+    
+    br(),
+    
+    hidden(div("Calculating fold recommendation, please wait...",
+               id = "tune_nfold_busy",
+               class = "fadein-out",
+               style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
+    )),
     
     br(),
     

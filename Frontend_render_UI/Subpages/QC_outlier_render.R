@@ -36,7 +36,7 @@ output$QC_rmd_metrics_UI <- renderUI({
 output$outlier_remove_advanced_pval <- renderUI({
   
   nm <- str_to_title(class(isolate(omicsData$objPP))[[1]])
-  out <- numericInput(paste0( nm, "_pvalue_threshold"), 
+  out <- numericInput(paste0("QC_pvalue_threshold"), 
                       "P-value threshold for outliers:", 0.0001, step = 0.0001, max = 1, min = 0)
   
   if(input$user_level_pick == "beginner") out <- disabled(out)
