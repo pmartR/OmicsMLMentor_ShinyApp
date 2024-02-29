@@ -43,7 +43,7 @@ output$cv_threshold_UI <- renderUI({
   nm <- str_to_title(class(omicsData$objMSU)[[1]])
   
   numericInput(paste0(nm, "_cv_threshold"), 
-               "Maximum CV", value = min(150, max_cv - 1), 
+               "Maximum CV", value = round(min(150, max_cv - 1)), 
                step = 1, min = 0, max = max_cv)
 })
 

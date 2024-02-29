@@ -111,8 +111,8 @@ models_long_name <- c(
   `Hierarchical clustering` = "hclust",
   `Principal Components Analysis` = "pca",
   `Uniform Manifold Approximation and Projection (UMAP)` = "umap",
-  `Gradient boosted tree` = "gbtree",
-  `K-nearest neighbors` = "knn"
+  `Gradient boosted tree` = "gbtree"
+  # `K-nearest neighbors` = "knn" ## not implemented yet
 )
 
 models_supervised <- models_long_name[map_lgl(models_long_name, 

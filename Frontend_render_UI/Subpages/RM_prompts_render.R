@@ -47,6 +47,7 @@ holdout_valid <- reactive({
       multilasso = 20,
       logistic = 20,
       loglasso = 20,
+      knn = 20,
       rf = 20,
       kmeans = 20, ## For cluster optimization, might have to snag group stufff
       hclust = 0,

@@ -5,7 +5,7 @@ output$pick_model_UI <- renderUI({
   req(input$skip_ag)
   
   models_supervised_text <-  map_chr(
-    as.character(models_supervised), 
+    as.character(models_long_name %in% models_supervised), 
     function(x)
       switch(
         x,
@@ -18,11 +18,11 @@ output$pick_model_UI <- renderUI({
     input$pick_model else character(0))
   
   pickerInput("pick_model", label = "Select a model:",
-              choices = names(models_long_name), 
+              choices = models_long_name, 
               selected = selected,
               choicesOpt = list(
                 disabled = if(is.null(omicsData$objMSU$f_data)) 
-                  models_supervised else NULL,
+                  models_long_name %in% models_supervised else NULL,
                 subtext = if(is.null(omicsData$objMSU$f_data)) 
                   models_supervised_text else NULL
                 )
@@ -94,12 +94,7 @@ output$pick_model_group_pick_UI <- renderUI({
   
   req(!is.null(omicsData$objMSU$f_data) && 
         !is.null(input$pick_model) && input$skip_ag &&
-        
-        input$pick_model %in% names(models_long_name)[
-          models_long_name %in% names(algo_rules)[
-            map_lgl(algo_rules, function(x) x$hard$supervised)
-            ]
-          ]
+        input$pick_model %in% models_supervised
         )
   
   selected <- isolate(if(is.null(input$pick_model_group_pick)) logical(0) else {
@@ -130,13 +125,26 @@ observeEvent(input$ag_prompts, {
 
 observeEvent(input$ag_done, {
   
-  if(input$ag_prompts == "supervised"){
+  expert_cond <- !is.null(input$skip_ag) && 
+    input$skip_ag && 
+    input$pick_model %in% models_supervised
+  
+  other_cond <- !is.null(input$ag_prompts) && 
+    input$ag_prompts == "supervised"
+  
+  if(expert_cond){
     
-    if(isTruthy(input$skip_ag)){
-      response <- input$pick_model_group_pick
-    } else {
-      response <- input$f_data_response_picker
-    }
+    response <- input$pick_model_group_pick
+    
+    omicsData$objMSU <- group_designation(omicsData$objMSU, 
+                                          main_effects = response)
+    
+    omicsData$objModel <- as.slData(omicsData$objMSU, 
+                                    response_cols = response)
+    
+  } else if(other_cond){
+    
+    response <- input$f_data_response_picker
     
     omicsData$objMSU <- group_designation(omicsData$objMSU, 
                                           main_effects = response)

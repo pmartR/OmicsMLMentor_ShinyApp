@@ -119,19 +119,17 @@ observe({
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
+  supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
+    (!input$skip_ag && input$ag_prompts == "supervised")
+  
   if(is.null(omicsData$objQC$f_data) && supervised){
     temp_omic$f_data <- data.frame(
-      SampleId = colnames(temp_omic$e_data)[colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
+      SampleId = colnames(temp_omic$e_data)[
+        colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
       Temp_col_all = "All"
     )
     temp_omic <- group_designation(temp_omic, "Temp_col_all")
   }
-  
-  
-  supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
-    (!input$skip_ag && input$ag_prompts == "supervised")
-  
-  any_missing <- any(is.na(omicsData$objMSU$e_data))
   
   if(input$user_level_pick == "beginner"){
     
@@ -268,7 +266,7 @@ observe({
   }
   
   df$Method <- names(models_long_name)[match(df$Method, models_long_name)]
-  
+  df <- df[!is.na(df$Method),] ## knn is implemented in summary, but not in sup_models yet lol
   ## Filts
   # filts <- c(
   #   "Feature selection" = "Method selects which predictors to use?",
@@ -280,10 +278,9 @@ observe({
   
   
   if(isTruthy(input$skip_ag)){
-    df <- df[df$Method == input$pick_model, ]
-  }
-  
-  if(input$user_level_pick == "beginner"){
+    picker <- names(models_long_name)[models_long_name == input$pick_model]
+    df <- df[df$Method == picker, ]
+  } else if(input$user_level_pick == "beginner"){
     df <- df[1:3,]
   } else if (input$user_level_pick == "familiar"){
     df <- df[1:min(c(nrow(df), 10)),]
@@ -343,8 +340,7 @@ output$pick_EM_model_UI <- renderUI({
   selected <- isolate(input$pick_model_EM)
   
   choices <- models_long_name[dashboard()$Method]
-  
-  ## until summary get fixed
+
   pickerInput("pick_model_EM", label = "Select a model:",
               choices = choices[!is.na(choices)], 
               selected = selected
