@@ -315,24 +315,32 @@ get_params <- function(subset_fn, tab) {
 inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
   group_df <- attr(omicsData, "group_DF")
   reorder <- match(
-    colnames(omicsData$e_data)[-which(colnames(omicsData$e_data) == pmartR::get_edata_cname(omicsData))],
+    colnames(omicsData$e_data)[
+      -which(colnames(omicsData$e_data) == pmartR::get_edata_cname(omicsData))],
     as.character(group_df[, get_fdata_cname(omicsData)])
   )
   group <- group_df[reorder, ]$Group
-
-  # create norm object and pull normalization parameters
-  norm_object <- check_norm_possible(omicsData,
-                                     subset_fn,
-                                     norm_fn,
-                                     params = params,
-                                     apply_norm = FALSE
-  )
-
-
-  if (is.null(norm_object)) {
-    return(NULL)
+  
+  if(norm_fn == "Zero-to-one scaling"){
+    norm_object <- pmartR:::zero_one_scale(omicsData$e_data,
+                                           get_edata_cname(omicsData))
+    params <- norm_object$norm_params
+  } else {
+    
+    # create norm object and pull normalization parameters
+    norm_object <- check_norm_possible(omicsData,
+                                       subset_fn,
+                                       norm_fn,
+                                       params = params,
+                                       apply_norm = FALSE
+    )
+    
+    if (is.null(norm_object)) {
+      return(NULL)
+    }
+    params <- norm_object$parameters$normalization
+    
   }
-  params <- norm_object$parameters$normalization
 
   if (!is.null(params$location)) {
   # p value and dataframe of normalization factors for location
@@ -347,7 +355,8 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
 
   # p value and dataframe of normalization factors for scale, if there are scale parameters
   if (!is.null(params$scale)) {
-    if(norm_fn == "zero_one_scale"){
+
+    if(norm_fn == "Zero-to-one scaling"){
       p_scale <- pmartR:::kw_rcpp(matrix(params$scale[2,] - params$scale[1,], 
                                          nrow = 1),
                                   group = as.character(group)
@@ -801,15 +810,27 @@ load_norm_observers <- function(tab) {
         
       }
 
-
-      params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
-      
-      eval <- inspect_norm(
-        omicsData = temp_dat,
-        subset_fn = input[[paste0(tab, "_subset_fn")]],
-        norm_fn = input[[paste0(tab, "_norm_fn")]],
-        params = params
-      )
+      if(input[[paste0(tab, "_normalize_option")]] == "Zero-to-one scaling"){
+        
+        params <- NULL
+        
+        eval <- inspect_norm(
+          omicsData = temp_dat,
+          subset_fn = NULL,
+          norm_fn = "Zero-to-one scaling",
+          params = NULL
+        )
+        
+      } else {
+        params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
+        
+        eval <- inspect_norm(
+          omicsData = temp_dat,
+          subset_fn = input[[paste0(tab, "_subset_fn")]],
+          norm_fn = input[[paste0(tab, "_norm_fn")]],
+          params = params
+        )
+      }
 
       if (is.null(eval)) {
         return()
@@ -960,13 +981,15 @@ load_norm_observers <- function(tab) {
           return()
         }
 
-        if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization", "SPANS - Proteomics only")) {
+        if (input[[paste0(tab, "_normalize_option")]] %in% 
+            c("Global Normalization", "SPANS - Proteomics only")) {
 
           params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
 
           
           noconv <- subset_noconv(as.slData(omicsData$objPP))
           conv <- subset_conv(as.slData(omicsData$objPP))
+          
           
           omicsData$objNorm <- check_norm_possible(noconv,
                                              subset_fn = input[[paste0(tab, "_subset_fn")]],
@@ -987,7 +1010,19 @@ load_norm_observers <- function(tab) {
             params = params,
             backtransform = as.logical(input[[paste0(tab, "_backtransform")]])
           )
+          } else if (input[[paste0(tab, "_normalize_option")]] == "Zero-to-one scaling"){
+            
+            omicsData$objNorm <- normalize_zero_one_scaling(omicsData$objPP)
+            norm_settings[[tab]] <- list(
+              settings = input[[paste0(tab, "_normalize_option")]]
+            )
           } else {
+            omicsData$objNorm <- normalize_loess(
+              omicsData$objPP,
+              method = input[[paste0(tab, "_loess_method")]],
+              span = input[[paste0(tab, "_loess_span")]]
+              )
+            
             norm_settings[[tab]] <- list(
               settings = input[[paste0(tab, "_normalize_option")]],
               method = input[[paste0(tab, "_loess_method")]],
@@ -1485,8 +1520,7 @@ assign_norm_output <- function(tab) {
                     "Mean" = "mean",
                     "Median" = "median",
                     "Z-norm" = "zscore",
-                    "Median Absolute Deviation" = "mad",
-                    "Zero-to-one scaling" = "zero_one_scale"
+                    "Median Absolute Deviation" = "mad"
                   ),
                   options = pickerOptions(maxOptions = 1),
                   multiple = TRUE
@@ -1525,7 +1559,37 @@ assign_norm_output <- function(tab) {
             )
           )
         )
-      }
+        } else if (input[[paste0(tab, "_normalize_option")]] == "Zero-to-one scaling") {
+          return(
+            div(
+              collapseBoxGroup(
+                id = paste0(tab, "_normalization_sidebar"),
+                open = "choose_params",
+
+                # Normalization parameters
+                collapseBox(
+
+                  # subsection_header(
+                    "Apply Normalization",
+                  #   paste0(tab, "_apply_norm_icon"),
+                  #   "color:red;float:right",
+                  #   icon("exclamation-sign", lib = "glyphicon")
+                  # ),
+                  value = "choose_params",
+                  collapsed = F,
+                  
+                  br(),
+                  strong("Warning: All NA values will be converted to zero."),
+                  br(),
+                  br(),
+                  hr(),
+
+                  uiOutput(paste0(tab, "_norm_buttons"))
+                )
+              )
+            )
+          )
+        }
       # } else if (input[[paste0(tab, "_normalize_option")]] == "Loess Normalization") {
       #   return(
       #     div(
@@ -1778,6 +1842,7 @@ assign_norm_output <- function(tab) {
         "SPANS - Proteomics only",
         "Global Normalization",
         # "Loess Normalization",
+        "Zero-to-one scaling",
         "No Normalization"
       )
       
@@ -1985,6 +2050,9 @@ assign_norm_output <- function(tab) {
       #   !is.null(input[[paste0(tab, "_loess_method")]]) &&
       #   !is.null(input[[paste0(tab, "_loess_span")]])
       
+      cond_zero_one <- !is.null(input[[paste0(tab, "_normalize_option")]]) &&
+        input[[paste0(tab, "_normalize_option")]] == "Zero-to-one scaling"
+      
       cond_global <- !is.null(input[[paste0(tab, "_normalize_option")]]) &&
         input[[paste0(tab, "_normalize_option")]] %in%
         c("Global Normalization", "SPANS - Proteomics only") &&
@@ -1993,6 +2061,7 @@ assign_norm_output <- function(tab) {
         !is.null(input[[paste0(tab, "_backtransform")]])
       
       if ( # !cond_loess &&
+        !cond_zero_one &&
         !cond_global) {
         lock <- disabled(lock)
         # preview <- disabled(preview)
@@ -2011,17 +2080,27 @@ assign_norm_output <- function(tab) {
       #     lock
       #   )
       # } else {
-      out <- list(
-        bias,
-        # preview,
-        tooltip,
-        br(),
-        br(),
-        lock
+      
+      fluidRow(
+        column(6,
+               bias,
+               # preview,
+               tooltip,
+               ),
+        column(6, lock)
       )
+      
+      # out <- list(
+      #   bias,
+      #   # preview,
+      #   tooltip,
+      #   br(),
+      #   br(),
+      #   lock
+      # )
       # }
       
-      return(tagList(out))
+      # return(tagList(out))
     }),
     
     
@@ -2122,8 +2201,9 @@ assign_norm_output <- function(tab) {
     
     output[[paste0(tab, "_normalized_boxplots_post")]] <- renderPlotly({
       
-      req(input[["normalized"]] == "Yes" ||  
-            get_data_norm(isolate(omicsData$objPP)) == F, 
+      req((input[["normalized"]] == "Yes" ||  
+            get_data_norm(isolate(omicsData$objPP)) == F ) &&
+          !is.null(omicsData$objNorm),
           cancelOutput = T)
 
       if(!is.null(get_group_DF(omicsData$objNorm))){

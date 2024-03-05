@@ -310,6 +310,8 @@ multilasso_params <- function(){
 
 }
 
+knn_params <- function(){}
+
 gbtree_params <- function(){
 
   ## Selected params
