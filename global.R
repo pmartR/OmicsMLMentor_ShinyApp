@@ -29,6 +29,7 @@ suppressPackageStartupMessages({
   library(dendextend)
   library("rintrojs")
   library(factoextra)
+  library(tune)
   
   library(dplyr) # dplyr always at bottom, to avoid function collisions.
   library(purrr)

@@ -998,7 +998,7 @@ load_norm_observers <- function(tab) {
                                              apply_norm = TRUE
           )
           
-          if(!is.null(conv) && !identical(noconv, conv)){
+          if(!is.null(conv) && !is.null(noconv) && !identical(noconv, conv)){
             
             omicsData$objNorm <- combine_omicsdata(omicsData$objNorm, conv)
           }

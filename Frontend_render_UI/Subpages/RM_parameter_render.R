@@ -430,8 +430,8 @@ hclust_params <- function(){
     ## This might make more sense as a picture -- hierachical only
     
     if(input$user_level_pick == "beginner"){
-      
-        pickerInput("linkage_method", "Linkage method", 
+
+        pickerInput("linkage_method", "Linkage method",
                     choices = c("complete"), width = "100%")
     } else {
       pickerInput("linkage_method", "Linkage method", 
@@ -496,8 +496,10 @@ output[["model_specific_parameters"]] <- renderUI({
   req(!is.null(omicsData$objPP) && 
         !is.null(input$pick_model_EM) &&
         !is.null(input$rm_prompts_hp) &&
-        (!is.null(input$pick_model_group_pick) || 
-           !is.null(input$f_data_response_picker))
+        ((!is.null(input$pick_model_group_pick) || 
+           !is.null(input$f_data_response_picker)) ||
+           input$ag_prompts == "unsupervised"
+           )
         )
   
   # fun <- as.character(models_long_name[names(models_long_name) == input$pick_model_EM]) ## while unsup summary is being fixed

@@ -101,9 +101,6 @@ ui <- function(request) {
                  style = "position:absolute;top:8px;right:10px;z-index:1100;"),
     
 
-    
-    # uiOutput("developer_buttons"),
-    
     ## ADDED FOR MAP
     div(
       style = "position:absolute;top:3px;right:16px;z-index:1100;",

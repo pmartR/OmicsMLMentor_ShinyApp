@@ -11,7 +11,9 @@ param_RM_UI <- function(tuning) {
              
              ## Feature selection
              
-             conditionalPanel("input.pick_model_EM == 'Multinomial regression' | input.pick_model_EM == 'Logistic regression'", {
+             conditionalPanel(
+               
+               "input.pick_model_EM == 'Multinomial regression' | input.pick_model_EM == 'Logistic regression'", {
                collapseBoxGroup(
                  id = "FS_RM_side_collapse", multiple = FALSE, open = c("choice_VS_RM"),
                  
@@ -77,6 +79,12 @@ param_RM_UI <- function(tuning) {
                  uiOutput("model_specific_parameters"),
                  
                  uiOutput("optimization_summary"), ## Number of levels ^ number of selected parameters
+                 
+                 hidden(div("Performing analysis, please wait...",
+                            id = "HP_busy",
+                            class = "fadein-out",
+                            style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
+                 )),
                  
                  uiOutput("param_opti_UI")
                )

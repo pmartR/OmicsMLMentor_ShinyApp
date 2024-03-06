@@ -610,7 +610,8 @@ observeEvent(input$run_sl, {
       slMethod = method,
       cvMethod = cvMethod,
       nFolds = nFolds,
-      nTest = ntest
+      nTest = ntest,
+      return_cv = T
     )
     
     list_args <- c(list_args, custom_args)
@@ -626,39 +627,6 @@ observeEvent(input$run_sl, {
       }
     })
     
-    temp <-  tryCatch({
-      do.call(slopeR::variable_importance, list_args)
-    }, error = function(e){
-      if(str_detect(e$message, "No variable importance method implemented for method")){
-        do.call(slopeR::fit, list_args)
-      } else {
-        browser()
-        NULL
-      }
-    })
-    temp
-    
-    # omicsData$objRM <- slopeR::fit(runner,
-    #                           slMethod = method,
-    #                           cvMethod = input$training_type,
-    #                           nFolds = input$nFolds,
-    #                           nTest = ntest
-    #                           )
-
-    # feature_selection(runner,
-    #                   slMethod = method,
-    #                   cvMethod = input$training_type,
-    #                   nFolds = input$nFolds,
-    #                   nTest = 9
-    #                   )
-    #
-    # slopeR::fit(runner,
-    #             slMethod = method,
-    #             slRes = omicsData$objRM,
-    #             cvMethod = input$training_type,
-    #             nFolds = input$nFolds,
-    #             viThreshold = input$vi_thresh ## Need results first??
-    # )
   } else {
 
     runner <- as.slData(omicsData$objPP)
@@ -821,7 +789,8 @@ observeEvent(input$feature_select_posthoc, {
       slMethod = method,
       cvMethod = cvMethod,
       nFolds = nFolds,
-      nTest = ntest
+      nTest = ntest,
+      return_cv = T
     )
     
     list_args <- c(list_args, custom_args)

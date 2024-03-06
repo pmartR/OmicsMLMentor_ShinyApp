@@ -136,6 +136,7 @@ observe({
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised
     )
+    
   } else if (input$user_level_pick != "expert"){
     
     id_col <- which(colnames(omicsData$objModel$e_data) == 
@@ -220,13 +221,16 @@ observe({
   missingness <- missingval_result(omicsData$objModel)$na.by.sample
   total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
   
+  group_text <- ifelse(!is.null(get_group_table(omicsData$objModel)), 
+                       min(get_group_table(omicsData$objModel)), 1)
+  
   colnames(df) <- c(
     "Method",
     "Score",
     paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"),
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
     paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
-    paste0("Runs with a minimum group size of ", min(get_group_table(omicsData$objModel)), "?"),
+    paste0("Runs with a minimum group size of ", group_text, "?"),
     paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
