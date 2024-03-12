@@ -30,6 +30,7 @@ suppressPackageStartupMessages({
   library("rintrojs")
   library(factoextra)
   library(tune)
+  library(xgboost)
   
   library(dplyr) # dplyr always at bottom, to avoid function collisions.
   library(purrr)

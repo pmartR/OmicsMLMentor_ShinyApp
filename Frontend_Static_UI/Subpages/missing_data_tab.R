@@ -49,7 +49,7 @@ missing_data <- function(){
                  br(),
                  br(),
                  paste0("Some unsupervised models accept incomplete detection of biomolecules, however",
-                        " unsupervised models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
+                        " currently supported supervised models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
                  
                  br(),
                  br(),

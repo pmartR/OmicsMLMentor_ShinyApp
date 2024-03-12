@@ -2,6 +2,10 @@ glossary_popup <- function(){
   # Modal
   showModal(
     modalDialog(
+      size = "l",
+      title = "Glossary",
+      
+      fluidRow(
       tabsetPanel(
         id = "gloss_tabs",
         
@@ -22,7 +26,9 @@ glossary_popup <- function(){
                      br(),
                      
                      fluidRow(
-                       map(models, function(x) uiOutput(paste0("EM_", x)))
+                       map(models_long_name[!models_long_name %in% c("multilasso", "loglasso")], 
+                           function(x) 
+                         uiOutput(paste0("EM_", x)))
                      )
                      
                    )
@@ -33,7 +39,7 @@ glossary_popup <- function(){
                  wellPanel(
                  )
         )
-      )
+      ))
     )
   )
 }

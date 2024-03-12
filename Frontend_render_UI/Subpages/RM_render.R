@@ -37,21 +37,22 @@ supervised_tab <- function() {
           collapseBox(
             collapsed = F,
             
+            "Selected model",
+            
             value = "select_sl",
             
             div(
-              "Selected model",
               uiOutput("model_summary")
             ),
             
             div(),
             hr(),
-            numericInput(
-              "the_seed",
-              "Random seed",
-              value = 0,
-              step = 1
-            ),
+            # numericInput(
+            #   "the_seed",
+            #   "Random seed",
+            #   value = 0,
+            #   step = 1
+            # ),
             
             # numericInput(
             #   "vi_thresh",
@@ -99,9 +100,24 @@ supervised_tab <- function() {
             
             value = "results_RM",
             
+            
+            div(
+              pickerInput(label = "Select vizualization type:", "super_plot_type", 
+                          choices = c(
+                            "True positive performance",
+                            "Prediction vs. truth",
+                            "Classification accuracy",
+                            "Confidence in sample predictions - bar",
+                            "Confidence in sample predictions - scatter"
+                          )
+              ),
+              style= "float:right"
+            ),
+            
             br(),
             
             uiOutput("performance_tabset_UI")
+            
           ),
           
           uiOutput("VI_tabset_UI_collapse")
@@ -303,90 +319,84 @@ output$Variable_importance_plot_reduced <- renderPlotly({
 
 output$performance_tabset_UI <- renderUI({
   
-  out <- tabsetPanel(
+  if(is.null(omicsData$objRM)) return("Please run model to see results")
+  
+  full_tabset <- tabPanel(
     
-    id = "performance_tabset",
+    "Full model",
     
-    # tabPanel(
-    #   "Training Performance Metrics",
-    #   splitLayout(
-    #     DTOutput("train_metrics"),
-    #     uiOutput("roc_plot_train")
-    #   )
-    # ),
+    br(),
     
-    # tabPanel(
-    #   "Testing Performance Metrics",
-    #   splitLayout(
-    #     DTOutput("test_metrics"),
-    #     uiOutput("roc_plot_test")
-    #   )
-    # ),
+    uiOutput("full_super_plot_UI")
     
-    # tabPanel(
-    #   "Data comparison -- Training vs. Testing",
-    #   # splitLayout(
-    #   #   DTOutput("test_metrics"),
-    #   #   uiOutput("roc_plot_test")
-    #   # )
-    # ),
+  )
+  
+  reduced_tabset <- if(!is.null(omicsData$objRM_reduced)){
     
     tabPanel(
-      "True positive performance",
-      # splitLayout(
-      #   DTOutput("test_metrics"),
-      #   uiOutput("roc_plot_test")
-      # )
+      
+      "Reduced model",
+      
       br(),
-      withSpinner(plotOutput("roc_curve"))
-    ),
+      
+      uiOutput("reduced_super_plot_UI")
+      )
     
-    tabPanel(
-      "Prediction vs. truth",
-      # splitLayout(
-      #   DTOutput("test_metrics"),
-      #   uiOutput("roc_plot_test")
-      # )
+  } else NULL
+  
+  do.call(tabsetPanel, list(id = "performance_tabset", 
+                            full_tabset, 
+                            reduced_tabset))
+
+})
+
+
+output$reduced_super_plot_UI <- renderUI({
+  
+  out <- if(input$super_plot_type == "True positive performance"){
+    div(
+      withSpinner(plotOutput("roc_curve_reduced")),
       br(),
-      withSpinner(plotOutput("prediction_bar"))
-    ),
-    
-    tabPanel(
-      "Classification accuracy",
-      # splitLayout(
-      #   DTOutput("test_metrics"),
-      #   uiOutput("roc_plot_test")
-      # )
+      uiOutput("true_pos_picker_ui_reduced")
+    )
+  } else if (input$super_plot_type == "Prediction vs. truth"){
+    withSpinner(plotOutput("prediction_bar_reduced"))
+  } else if (input$super_plot_type == "Classification accuracy"){
+    withSpinner(plotOutput("confusion_heatmap_reduced"))
+  } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
+    withSpinner(plotOutput("confidence_bar_reduced"))
+  } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
+    div(
+      withSpinner(plotOutput("confidence_scatter")),
       br(),
-      withSpinner(plotOutput("confusion_heatmap"))
-    ),
-    
-    tabPanel(
-      "Confidence in sample predictions - bar",
-      # splitLayout(
-      #   DTOutput("test_metrics"),
-      #   uiOutput("roc_plot_test")
-      # )
+      uiOutput("true_pos_picker_ui_reduced")
+    )
+  }
+  
+  out
+})
+
+output$full_super_plot_UI <- renderUI({
+  out <- if(input$super_plot_type == "True positive performance"){
+    div(
+      withSpinner(plotOutput("roc_curve")),
       br(),
-      withSpinner(plotOutput("confidence_bar"))
-    ),
-    
-    tabPanel(
-      "Confidence in sample predictions - scatter",
-      # splitLayout(
-      #   DTOutput("test_metrics"),
-      #   uiOutput("roc_plot_test")
-      # )
-      br(),
+      uiOutput("true_pos_picker_ui")
+    )
+  } else if (input$super_plot_type == "Prediction vs. truth"){
+    withSpinner(plotOutput("prediction_bar"))
+  } else if (input$super_plot_type == "Classification accuracy"){
+    withSpinner(plotOutput("confusion_heatmap"))
+  } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
+    withSpinner(plotOutput("confidence_bar"))
+  } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
+    div(
       withSpinner(plotOutput("confidence_scatter")),
       br(),
       uiOutput("true_pos_picker_ui")
     )
-  )
-  
-  if(is.null(omicsData$objRM)){
-    out <- "Please run model to see results"
   }
+  
   out
 })
 
@@ -801,6 +811,8 @@ observeEvent(input$feature_select_posthoc, {
 
 })
 
+#######
+
 output$true_pos_picker_ui <- renderUI({
   
   if(isTruthy(input$skip_ag)){
@@ -817,12 +829,38 @@ output$true_pos_picker_ui <- renderUI({
   
 })
 
+output$true_pos_picker_ui_reduced <- renderUI({
+  
+  if(isTruthy(input$skip_ag)){
+    response <- input$pick_model_group_pick
+  } else {
+    response <- input$f_data_response_picker
+  }
+  
+  levels_responses <- unique(omicsData$objPP$f_data[[response]])
+  
+  pickerInput("true_pos_picker_reduced", 
+              "Designate true positive event", 
+              choices = as.character(levels_responses))
+  
+})
+
 output$roc_curve <- renderPlot({
 
   req(!is.null(omicsData$objRM))
 
-  plot(omicsData$objRM, "roc_curve", pos_class = input$true_pos_picker)
+  plot(omicsData$objRM, "roc_curve", 
+       pos_class = input$true_pos_picker)
 
+})
+
+output$roc_curve_reduced <- renderPlot({
+  
+  req(!is.null(omicsData$objRM_reduced))
+  
+  plot(omicsData$objRM_reduced, "roc_curve", 
+       pos_class = input$true_pos_picker_reduced)
+  
 })
 
 
@@ -836,12 +874,29 @@ output$confidence_bar <- renderPlot({
 
 })
 
+output$confidence_bar_reduced <- renderPlot({
+  
+  req(!is.null(omicsData$objRM_reduced))
+  
+  plot( omicsData$objRM_reduced, plotType = "confidence_bar") + 
+    theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  
+})
+
 output$prediction_bar <- renderPlot({
 
   req(!is.null(omicsData$objRM))
 
   plot( omicsData$objRM, plotType = "prediction_bar")
 
+})
+
+output$prediction_bar_reduced <- renderPlot({
+  
+  req(!is.null(omicsData$objRM_reduced))
+  
+  plot( omicsData$objRM_reduced, plotType = "prediction_bar")
+  
 })
 
 output$confusion_heatmap <- renderPlot({
@@ -852,6 +907,14 @@ output$confusion_heatmap <- renderPlot({
 
 })
 
+output$confusion_heatmap_reduced <- renderPlot({
+  
+  req(!is.null(omicsData$objRM_reduced))
+  
+  plot( omicsData$objRM_reduced, plotType = "confusion_heatmap")
+  
+})
+
 output$confidence_scatter <- renderPlot({
 
   req(!is.null(omicsData$objRM))
@@ -859,6 +922,16 @@ output$confidence_scatter <- renderPlot({
   plot( omicsData$objRM, plotType = "confidence_scatter", pos_class = input$true_pos_picker)
 
 })
+
+output$confidence_scatter_reduced <- renderPlot({
+  
+  req(!is.null(omicsData$objRM_reduced))
+  
+  plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
+        pos_class = input$true_pos_picker_reduced)
+  
+})
+
 # 
 # 
 # output$test_plots <- renderPlot({

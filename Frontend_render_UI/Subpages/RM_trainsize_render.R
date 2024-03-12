@@ -74,6 +74,8 @@ output$TS_preview_plot <- renderPlot({
     ## Facit plots for training folds
     req(!is.null(input$cv_hp_option))
     
+    set.seed(1024)
+    
     folds <- rsample::vfold_cv(
       group_info_training,
       v = input$nFolds_hp,
@@ -140,6 +142,8 @@ output$TS_preview_plot <- renderPlot({
       text <- paste0("For each of ", input$nFolds_hp, " folds")
     }
     
+    set.seed(1024)
+    
     folds <- rsample::vfold_cv(
       group_info,
       v = input$nFolds_hp,
@@ -168,6 +172,8 @@ output$TS_preview_plot <- renderPlot({
         slice_sample(prop = 1/input$nFolds_cv)
       text <- paste0("For each of ", input$nFolds_cv, " folds")
     }
+    
+    set.seed(1024)
     
     folds <- rsample::vfold_cv(
       group_info,

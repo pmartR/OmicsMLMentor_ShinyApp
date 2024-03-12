@@ -2,11 +2,13 @@ example_data_UI <- function(){
   
   wellPanel(
     
+    div(
+      style = 'height:500px; overflow-y: scroll',
+    
     br(),
     strong("Supported upload files are restricted to .csv files in the following format:"),
     br(),
-    
-    tags$div(
+    br(),
       tags$ul(
         tags$li(paste0("Count or Abundance data as a cross-tab with rows for each biomolecule",
                        " and columns for each sample. A column is required that",
@@ -34,13 +36,13 @@ example_data_UI <- function(){
                        "proteomics data, this cross-tab contains the peptide-to-protein mapping.")
         )
       )
-    ),
+    )#,
     
-    br(),
-    br(),
-    actionButton("template_edata", "Download template Abundance Data", inline = T),
-    actionButton("template_fdata", "Download template Sample Data", inline = T),
-    actionButton("template_emeta", "Download template Abundance Data", inline = T)
+    # br(),
+    # br(),
+    # actionButton("template_edata", "Download template Abundance Data", inline = T),
+    # actionButton("template_fdata", "Download template Sample Data", inline = T),
+    # actionButton("template_emeta", "Download template Abundance Data", inline = T)
   )
   
   

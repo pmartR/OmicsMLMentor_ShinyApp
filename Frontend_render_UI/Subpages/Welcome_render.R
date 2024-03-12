@@ -50,7 +50,9 @@ observeEvent(input$launch_data_requirements, {
           "Supported Data Types",
           fluidRow(
             column(10,
-                   align = "center", offset = 1,
+                   align = "left", 
+                   offset = 1,
+                   br(),
                    requirements_function()
             )
           )
@@ -59,8 +61,9 @@ observeEvent(input$launch_data_requirements, {
           "Data formating and templates",
           fluidRow(
             column(10,
-                   align = "center", offset = 1,
-                   
+                   align = "left", 
+                   offset = 1,
+                   br(),
                    example_data_UI()
             )
           )

@@ -2,7 +2,6 @@
 
 observeEvent(input$param_opti, {
   
-  
   ## Check normalization application
   shinyjs::show("HP_busy")
   
