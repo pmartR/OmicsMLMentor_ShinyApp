@@ -111,7 +111,7 @@ supervised_tab <- function() {
                             "Confidence in sample predictions - scatter"
                           )
               ),
-              style= "float:right;"
+              style= "float:right;z-index:1100;"
             ),
             
             br(),
@@ -355,17 +355,17 @@ output$reduced_super_plot_UI <- renderUI({
   
   out <- if(input$super_plot_type == "True positive performance"){
     div(
-      withSpinner(plotOutput("roc_curve_reduced"))
+      withSpinner(plotlyOutput("roc_curve_reduced"))
     )
   } else if (input$super_plot_type == "Prediction vs. truth"){
-    withSpinner(plotOutput("prediction_bar_reduced"))
+    withSpinner(plotlyOutput("prediction_bar_reduced"))
   } else if (input$super_plot_type == "Classification accuracy"){
-    withSpinner(plotOutput("confusion_heatmap_reduced"))
+    withSpinner(plotlyOutput("confusion_heatmap_reduced"))
   } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
-    withSpinner(plotOutput("confidence_bar_reduced"))
+    withSpinner(plotlyOutput("confidence_bar_reduced"))
   } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
     div(
-      withSpinner(plotOutput("confidence_scatter")),
+      withSpinner(plotlyOutput("confidence_scatter_reduced")),
       br(),
       uiOutput("true_pos_picker_ui_reduced")
     )
@@ -377,17 +377,17 @@ output$reduced_super_plot_UI <- renderUI({
 output$full_super_plot_UI <- renderUI({
   out <- if(input$super_plot_type == "True positive performance"){
     div(
-      withSpinner(plotOutput("roc_curve"))
+      withSpinner(plotlyOutput("roc_curve"))
     )
   } else if (input$super_plot_type == "Prediction vs. truth"){
-    withSpinner(plotOutput("prediction_bar"))
+    withSpinner(plotlyOutput("prediction_bar"))
   } else if (input$super_plot_type == "Classification accuracy"){
-    withSpinner(plotOutput("confusion_heatmap"))
+    withSpinner(plotlyOutput("confusion_heatmap"))
   } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
-    withSpinner(plotOutput("confidence_bar"))
+    withSpinner(plotlyOutput("confidence_bar"))
   } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
     div(
-      withSpinner(plotOutput("confidence_scatter")),
+      withSpinner(plotlyOutput("confidence_scatter")),
       br(),
       uiOutput("true_pos_picker_ui")
     )
@@ -843,7 +843,7 @@ output$true_pos_picker_ui_reduced <- renderUI({
   
 })
 
-output$roc_curve <- renderPlot({
+output$roc_curve <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
@@ -851,7 +851,7 @@ output$roc_curve <- renderPlot({
 
 })
 
-output$roc_curve_reduced <- renderPlot({
+output$roc_curve_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
@@ -861,7 +861,7 @@ output$roc_curve_reduced <- renderPlot({
 
 
 
-output$confidence_bar <- renderPlot({
+output$confidence_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
@@ -870,7 +870,7 @@ output$confidence_bar <- renderPlot({
 
 })
 
-output$confidence_bar_reduced <- renderPlot({
+output$confidence_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
@@ -879,7 +879,7 @@ output$confidence_bar_reduced <- renderPlot({
   
 })
 
-output$prediction_bar <- renderPlot({
+output$prediction_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
@@ -887,7 +887,7 @@ output$prediction_bar <- renderPlot({
 
 })
 
-output$prediction_bar_reduced <- renderPlot({
+output$prediction_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
@@ -895,7 +895,7 @@ output$prediction_bar_reduced <- renderPlot({
   
 })
 
-output$confusion_heatmap <- renderPlot({
+output$confusion_heatmap <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
@@ -903,7 +903,7 @@ output$confusion_heatmap <- renderPlot({
 
 })
 
-output$confusion_heatmap_reduced <- renderPlot({
+output$confusion_heatmap_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
@@ -911,15 +911,17 @@ output$confusion_heatmap_reduced <- renderPlot({
   
 })
 
-output$confidence_scatter <- renderPlot({
+output$confidence_scatter <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  plot( omicsData$objRM, plotType = "confidence_scatter", pos_class = input$true_pos_picker)
+  plot( omicsData$objRM, 
+        plotType = "confidence_scatter", 
+        pos_class = input$true_pos_picker)
 
 })
 
-output$confidence_scatter_reduced <- renderPlot({
+output$confidence_scatter_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
