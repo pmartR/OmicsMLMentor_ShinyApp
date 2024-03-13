@@ -297,12 +297,12 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
   
   req(input$cv_perform_rec > 0 || input$cv_hp_rec > 0)
   
-  show("perform_nfold_busy")
-  show("tune_nfold_busy")
+  shinyjs::show("perform_nfold_busy")
+  shinyjs::show("tune_nfold_busy")
   
   on.exit({
-    hide("perform_nfold_busy")
-    hide("tune_nfold_busy")
+    shinyjs::hide("perform_nfold_busy")
+    shinyjs::hide("tune_nfold_busy")
   })
   
   method <- input$pick_model_EM
@@ -378,13 +378,15 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
   list_args <- list(
     slData = data,
     slMethod = method,
-    nFolds = 2:max_nfold,
+    nFolds = 4:max_nfold,
     pTest = 0.2
   )
   
   list_args <- c(list_args, custom_args)
   
-  cv_eval$result <- do.call(slopeR::eval_cv_grid, list_args)
+  suppressWarnings({
+    cv_eval$result <- do.call(slopeR::eval_cv_grid, list_args)
+  })
   
   best_fold <- cv_eval$result$nFolds[which.min(cv_eval$result$acc_sds)]
   

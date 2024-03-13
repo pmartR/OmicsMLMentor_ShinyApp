@@ -6,9 +6,7 @@ progress_tab <- function(tabset, ..., plot_choices = c(
                            "Missing Value Sample Bar Plots",
                            "Missing Value Biomolecule Histogram"
                          )) {
-  tabPanel("Progress",
-    value = paste0(tabset, "_progress"),
-    class = "collapse_page",
+  div(
     fluidRow( # begin fluidrow
 
       column( # sidebarpanel

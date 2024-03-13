@@ -111,7 +111,7 @@ supervised_tab <- function() {
                             "Confidence in sample predictions - scatter"
                           )
               ),
-              style= "float:right"
+              style= "float:right;"
             ),
             
             br(),
@@ -355,9 +355,7 @@ output$reduced_super_plot_UI <- renderUI({
   
   out <- if(input$super_plot_type == "True positive performance"){
     div(
-      withSpinner(plotOutput("roc_curve_reduced")),
-      br(),
-      uiOutput("true_pos_picker_ui_reduced")
+      withSpinner(plotOutput("roc_curve_reduced"))
     )
   } else if (input$super_plot_type == "Prediction vs. truth"){
     withSpinner(plotOutput("prediction_bar_reduced"))
@@ -379,9 +377,7 @@ output$reduced_super_plot_UI <- renderUI({
 output$full_super_plot_UI <- renderUI({
   out <- if(input$super_plot_type == "True positive performance"){
     div(
-      withSpinner(plotOutput("roc_curve")),
-      br(),
-      uiOutput("true_pos_picker_ui")
+      withSpinner(plotOutput("roc_curve"))
     )
   } else if (input$super_plot_type == "Prediction vs. truth"){
     withSpinner(plotOutput("prediction_bar"))
@@ -825,7 +821,8 @@ output$true_pos_picker_ui <- renderUI({
   
   pickerInput("true_pos_picker", 
               "Designate true positive event", 
-              choices = as.character(levels_responses))
+              choices = as.character(levels_responses)
+              )
   
 })
 
@@ -841,7 +838,8 @@ output$true_pos_picker_ui_reduced <- renderUI({
   
   pickerInput("true_pos_picker_reduced", 
               "Designate true positive event", 
-              choices = as.character(levels_responses))
+              choices = as.character(levels_responses)
+              )
   
 })
 
@@ -849,8 +847,7 @@ output$roc_curve <- renderPlot({
 
   req(!is.null(omicsData$objRM))
 
-  plot(omicsData$objRM, "roc_curve", 
-       pos_class = input$true_pos_picker)
+  plot(omicsData$objRM, "roc_curve")
 
 })
 
@@ -858,8 +855,7 @@ output$roc_curve_reduced <- renderPlot({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  plot(omicsData$objRM_reduced, "roc_curve", 
-       pos_class = input$true_pos_picker_reduced)
+  plot(omicsData$objRM_reduced, "roc_curve")
   
 })
 

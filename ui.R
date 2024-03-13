@@ -3,7 +3,7 @@ ui <- function(request) {
   tagList(
     useShinyjs(),
     use_prompt(),
-    useShinydashboardPlus(),
+    useShinydashboardPlus(), ## This causes the hovers for picker input, pages
     introjsUI(),
     
     extendShinyjs(script = "./Helpers/shinyui.js", functions = c(
@@ -18,6 +18,25 @@ ui <- function(request) {
     
     tags$head(
       # tags$link(rel = "stylesheet", type = "text/css", href = "./Helpers/SLOPER.css"),
+      
+      # tags$style(HTML("
+      # .btn-dropdown-toggle:hover, {
+      #               background-color: blue;
+      #               color: black;
+      #               font-weight: bold;
+      #           }
+      #                 ")),
+      # 
+      # tags$style(HTML("
+      # .bs-placeholder:hover, {
+      #               background-color: blue;
+      #               color: black;
+      #               font-weight: bold;
+      #           }
+      #                 ")),
+      
+      ## update collapses
+      tags$script(HTML(updateCollapse_script)),
       
       # Hack to replicate the addTooltip functionality with prompter
       tags$script(HTML(addTooltip_handler_script)),
@@ -47,23 +66,13 @@ ui <- function(request) {
     navbarPage(
       title = tags$span(tags$img(src = "slope_icon.png", style = "max-height:100%"), ""),
       id = "top_page",
-      ##### LANDING TAB ######
+      
+      
       tabPanel("Welcome", welcome_tab()),
       tabPanel("Upload", upload_tab_overlord()),
       tabPanel("Quality Control", QC_tab_overlord()),
       tabPanel("Model Set-Up", Model_setup_tab_overlord()),
       tabPanel("Pre-processing", preprocessing_tab_overlord()),
-      
-      # #### EDA Tab #####
-
-
-      # #### EDA Tab #####
-      # EDA_tab(),
-
-      #### Stats Integration Tab ####
-      # integration_tab(),
-
-      ### Run model ###
       tabPanel("Run Model", RM_tab_overlord()),
       
       # #### Download Tab #####

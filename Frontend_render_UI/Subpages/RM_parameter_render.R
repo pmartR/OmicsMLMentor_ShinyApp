@@ -67,19 +67,19 @@ rf_params <- function(){
   
   div(
     numericInput("trees", "Number of trees in forest", min = 1L, 
-                 max = 2000L, value = 500, width = "100%"),
+                 value = 500, width = "100%"),
     if(input$rm_prompts_hp == "tuned") 
       checkboxInput("optimize_trees", "Optimize?", value = F),
     br(),
     
-    numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
-                 max = 40L, value = min_n, width = "100%"),
+    numericInput("min_n", "Minimum number of datapoints for branch split", min = 1, 
+                 max = ncol(x), value = min_n, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_min_n", "Optimize?", value = F),
     br(),
     
     numericInput("mtry", "Number of predictors to evaluate at each split", min = 1L, 
-                 max = 50L, value = mtry, width = "100%"),
+                 max = nrow(x), value = mtry, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mtry", "Optimize?", value = F)
     
@@ -356,14 +356,14 @@ gbtree_params <- function(){
       checkboxInput("optimize_trees", "Optimize?", value = F),
     br(),
     
-    numericInput("min_n", "Minimum number of datapoints for branch split", min = 2L, 
-                 max = 40L, value = 20, width = "100%"),
+    numericInput("min_n", "Minimum number of datapoints for branch split", min = 1, 
+                 max = nrow(x), value = 20, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_min_n", "Optimize?", value = F),
     br(),
     
     numericInput("mtry", "Number of predictors to evaluate at each split", min = 1L, 
-                 max = 50L, value = 20, width = "100%"),
+                 max = ncol(x), value = 20, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_mtry", "Optimize?", value = F),
     br(),
@@ -380,25 +380,31 @@ gbtree_params <- function(){
       checkboxInput("optimize_tree_depth", "Optimize?", value = ),
     br(),
     
-    numericInput("loss_reduction", "The reduction in the loss function required to split further", min = 1e-10, 
+    numericInput("loss_reduction", 
+                 "The reduction in the loss function required to split further",
+                 min = 1e-10, 
                  max = 10^1.5, value = 1e0, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_loss_reduction", "Optimize?", value = F),
     br(),
     
-    numericInput("learn_rate", "Scale factor for the contribution of each tree", min = 1e-10, 
+    numericInput("learn_rate", "Scale factor for the contribution of each tree", 
+                 min = 1e-10, 
                  max = 1e-1, value = 1e-2, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_learn_rate", "Optimize?", value = F),
     br(),
     
-    numericInput("stop_iter", "Number of iterations without an improvement in the objective function occur before training should be halted.", min = 3L, 
+    numericInput("stop_iter", 
+                 "Number of iterations without an improvement in the objective function occur before training should be halted.", 
+                 min = 3L, 
                  max = 20L, value = 8L, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_stop_iter", "Optimize?", value = F),
     br(),
     
-    numericInput("sample_prop", "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting", 
+    numericInput("sample_prop", 
+                 "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting", 
                  min = 0, 
                  max = 1, value = .7, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
@@ -442,7 +448,8 @@ hclust_params <- function(){
                               "average",
                               "mcquitty",
                               "median",
-                              "centroid"), width = "100%")
+                              "centroid"),
+                  width = "100%")
     },
     
     if(input$rm_prompts_hp == "tuned")

@@ -1,7 +1,6 @@
 
 groups_tab <- function() {
-  # tabPanel("Upload Sample Data",
-           # class = "collapse_page",
+  div(
            fluidRow(
              column(
                4,
@@ -89,5 +88,5 @@ groups_tab <- function() {
                )
              ) # column 8
            ) # fluidrow
-  # )
+  )
 }

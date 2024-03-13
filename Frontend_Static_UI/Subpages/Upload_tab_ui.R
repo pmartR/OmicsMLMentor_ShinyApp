@@ -2,9 +2,7 @@
 
 ## Upload tab
 upload_tab <- function() {
-  # tabPanel("Upload Experimental Data",
-  #   value = "upload",
-  #   class = "collapse_page",
+
   div(
     fluidRow( # begin fluidrow
 
@@ -91,7 +89,6 @@ upload_tab <- function() {
       ) # main_column
     ) # fluidrow
   ) # div
-#   ) # tabpanel
 }
 
 

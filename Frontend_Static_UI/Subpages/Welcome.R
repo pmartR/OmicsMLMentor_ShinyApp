@@ -32,10 +32,6 @@ choiceNames_ul <- pmap(list(user_level_text, files_user_level),
 
 
 welcome_tab <- function(){
-    
-  
-  # tabPanel("Upload Sample Data",
-  # class = "collapse_page",
   
   fluidRow(
     column(

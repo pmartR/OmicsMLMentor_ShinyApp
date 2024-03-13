@@ -20,7 +20,7 @@ upload_tab_overlord <- function(){
       column(
         3,
         br(),
-        progressBar(id = "upload_exp_done", value = 0, size = "xs")
+        shinyWidgets::progressBar(id = "upload_exp_done", value = 0, size = "xs")
       ),
       
       column(1, 
@@ -36,7 +36,7 @@ upload_tab_overlord <- function(){
       column(
         3,
         br(),
-        progressBar(id = "upload_samp_done", value = 0, size = "xs")
+        shinyWidgets::progressBar(id = "upload_samp_done", value = 0, size = "xs")
       ),
       
       column(1, 
@@ -63,14 +63,6 @@ upload_tab_overlord <- function(){
         div(
           id = "experimental_upload_box",
           
-          # box(
-          #   # id = "experimental_upload_box",
-          #   title = "Upload Experimental Data",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
-          
           br(),
           upload_tab()
           
@@ -79,14 +71,6 @@ upload_tab_overlord <- function(){
         div(
           id = "sample_upload_box",
           
-          # box(
-          #   title = "Upload Sample Data",
-          #   # id = "sample_upload_box",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
-          
           br(),
           groups_tab()
           
@@ -94,14 +78,6 @@ upload_tab_overlord <- function(){
         
         div(
           id = "review_upload_box",
-          
-          # box(
-          #   title = "Review Selections",
-          #   # id = "review_upload_box",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
           
           br(),
           progress_tab("Upload"),

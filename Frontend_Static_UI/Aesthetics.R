@@ -5,4 +5,16 @@ dt_minus <- '<span class="glyphicon glyphicon-minus"></span>'
 exclamation_span <- "<span id = '%s', class='glyphicon glyphicon-exclamation-sign'></span>"
 blueq = icon("question-sign", lib="glyphicon", style = "color:deepskyblue;")
 blueexcl = icon("exclamation-sign", lib="glyphicon", style = "color:deepskyblue;")
-addTooltip_handler_script = "updateBoxCollapse = function(e) {let p = e; while (!p.classList.contains('collapse-box-group')) { if (p == document) return; p = p.parentNode}; Shiny.setInputValue('collapseTitleClick',{p:p.id, id: e.getAttribute('data-panel'), t: Date.now()});}; Shiny.addCustomMessageHandler('addPrompter', function(message) { target = document.getElementById(message.target); if (target != null) { if (target.classList.contains('glyphicon')) { target = target.parentElement;} target.className += message.attributes; target.setAttribute('aria-label', message.label); }})"
+updateCollapse_script = paste0(
+  "updateBoxCollapse = function(e) {let p = e; while (!p.classList.contains",
+  "('collapse-box-group')) { if (p == document) return; p = p.parentNode};",
+  " Shiny.setInputValue('collapseTitleClick',{p:p.id, id: ",
+  "e.getAttribute('data-panel'), t: Date.now()});};"
+)
+addTooltip_handler_script = paste0(
+  "Shiny.addCustomMessageHandler('addPrompter', function(message) ",
+  "{ target = document.getElementById(message.target); if (target != null) ",
+  "{ if (target.classList.contains('glyphicon')) ",
+  "{ target = target.parentElement;} target.className += message.attributes; ",
+  "target.setAttribute('aria-label', message.label); }})"
+  )

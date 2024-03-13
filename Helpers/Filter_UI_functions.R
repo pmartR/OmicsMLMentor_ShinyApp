@@ -72,8 +72,7 @@ filter_tab_temp <- function(tabname, keep_missing, user_level) {
   
   
   ## Page overall UI
-  tabPanel("Filters",
-           value = paste0(tabname, "_filter"), class = "collapse_page",
+  div(
            column(
              4,
              collapseBoxGroup(

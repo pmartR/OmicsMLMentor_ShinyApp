@@ -1,10 +1,7 @@
 ## change terminology to detected
 
 missing_data <- function(){
-  
-  # tabPanel("Missing data",
-           
-  
+
            div(
                
           column(4,

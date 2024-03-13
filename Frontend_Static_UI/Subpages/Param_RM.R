@@ -3,9 +3,9 @@
 ## https://www.tidymodels.org/start/tuning/ ##
 
 param_RM_UI <- function(tuning) {
-  tabPanel("Parameter Optimization",
-           value = "PO_RM",
-           class = "collapse_page",
+  div("Parameter Optimization",
+           #value = "PO_RM",
+           #class = "collapse_page",
            column(
              4,
              

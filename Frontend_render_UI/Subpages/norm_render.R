@@ -534,7 +534,7 @@ load_norm_observers <- function(tab) {
               (!is.null(input[[paste0(tab, "_spans_norm_fn")]]) &&
               !is.null(input[[paste0(tab, "_spans_subset_fn")]])))
 
-        show("SPANS_busy")
+        shinyjs::show("SPANS_busy")
 
         UI_elements <- paste0(tab, c(
           "_preview_normalization",

@@ -1,38 +1,50 @@
 suppressPackageStartupMessages({
   
- ## needs this installed kernlab
-  library(DT)
-  library(markdown)
-  library(mixOmics)
-  library(plotly)
+  ## R stuff
   library(pmartR)
   library(pmartRdata)
-  library(prompter)
-  library(purrr)
-  library(RColorBrewer)
   library(readr)
   library(reshape2)
-  library(shiny)
-  library(shinyalert)
-  library(shinycssloaders)
-  library(shinydashboardPlus)
-  library(shinyFiles)
-  library(shinyjs)
-  library(shinyjqui)
-  library(shinyWidgets)
   library(stringr)
   library(tidyr)
   library(V8)
-  library(slopeR)
+  library(future)
+  library(slopeR) ## Must be installed manually
+  
+  ## Plot/table stuff
+  library(plotly)
+  library(DT)
+  library(RColorBrewer)
   library(patchwork)
   library(ggdendro)
   library(dendextend)
-  library("rintrojs")
+  
+  ## Reporting
+  library(markdown)
+  
+  ## Shiny stuff
+  library(shiny)
+  library(shinyjs)
+  library(shinyBS)
+  library(shinyWidgets)
+  library(shinycssloaders)
+  library(shinyalert)
+  library(prompter)
+  library(shinydashboardPlus)
+  library(shinyFiles)
+  library(shinyjqui)
+  library(rintrojs)
+  library(shinybusy)
+  
+  ## Model stuff
+  library(mixOmics)
   library(factoextra)
   library(tune)
   library(xgboost)
+  library(kernlab)
   
-  library(dplyr) # dplyr always at bottom, to avoid function collisions.
+  ## Don't let these get masked by other functions
+  library(dplyr)
   library(purrr)
 })
 

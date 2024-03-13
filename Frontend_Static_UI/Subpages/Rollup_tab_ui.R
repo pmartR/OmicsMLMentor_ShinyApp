@@ -1,9 +1,7 @@
 
 # Template for different "stats" tabs for each data type
 rollup_tab <- function(tabname) {
-  tabPanel("Protein roll-up",
-           value = paste0(tabname, "_rollup"),
-           class = "collapse_page",
+  div(
            fluidRow( # begin fluidrow
              column( # sidebarpanel
                4,

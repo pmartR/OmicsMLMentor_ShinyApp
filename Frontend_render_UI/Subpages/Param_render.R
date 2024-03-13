@@ -54,24 +54,26 @@ observeEvent(c(omicsData$objHP, input$rec_param_option), {
     
     best_df <- hp_res %>% select_best(metric = "roc_auc")
     
-    list_hp <- list(
-      trees = best_df$trees,
-      min_n = best_df$min_n,
-      mtry = best_df$mtry,
-      cost = best_df$cost,
-      svm_margin = best_df$svm_margin,
-      margin = best_df$margin,
-      degree = best_df$degree,
-      scale_factor = best_df$scale_factor,
-      rbf_sigma = best_df$rbf_sigma,
-      penalty = best_df$input$penalty,
-      mixture = best_df$input$mixture,
-      tree_depth = best_df$tree_depth,
-      loss_reduction = best_df$loss_reduction,
-      learn_rate = best_df$learn_rate,
-      stop_iter = best_df$stop_iter,
-      sample_prop = best_df$sample_size
-    )
+    suppressWarnings({
+      list_hp <- list(
+        trees = best_df$trees,
+        min_n = best_df$min_n,
+        mtry = best_df$mtry,
+        cost = best_df$cost,
+        svm_margin = best_df$svm_margin,
+        margin = best_df$margin,
+        degree = best_df$degree,
+        scale_factor = best_df$scale_factor,
+        rbf_sigma = best_df$rbf_sigma,
+        penalty = best_df$input$penalty,
+        mixture = best_df$input$mixture,
+        tree_depth = best_df$tree_depth,
+        loss_reduction = best_df$loss_reduction,
+        learn_rate = best_df$learn_rate,
+        stop_iter = best_df$stop_iter,
+        sample_prop = best_df$sample_size
+      )
+    })
     
     list_hp_non_null <- Filter(Negate(is.null), list_hp)
     list_hp_null <- list_hp[!(names(list_hp) %in% names(list_hp_non_null))]

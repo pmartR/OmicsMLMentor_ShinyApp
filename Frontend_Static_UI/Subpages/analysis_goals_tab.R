@@ -54,9 +54,7 @@ choiceNames_ag <- pmap(list(ag_text, p1_list, p2_list, choiceValues_ag),
 
 
 analysis_goals <- function() {
-  tabPanel("Analysis Preferences",
-           
-           class = "collapse_page",
+  div(
            fluidRow(
              column(
                12,

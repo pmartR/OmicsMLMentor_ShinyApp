@@ -3,9 +3,7 @@
 # omicsData_objects
 
 norm_tab <- function(tabname) {
-  tabPanel("Normalization",
-           value = "norm",
-           class = "collapse_page",
+  div(
            column(
              4,
              

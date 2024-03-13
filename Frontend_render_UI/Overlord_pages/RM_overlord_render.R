@@ -22,7 +22,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "MO_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "MO_done", value = 0, size = "xs")
         ),
         
         
@@ -39,7 +39,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "TS_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "TS_done", value = 0, size = "xs")
         ),
         
         column(1, 
@@ -57,7 +57,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "params_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "params_done", value = 0, size = "xs")
         ),
         
         
@@ -76,7 +76,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "RM_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "RM_done", value = 0, size = "xs")
         ),
         
         column(1, 
@@ -105,14 +105,6 @@ output$RM_ui <- renderUI({
           div(
             id = "rm_prompt_box",
             
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Specify Training/Testing set-up",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
-            
             br(),
             Prompt_RM_UI()
             # TS_RM_UI()
@@ -122,14 +114,6 @@ output$RM_ui <- renderUI({
           hidden(div(
             id = "train_box",
             
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Specify Training/Testing set-up",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
-            
             br(),
             TS_RM_UI()
             
@@ -138,13 +122,6 @@ output$RM_ui <- renderUI({
           hidden(div(
             id = "param_box",
             
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Parameter Optimization",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
             
             br(),
             param_RM_UI()
@@ -153,14 +130,6 @@ output$RM_ui <- renderUI({
           
           hidden(div(
             id = "RM_box",
-            
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Evaluate Model",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
             
             br(),
             uiOutput("RM_tab_UI")
@@ -171,13 +140,6 @@ output$RM_ui <- renderUI({
           hidden(div(
             id = "RM_result_box",
             
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Review Results",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
             
             br(),
             progress_tab("results_review"),
@@ -211,7 +173,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "MO_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "MO_done", value = 0, size = "xs")
         ),
         
         column(1, 
@@ -227,7 +189,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "params_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "params_done", value = 0, size = "xs")
         ),
         
         
@@ -246,7 +208,7 @@ output$RM_ui <- renderUI({
         column(
           1,
           br(),
-          progressBar(id = "RM_done", value = 0, size = "xs")
+          shinyWidgets::progressBar(id = "RM_done", value = 0, size = "xs")
         ),
         
         column(1, 
@@ -274,15 +236,6 @@ output$RM_ui <- renderUI({
           
           div(
             id = "rm_prompt_box",
-            
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Specify Training/Testing set-up",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
-            
             br(),
             Prompt_RM_UI_unsup()
             
@@ -290,14 +243,6 @@ output$RM_ui <- renderUI({
           
           hidden(div(
             id = "param_box",
-            
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Parameter Optimization",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
             
             br(),
             param_RM_UI()
@@ -307,14 +252,6 @@ output$RM_ui <- renderUI({
           hidden(div(
             id = "RM_box",
             
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Evaluate Model",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
-            
             br(),
             uiOutput("RM_tab_UI")
             
@@ -322,14 +259,6 @@ output$RM_ui <- renderUI({
           
           hidden(div(
             id = "RM_result_box",
-            
-            # box(
-            #   # id = "experimental_upload_box",
-            #   title = "Review Results",
-            #   width = 12,
-            #   status = "primary",
-            #   headerBorder = F
-            # ),
             
             br(),
             progress_tab("results_review"),

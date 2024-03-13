@@ -1,6 +1,5 @@
 TS_RM_UI <- function() {
-  tabPanel("Training structure",
-           value = "TS_RM",
+  div(
            class = "collapse_page",
            column(
              4,

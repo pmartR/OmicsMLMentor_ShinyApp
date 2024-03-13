@@ -1,7 +1,5 @@
 transformation_UI <- function() {
-  tabPanel("Data transformation and scaling",
-           value = "filter_tab",
-           class = "collapse_page",
+  div(
            column(
              4,
              collapseBoxGroup(

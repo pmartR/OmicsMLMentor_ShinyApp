@@ -1,8 +1,6 @@
 
 Prompt_RM_UI <- function() {
-  tabPanel("Model Options",
-           
-           class = "collapse_page",
+  div(
            fluidRow(
              column(
                12,
@@ -62,9 +60,7 @@ Prompt_RM_UI <- function() {
 
 
 Prompt_RM_UI_unsup <- function() {
-  tabPanel("Model Options",
-           
-           class = "collapse_page",
+  div(
            fluidRow(
              column(
                12,

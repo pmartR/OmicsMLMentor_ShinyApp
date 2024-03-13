@@ -1,7 +1,6 @@
 
 var_select_tab <- function() {
-  # tabPanel("Variable Specifications",
-           # class = "collapse_page",
+  div(
            fluidRow(
              column(
                4,
@@ -97,5 +96,5 @@ var_select_tab <- function() {
                )
              ) # column 8
            ) # fluidrow
-  # )
+  )
 }

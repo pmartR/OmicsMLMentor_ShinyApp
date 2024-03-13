@@ -19,7 +19,7 @@ QC_tab_overlord <- function(){
       column(
         2,
         br(),
-        progressBar(id = "QC_lo_done", value = 0, size = "xs")
+        shinyWidgets::progressBar(id = "QC_lo_done", value = 0, size = "xs")
       ),
       
       column(1, 
@@ -35,7 +35,7 @@ QC_tab_overlord <- function(){
       column(
         2,
         br(),
-        progressBar(id = "QC_outlier_done", value = 0, size = "xs")
+        shinyWidgets::progressBar(id = "QC_outlier_done", value = 0, size = "xs")
       ),
       
       
@@ -52,7 +52,7 @@ QC_tab_overlord <- function(){
       column(
         2,
         br(),
-        progressBar(id = "missing_data_done", value = 0, size = "xs")
+        shinyWidgets::progressBar(id = "missing_data_done", value = 0, size = "xs")
       ),
       
       column(1, 
@@ -79,28 +79,12 @@ QC_tab_overlord <- function(){
         div(
           id = "low_ob_box",
           
-          # box(
-          #   # id = "experimental_upload_box",
-          #   title = "Removal of Single-observation Biomolecules",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
-          
           br(), LQ_mols()
           
         ),
         
         div(
           id = "remove_outlier_box",
-          
-          # box(
-          #   # id = "experimental_upload_box",
-          #   title = "Detection and Removal of Outliers",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
           
           br(), QC_outliers()
           
@@ -109,28 +93,12 @@ QC_tab_overlord <- function(){
         div(
           id = "missing_data_box",
           
-          # box(
-          #   # id = "experimental_upload_box",
-          #   title = "Handling Missingness in Data",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
-          
           br(), missing_data()
           
         ),
         
         div(
           id = "QC_review_selection_box",
-          
-          # box(
-          #   # id = "experimental_upload_box",
-          #   title = "Review Selections",
-          #   width = 12,
-          #   status = "primary",
-          #   headerBorder = F
-          # ),
           
           br(),
           progress_tab("QC"),

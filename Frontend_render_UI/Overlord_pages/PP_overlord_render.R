@@ -26,7 +26,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             1,
             br(),
-            progressBar(id = "transform_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "transform_done", value = 0, size = "xs")
           ),
           
           column(1, 
@@ -42,7 +42,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             1,
             br(),
-            progressBar(id = "filters_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "filters_done", value = 0, size = "xs")
           ),
           
           
@@ -59,7 +59,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             1,
             br(),
-            progressBar(id = "norm_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "norm_done", value = 0, size = "xs")
           ),
           
           column(1, 
@@ -75,7 +75,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             1,
             br(),
-            progressBar(id = "rollup_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "rollup_done", value = 0, size = "xs")
           ),
           
           column(1, 
@@ -102,14 +102,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             div(
               id = "transform_box",
               
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Scale and/or Transform Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
-              
               br(),
               transformation_UI()
               
@@ -118,14 +110,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             div(
               id = "filter_box",
               
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Filter Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
-              
               br(),
               uiOutput("filter_page")
               
@@ -133,14 +117,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             
             div(
               id = "norm_box",
-              
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Normalize Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
               
               br(),
               uiOutput("norm_tab")
@@ -151,14 +127,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             div(
               id = "rollup_box",
               
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Roll Up to Protein-level Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
-              
               br(),
               uiOutput("rollup_tab")
               
@@ -166,14 +134,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             
             div(
               id = "PP_review_selection_box",
-              
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Review Selections",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
               
               br(),
               progress_tab("preprocessing"),
@@ -206,7 +166,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             2,
             br(),
-            progressBar(id = "transform_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "transform_done", value = 0, size = "xs")
           ),
           
           column(1, 
@@ -222,7 +182,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             2,
             br(),
-            progressBar(id = "filters_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "filters_done", value = 0, size = "xs")
           ),
           
           
@@ -239,7 +199,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
           column(
             2,
             br(),
-            progressBar(id = "norm_done", value = 0, size = "xs")
+            shinyWidgets::progressBar(id = "norm_done", value = 0, size = "xs")
           ),
           
           column(1, 
@@ -266,14 +226,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             div(
               id = "transform_box",
               
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Scale and/or Transform Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
-              
               br(),
               transformation_UI()
               
@@ -281,14 +233,6 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             
             div(
               id = "filter_box",
-              
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Filter Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
               
               br(),
               uiOutput("filter_page")
@@ -298,30 +242,13 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
             div(
               id = "norm_box",
               
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Normalize Data",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
-              
               br(),
               uiOutput("norm_tab")
-              # norm_tab()
               
             ),
             
             div(
               id = "PP_review_selection_box",
-              
-              # box(
-              #   # id = "experimental_upload_box",
-              #   title = "Review Selections",
-              #   width = 12,
-              #   status = "primary",
-              #   headerBorder = F
-              # ),
               
               br(),
               progress_tab("preprocessing"),

@@ -462,7 +462,7 @@ if(MAP_ACTIVE){
         
       } else if (class(pullData) == "midpoint SLOPE") {
         on.exit({
-          show("loading-gray-overlay")
+          shinyjs::show("loading-gray-overlay")
           html(
             "loading-gray-overlay", 
             "<div class='relative-centered', style='font-size:large;color:red;'>loading SLOPE midpoints not implemented.</div>"
@@ -473,7 +473,7 @@ if(MAP_ACTIVE){
       }
       else {
         on.exit({
-          show("loading-gray-overlay")
+          shinyjs::show("loading-gray-overlay")
           html(
             "loading-gray-overlay", 
             "<div class='relative-centered', style='font-size:large;color:red;'>Specified object was not valid.  Check that object was properly constructed or load data manually. </div>"
