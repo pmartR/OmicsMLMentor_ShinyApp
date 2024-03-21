@@ -23,11 +23,21 @@ output$QC_LQ_Advanced_UI <- renderUI({
   
 })
 
-output$QC_single_mol_plot <- renderPlot({
+output$QC_single_mol_plot <- renderPlotly({
   
-  req(omicsData$objQC)
+  req(!is.null(omicsData$objQC) && 
+        length(attr(omicsData$objQC, "filters")) == 0,
+      cancelOutput = T
+        )
   
-   plot(molecule_filter(omicsData$objQC), min_num = 2)
+  filt <- molecule_filter(omicsData$objQC)
+  
+   p <- plot(filt, min_num = 2)
+   
+   isolate(plot_table_current$QC$single_obs <- p)
+   isolate(table_table_current$QC$single_obs <- filt)
+   
+   p
    
 })
 

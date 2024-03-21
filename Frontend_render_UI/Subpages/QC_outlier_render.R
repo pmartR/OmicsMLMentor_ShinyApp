@@ -46,7 +46,8 @@ output$outlier_remove_advanced_pval <- renderUI({
 
 output$QC_rmdfilt_sample_select_UI <- renderUI({
   
-  req(omicsData$objQC)
+  req(!is.null(omicsData$objQC) && 
+        !("customFilt" %in% map(attr(omicsData$objQC, "filters"), 1)))
   
   temp_dat <- omicsData$objQC
   
@@ -164,18 +165,23 @@ output$QC_rmdfilt_sample_remove_UI <- renderUI({
   )
 })
 
-output$rmd_plot_qc_all <- renderPlot({
+output$rmd_plot_qc_all <- renderPlotly({
   
   req(QC_rmd$res)
   
   pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
   
-  plot(QC_rmd$res, pvalue_threshold = pval) + 
+  p <- plot(QC_rmd$res, pvalue_threshold = pval) + 
     theme(legend.position = 0)
+  
+  isolate(plot_table_current$QC$rmd_overall <- p)
+  isolate(table_table_current$QC$rmd_table <- QC_rmd$res)
+  
+  p
   
 })
 
-output$rmd_plot_qc_select <- renderPlot({
+output$rmd_plot_qc_select <- renderPlotly({
   
   req(QC_rmd$res)
   req(input$QC_rmdfilt_sample_select, cancelOutput = T)
@@ -202,7 +208,11 @@ output$rmd_plot_qc_select <- renderPlot({
 
   req(length(sampId) > 0)
   
-  plot(QC_rmd$res, sampleID = sampId)
+  p <- plot(QC_rmd$res, sampleID = sampId)
+  
+  isolate(plot_table_current$QC$rmd_outliers <- p)
+  
+  p
   
 })
 

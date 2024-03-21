@@ -41,6 +41,11 @@ ui <- function(request) {
       # Hack to replicate the addTooltip functionality with prompter
       tags$script(HTML(addTooltip_handler_script)),
       
+      ## DT fun
+      tags$script('Shiny.addCustomMessageHandler("unbind-DT-RR", function(x) {
+                      Shiny.unbindAll($(document.getElementById(x)).find(".dataTable"));
+                      });'),
+      
       ## Css
       includeCSS("./Helpers/SLOPER.css")
     ),

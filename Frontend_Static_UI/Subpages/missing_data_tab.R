@@ -110,13 +110,13 @@ missing_data <- function(){
                      "Total biomolecules detected by sample - Plot",
                      value = "missing_data_sample_plot",
                      collapsed = F,
-                     plotOutput("missing_data_hist_sample")
+                     plotlyOutput("missing_data_hist_sample")
                    ),
                    
                    collapseBox(
                      "Individual biomolecule detection across samples - Plot",
                      value = "missing_data_biomolecule_plot",
-                     plotOutput("missing_data_hist_biomolecule"),
+                     plotlyOutput("missing_data_hist_biomolecule"),
                      uiOutput("slider_options_ui")
                      
                    )

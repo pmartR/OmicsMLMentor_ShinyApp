@@ -53,8 +53,7 @@ norm_tab <- function(tabname) {
                      "Normalization Preview",
                      br(),
                      withSpinner(uiOutput(paste0(tabname, "_normalized_boxplots_post_UI")))
-                   )
-                 )
+                   ))
                )
              ),
              

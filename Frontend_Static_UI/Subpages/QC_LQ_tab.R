@@ -36,7 +36,7 @@ LQ_mols <- function(){
           "Visualize Remaining Biomolecules",
           value = "single_obs_plots",
           collapsed = F,
-          plotOutput("QC_single_mol_plot")
+          plotlyOutput("QC_single_mol_plot")
         )
       )
     ) # column 8

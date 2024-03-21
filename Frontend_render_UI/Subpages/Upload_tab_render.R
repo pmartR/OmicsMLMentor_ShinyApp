@@ -197,7 +197,7 @@ output$e_meta_spec_UI <- renderUI({
 
 ## Plot for edata
 
-output$boxplot_UI <- renderPlot({
+output$boxplot_UI <- renderPlotly({
   
   req(!is.null(reactive_dataholder$e_data))
   
@@ -206,9 +206,13 @@ output$boxplot_UI <- renderPlot({
   df <- gather(df)
   df <- df[!is.na(df$value),]
   
-  ggplot(df, aes(x = key, y = value)) + geom_boxplot() + theme_bw() + 
+  p <- ggplot(df, aes(x = key, y = value)) + geom_boxplot() + theme_bw() + 
     ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5)) +
     labs(x = "", y = ifelse(input$data_type != "RNA-seq", "Abundance", "Counts"))
+  
+  isolate(plot_table_current$Upload$boxplot <- p)
+  
+  p
   
 })
 
@@ -221,7 +225,7 @@ output$detected_box_upload <- renderUI({
     "Detected Data Properties",
     value = "summary",
     # uiOutput("Characteristics_module_tabset")
-    withSpinner(plotOutput("boxplot_UI"))#,
+    withSpinner(plotlyOutput("boxplot_UI"))#,
     # uiOutput("show_log_UI")
   ))
 })

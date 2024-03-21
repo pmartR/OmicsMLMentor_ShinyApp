@@ -4,8 +4,10 @@ observeEvent(input$param_opti, {
   
   ## Check normalization application
   shinyjs::show("HP_busy")
+  future::plan(future::multisession)
   
   on.exit({
+    future::plan(future::sequential)
     shinyjs::hide("HP_busy")
   })
   

@@ -82,7 +82,7 @@ groups_tab <- function() {
                  # collapseBox("Detected Data Properties",
                  #             value = "fdata_plots",
                  #             uiOutput("Group_plot_picker"),
-                 #             plotOutput("Group_tab_plots")
+                 #             plotlyOutput("Group_tab_plots")
                  #             # uiOutput("group_tab_boxplots")
                  # )
                )

@@ -281,6 +281,8 @@ observe({
   # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
   
   
+  table_table_current$MSU$expert_mentor_summary <- df
+  
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
@@ -293,7 +295,6 @@ observe({
   # Convert to Character
   col_names <- names(df)
   df[,col_names] <- lapply(df[,col_names] , as.character)
-  
   
   if(nrow(df) < 5){
     df[(nrow(df) + 1):5,] <- ""

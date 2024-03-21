@@ -12,8 +12,8 @@ output[["RM_tab_UI"]] <- renderUI({
 
 supervised_tab <- function() {
   
-  tabPanel(
-    "Supervised",
+  div(
+    # "Supervised",
     value = 'supervised_tab',
     class = "collapse_page",
     fluidRow(
@@ -251,7 +251,7 @@ output$VI_tabset_UI <- renderUI({
     
   } else NULL
   
-  do.call(tabsetPanel, list(id = "vi_plots", full_tabset, reduced_tabset))
+  do.call(tabsetPanel, list(id = "vi_plots", reduced_tabset, full_tabset))
   
 })
 
@@ -267,7 +267,7 @@ output$Variable_importance_plot <- renderPlotly({
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
                                    levels = plotting_df$names_orig)
   
-  ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
+  p <- ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
     geom_col() +
     ggplot2::theme_bw() + 
     ggplot2::labs(x = "", y = "Variable importance") +
@@ -283,6 +283,11 @@ output$Variable_importance_plot <- renderPlotly({
       # axis.title = element_text(size = 12, face = "bold"),
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
     )
+  
+  isolate(plot_table_current$RM$variable_importance$full <- p)
+  isolate(table_table_current$RM$variable_importance$full <- plotting_df)
+  
+  p
   
 })
 
@@ -298,7 +303,7 @@ output$Variable_importance_plot_reduced <- renderPlotly({
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
                                    levels = plotting_df$names_orig)
   
-  ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
+  p <- ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
     geom_col() +
     ggplot2::theme_bw() + 
     ggplot2::labs(x = "", y = "Variable importance") +
@@ -314,6 +319,11 @@ output$Variable_importance_plot_reduced <- renderPlotly({
       # axis.title = element_text(size = 12, face = "bold"),
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
     )
+  
+  isolate(plot_table_current$RM$variable_importance$reduced <- p)
+  isolate(table_table_current$RM$variable_importance$reduced <- plotting_df)
+  
+  p
   
 })
 
@@ -345,8 +355,8 @@ output$performance_tabset_UI <- renderUI({
   } else NULL
   
   do.call(tabsetPanel, list(id = "performance_tabset", 
-                            full_tabset, 
-                            reduced_tabset))
+                            reduced_tabset,
+                            full_tabset))
 
 })
 
@@ -398,8 +408,8 @@ output$full_super_plot_UI <- renderUI({
 
 unsupervised_tab <- function() {
   
-  tabPanel(
-    "Unsupervised",
+  div(
+    # "Unsupervised",
     value = 'unsupervised_tab',
     class = "collapse_page",
     fluidRow(
@@ -491,7 +501,7 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
-                  withSpinner(plotOutput("structure_plot")),
+                  withSpinner(plotlyOutput("structure_plot")),
                 br(),
                 column(6, uiOutput("unsup_picker_UI")),
                 column(6, uiOutput("unsup_slider_UI"))
@@ -622,6 +632,7 @@ observeEvent(input$run_sl, {
     
     list_args <- c(list_args, custom_args)
     
+    future::plan(future::sequential)
     omicsData$objRM <- tryCatch({
       do.call(slopeR::variable_importance, list_args)
     }, error = function(e){
@@ -847,7 +858,12 @@ output$roc_curve <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  plot(omicsData$objRM, "roc_curve")
+  p <- plot(omicsData$objRM, "roc_curve")
+  
+  isolate(plot_table_current$RM$model_eval$full$roc_curve <- p)
+  isolate(table_table_current$RM$model_eval$full$roc_curve <- p$data)
+  
+  p
 
 })
 
@@ -855,7 +871,12 @@ output$roc_curve_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  plot(omicsData$objRM_reduced, "roc_curve")
+  p <- plot(omicsData$objRM_reduced, "roc_curve")
+  
+  isolate(plot_table_current$RM$model_eval$reduced$roc_curve <- p)
+  isolate(table_table_current$RM$model_eval$reduced$roc_curve <- p$data)
+  
+  p
   
 })
 
@@ -865,8 +886,13 @@ output$confidence_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  plot( omicsData$objRM, plotType = "confidence_bar") + 
+  p <- plot( omicsData$objRM, plotType = "confidence_bar") + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  
+  isolate(plot_table_current$RM$model_eval$full$confidence_bar <- p)
+  isolate(table_table_current$RM$model_eval$full$confidence_bar <- p$data)
+  
+  p
 
 })
 
@@ -874,8 +900,13 @@ output$confidence_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  plot( omicsData$objRM_reduced, plotType = "confidence_bar") + 
+  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar") + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  
+  isolate(plot_table_current$RM$model_eval$reduced$confidence_bar <- p)
+  isolate(table_table_current$RM$model_eval$reduced$confidence_bar <- p$data)
+  
+  p
   
 })
 
@@ -883,7 +914,12 @@ output$prediction_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  plot( omicsData$objRM, plotType = "prediction_bar")
+  p <- plot( omicsData$objRM, plotType = "prediction_bar")
+  
+  isolate(plot_table_current$RM$model_eval$full$prediction_bar <- p)
+  isolate(table_table_current$RM$model_eval$full$prediction_bar <- p$data)
+  
+  p
 
 })
 
@@ -891,7 +927,12 @@ output$prediction_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  plot( omicsData$objRM_reduced, plotType = "prediction_bar")
+  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar")
+  
+  isolate(plot_table_current$RM$model_eval$reduced$prediction_bar <- p)
+  isolate(table_table_current$RM$model_eval$reduced$prediction_bar <- p$data)
+  
+  p
   
 })
 
@@ -899,7 +940,13 @@ output$confusion_heatmap <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  plot( omicsData$objRM, plotType = "confusion_heatmap")
+  p <- plot( omicsData$objRM, plotType = "confusion_heatmap")
+  
+  isolate(plot_table_current$RM$model_eval$full$confusion_heatmap <- p)
+  isolate(table_table_current$RM$model_eval$full$confusion_heatmap <- p$data)
+  
+  
+  p
 
 })
 
@@ -907,7 +954,12 @@ output$confusion_heatmap_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  plot( omicsData$objRM_reduced, plotType = "confusion_heatmap")
+  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap")
+  
+  isolate(plot_table_current$RM$model_eval$reduced$confusion_heatmap <- p)
+  isolate(table_table_current$RM$model_eval$reduced$confusion_heatmap <- p$data)
+  
+  p
   
 })
 
@@ -915,9 +967,14 @@ output$confidence_scatter <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  plot( omicsData$objRM, 
+  p <- plot( omicsData$objRM, 
         plotType = "confidence_scatter", 
         pos_class = input$true_pos_picker)
+  
+  isolate(plot_table_current$RM$model_eval$full$confidence_scatter <- p)
+  isolate(table_table_current$RM$model_eval$full$confidence_scatter <- p$data)
+  
+  p
 
 })
 
@@ -925,14 +982,19 @@ output$confidence_scatter_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
+  p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
         pos_class = input$true_pos_picker_reduced)
+  
+  isolate(plot_table_current$RM$model_eval$reduced$confidence_scatter <- p)
+  isolate(table_table_current$RM$model_eval$reduced$confidence_scatter <- p$data)
+  
+  p
   
 })
 
 # 
 # 
-# output$test_plots <- renderPlot({
+# output$test_plots <- renderPlotly({
 #
 #   req(!is.null(omicsData$objRM))
 #
@@ -1013,7 +1075,7 @@ output$unsup_slider_UI <- renderUI({
 # 
 # ## Make plotly so we can hover over the points
 # 
-output$structure_plot <- renderPlot({
+output$structure_plot <- renderPlotly({
   
   req(!is.null(input$pick_model_EM) && 
         input$ag_prompts != "supervised" && 
@@ -1035,39 +1097,21 @@ output$structure_plot <- renderPlot({
     clust <- omicsData$objRM$fit$fit$fit$cluster
     temp <- as.data.frame(omicsData$objRM$pre$mold$predictors)
     
-    return(fviz_cluster(omicsData$objRM$fit$fit$fit, data = temp,
-                 # palette = c("#2E9FDF", "#00AFBB"),
-                 geom = "point",
-                 ellipse.type = "convex", 
-                 ggtheme = theme_bw()
-    ))
     
-
-    # centers <- tibble(
-    #   cluster = factor(1:3),
-    #   num_points = c(100, 150, 50),  # number points in each cluster
-    #   x1 = c(5, 0, -3),              # x1 coordinate of cluster center
-    #   x2 = c(-1, 1, -2)              # x2 coordinate of cluster center
-    # )
-    # 
-    # labelled_points <-
-    #   centers %>%
-    #   mutate(
-    #     x1 = map2(num_points, x1, rnorm),
-    #     x2 = map2(num_points, x2, rnorm)
-    #   ) %>%
-    #   select(-num_points) %>%
-    #   unnest(cols = c(x1, x2))
-    # 
-    # ggplot(labelled_points, aes(x1, x2, color = cluster)) +
-    #   geom_point(alpha = 0.3) + theme_bw() + theme(text = element_text(size = 12))
+    p <- fviz_cluster(omicsData$objRM$fit$fit$fit, data = temp,
+                      # palette = c("#2E9FDF", "#00AFBB"),
+                      geom = "point",
+                      ellipse.type = "convex", 
+                      ggtheme = theme_bw()
+    )
 
   } else if (method == "hclust"){
 
 
     if(input$pick_axis == "samples"){
     ## hclust method needs to include sample names for plotting
-    omicsData$objRM$fit$fit$fit$labels <- colnames(omicsData$objPP$e_data)[-which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP))]
+    omicsData$objRM$fit$fit$fit$labels <- colnames(omicsData$objPP$e_data)[
+      -which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP))]
 
     } else {
 
@@ -1077,7 +1121,8 @@ output$structure_plot <- renderPlot({
 
     if(length(color_by) > 0){
 
-      list_cols <- as.numeric(as.factor(omicsData$objPP$f_data[[as.character(color_by)]]))
+      list_cols <- as.numeric(
+        as.factor(omicsData$objPP$f_data[[as.character(color_by)]]))
       names(list_cols) <- omicsData$objPP$f_data[[get_fdata_cname(omicsData$objPP)]]
       
       if(!is.null(input$height_clust) && input$height_clust == "Height"){
@@ -1102,7 +1147,8 @@ output$structure_plot <- renderPlot({
 
     }
     
-    return(plot_ggdendro_multi(dend, branch.size = 0.5, expand.y = input$expand_y))
+    p <- plot_ggdendro_multi(dend, branch.size = 0.5, expand.y = input$expand_y)
+
     # hclust_fit %>%
     #   extract_centroids(num_clusters = 2)
 
@@ -1135,7 +1181,7 @@ output$structure_plot <- renderPlot({
                geom_point(size = 3) + theme_bw())
     } else {
       ## Where is R2?
-      return(ggplot(df, aes(x = PC1, y = PC2)) + geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = PC1, y = PC2)) + geom_point(size = 3) + theme_bw()
     }
 
   } else {
@@ -1165,10 +1211,14 @@ output$structure_plot <- renderPlot({
                geom_point(size = 3) + theme_bw())
     } else {
       ## Where is R2?
-      return(ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
+               geom_point(size = 3) + theme_bw()
     }
 
   }
+  
+  isolate(plot_table_current$RM$model_eval[[method]] <- p)
+  isolate(table_table_current$RM$model_eval <- p$data)
 
+  p
 })

@@ -78,7 +78,7 @@ TS_RM_UI <- function() {
                              id = "training_tabset",
                              tabPanel(
                                "Training structure",
-                               withSpinner(plotOutput("TS_preview_plot"))
+                               withSpinner(plotlyOutput("TS_preview_plot"))
                              )
                            )
                )             )

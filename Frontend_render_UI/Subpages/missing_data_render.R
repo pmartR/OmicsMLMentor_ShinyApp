@@ -1,7 +1,7 @@
 
 ## hist to detected
 
-output$missing_data_hist_biomolecule <- renderPlot({
+output$missing_data_hist_biomolecule <- renderPlotly({
   req(!is.null(omicsData$objQC$e_data))
   
   id_col <- colnames(omicsData$objQC$e_data) %in% pmartR::get_edata_cname(omicsData$objQC)
@@ -10,7 +10,13 @@ output$missing_data_hist_biomolecule <- renderPlot({
   apply_dir <- 1
   total <- ncol(df[-1])
   
-  data <- data.frame(`Percentage missing` = apply(is.na(df[-1]), apply_dir, sum)/total*100, check.names = F)
+  data <- data.frame(`Percentage missing` = 
+                       apply(is.na(df[-1]), apply_dir, sum)/total*100, 
+                     check.names = F)
+  
+  data <- cbind(df[1], data)
+  
+  data <- arrange(data, `Percentage missing`)
   
   data$Handling <- "Unassigned"
   
@@ -60,13 +66,17 @@ output$missing_data_hist_biomolecule <- renderPlot({
   
   text_ylab <- "biomolecules"
   
-  ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
+  p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
     geom_histogram() + theme_bw() + labs(y = paste0("Count of ", text_ylab))
+  
+  isolate(plot_table_current$QC$missing_features <- p)
+  
+  p
   
 })
 
 
-output$missing_data_hist_sample <- renderPlot({
+output$missing_data_hist_sample <- renderPlotly({
   req(!is.null(omicsData$objQC$e_data))
   
   temp_dat <- omicsData$objQC
@@ -86,8 +96,14 @@ output$missing_data_hist_sample <- renderPlot({
   upper <- min(mean(mis_val_presence) + sd(mis_val_presence) * 2, 1)
   lower <- max(mean(mis_val_presence) - sd(mis_val_presence) * 2, 0)
   
-  plot(missingval_result(temp_dat), temp_dat, 
+  p <- plot(missingval_result(temp_dat), temp_dat, 
        nonmissing = T, proportion = T)
+  
+  isolate(plot_table_current$QC$missing_samples <- p)
+  isolate(table_table_current$QC$missing_samples <- missingval_result(temp_dat)[[1]])
+  isolate(table_table_current$QC$missing_features <- missingval_result(temp_dat)[[2]])
+  
+  p
   
   # if(lower < .9){
   #   p + 
@@ -101,7 +117,7 @@ output$missing_data_hist_sample <- renderPlot({
   
 })
 
-# output$missing_data_hist_sample <- renderPlot({
+# output$missing_data_hist_sample <- renderPlotly({
 #   req(!is.null(omicsData$objQC$e_data))
 #   
 #   total_biomolecule <- nrow(omicsData$objQC$e_data)

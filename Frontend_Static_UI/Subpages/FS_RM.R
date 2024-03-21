@@ -76,7 +76,7 @@
 #                collapseBox("Visualize feature selection and optimization plots",
 #                            collapsed = F,
 #                            value = "FS_preview",
-#                            withSpinner(plotOutput("FS_preview_plot"))
+#                            withSpinner(plotlyOutput("FS_preview_plot"))
 #                )             )
 #            ) # column 8
 #   )

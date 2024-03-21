@@ -81,7 +81,7 @@ upload_tab <- function() {
           #   "Detected Data Properties",
           #   value = "summary",
           #   # uiOutput("Characteristics_module_tabset")
-          #   withSpinner(plotOutput("boxplot_UI"))#,
+          #   withSpinner(plotlyOutput("boxplot_UI"))#,
           #   # uiOutput("show_log_UI")
           # ))
 

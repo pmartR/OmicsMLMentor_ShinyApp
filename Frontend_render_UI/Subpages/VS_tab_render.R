@@ -82,7 +82,7 @@ output$vs_tab_plots_UI <- renderUI({
     column(6, 
     uiOutput("VS_column_examine")),
     br(),
-    column(12, withSpinner(plotOutput("vs_tab_plots")))
+    column(12, withSpinner(plotlyOutput("vs_tab_plots")))
   ))
   
 })
@@ -106,7 +106,7 @@ output$VS_column_examine <- renderUI({
   
 })
 
-output$vs_tab_plots <-  renderPlot({
+output$vs_tab_plots <-  renderPlotly({
   
   if(input$VS_data_picker == "e_data"){
     plot(omicsData$objMSU)

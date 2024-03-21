@@ -58,6 +58,13 @@ observeEvent(input$check_group_cols, {
     od$f_data <- NULL
   }
 
+  isolate({
+    table_table_current$Upload$e_data <- od$e_data
+    table_table_current$Upload$f_data <- od$f_data
+    if(!is.null(od$e_meta)) table_table_current$Upload$e_meta <- od$e_meta
+    table_table_current$Upload$summary <- summary(od)
+  })
+  
   omicsData$obj <-  od
   
 })

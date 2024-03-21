@@ -33,7 +33,7 @@ output$transform_picker_UI <- renderUI({
 })
 
 
-output$transform_preview_plot <- renderPlot({
+output$transform_preview_plot <- renderPlotly({
   
   req(!inherits(omicsData$objMSU, "seqData"))
   
@@ -45,7 +45,12 @@ output$transform_preview_plot <- renderPlot({
     out <- edata_transform(out, input$transform)
   }
   
-  plot(out)
+  p <- plot(out)
+  
+  isolate(plot_table_current$PP$transform <- p)
+  isolate(table_table_current$PP$transform <- out$e_data)
+  
+  p
   
 })
 

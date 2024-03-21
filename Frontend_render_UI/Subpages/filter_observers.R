@@ -408,6 +408,8 @@ observeEvent(omicsData$objPP, {
   
   observeEvent(input[[paste0(name, "_add_molfilt")]], {
     # req(!objs_filtered())
+    removeTab("filter_previews", target = "molfilt_plot_tab")
+    
     make_filter(name, "molfilt", 
                 "Something went wrong assigning your molecule filter.", 
                 pmartR::molecule_filter,
@@ -425,7 +427,7 @@ observeEvent(omicsData$objPP, {
           title = "Molecule filter",
           value = "molfilt_plot_tab",
           br(),
-          withSpinner(plotOutput("molfilt_plot"))
+          withSpinner(plotlyOutput("molfilt_plot"))
         )
       )
     } else {
@@ -456,7 +458,7 @@ observeEvent(omicsData$objPP, {
         title = "Molecule filter",
         value = "molfilt_plot_tab",
         br(),
-        withSpinner(plotOutput("molfilt_plot"))
+        withSpinner(plotlyOutput("molfilt_plot"))
       )
     )
   })
@@ -466,6 +468,8 @@ observeEvent(omicsData$objPP, {
     # req(!objs_filtered())
     # since cv filter can successfully create a bad filter, we need to clear this beforehand
     filters[[name]][["cvfilt"]] <<- filter_flags[[name]]$last_created <<- NULL
+    
+    removeTab("filter_previews", target = "cvfilt_plot_tab")
     
     make_filter(name, "cvfilt", "Something went wrong assigning your coefficient of variation filter.",
                 pmartR::cv_filter,
@@ -483,7 +487,7 @@ observeEvent(omicsData$objPP, {
           title = "Coefficient of variation filter",
           value = "cvfilt_plot_tab",
           br(),
-          withSpinner(plotOutput("cvfilt_plot"))
+          withSpinner(plotlyOutput("cvfilt_plot"))
         )
       )
     } else {
@@ -514,7 +518,7 @@ observeEvent(omicsData$objPP, {
         title = "Coefficient of variation filter",
         value = "cvfilt_plot_tab",
         br(),
-        withSpinner(plotOutput("cvfilt_plot"))
+        withSpinner(plotlyOutput("cvfilt_plot"))
       )
     )
     
@@ -542,6 +546,8 @@ observeEvent(omicsData$objPP, {
   ### proteomics filter if in peptide land ###
   if (name %in% c("Pepdata", "Isobaricpepdata")) {
     observeEvent(input[[paste0(name, "_add_profilt")]], {
+      
+      removeTab("filter_previews", target = "profilt_plot_tab")
       make_filter(name, "profilt", 
                   "Something went wrong assigning your proteomics filter.", 
                   pmartR::proteomics_filter,
@@ -558,7 +564,7 @@ observeEvent(omicsData$objPP, {
             title = "Proteomic filter",
             value = "profilt_plot_tab",
             br(),
-            withSpinner(plotOutput("profilt_plot"))
+            withSpinner(plotlyOutput("profilt_plot"))
           )
         )
       } else {
@@ -588,7 +594,7 @@ observeEvent(omicsData$objPP, {
         title = "Proteomic filter",
         value = "profilt_plot_tab",
         br(),
-        withSpinner(plotOutput("profilt_plot"))
+        withSpinner(plotlyOutput("profilt_plot"))
       )
     )
   })
@@ -612,6 +618,8 @@ observeEvent(omicsData$objPP, {
     
     req(length(input$missing_options_filter) > 0)
     
+    removeTab("filter_previews", target = "imputefilt_plot_tab")
+    
     make_filter(name, 
                 "imputefilt", 
                 "Something went wrong assigning your imputation filter.", 
@@ -634,7 +642,7 @@ observeEvent(omicsData$objPP, {
           title = "Missingness handling filter",
           value = "imputefilt_plot_tab",
           br(),
-          withSpinner(plotOutput("imputefilt_plot"))
+          withSpinner(plotlyOutput("imputefilt_plot"))
         )
       )
     } else {
@@ -656,6 +664,7 @@ observeEvent(omicsData$objPP, {
     req(length(input$missing_options_filter) > 0)
     
     removeTab("filter_previews", target = "imputefilt_plot_tab")
+
     make_filter(dataname = name,
                 filter_tag = "imputefilt",
                 message = "Something went wrong assigning your imputation filter.",
@@ -676,7 +685,7 @@ observeEvent(omicsData$objPP, {
         title = "Missingness handling filter",
         value = "imputefilt_plot_tab",
         br(),
-        withSpinner(plotOutput("imputefilt_plot"))
+        withSpinner(plotlyOutput("imputefilt_plot"))
       )
     )
   })
@@ -692,6 +701,8 @@ observeEvent(omicsData$objPP, {
                   settings = list(min_count = input[[paste0(name, "_min_num_trans")]])
       )
       
+      removeTab("filter_previews", target = "TCfilt_plot_tab")
+      
       TCfilt_exists <- !is.null(filters[[name]]$TCfilt)
       
       if(TCfilt_exists){
@@ -702,7 +713,7 @@ observeEvent(omicsData$objPP, {
             title = "Total count filter",
             value = "TCfilt_plot_tab",
             br(),
-            withSpinner(plotOutput("TCfilt_plot"))
+            withSpinner(plotlyOutput("TCfilt_plot"))
           )
         )
       } else {
@@ -733,13 +744,15 @@ observeEvent(omicsData$objPP, {
           title = "Total count filter",
           value = "TCfilt_plot_tab",
           br(),
-          withSpinner(plotOutput("TCfilt_plot"))
+          withSpinner(plotlyOutput("TCfilt_plot"))
         )
       )
     })
     
     # ### Library size filter if in RNA-seq land ###
     observeEvent(ignoreInit = T, input[[paste0(name, "_add_Libfilt")]], {
+      
+      removeTab("filter_previews", target = "Libfilt_plot_tab")
       make_filter(name, 
                   "Libfilt", 
                   "Something went wrong assigning your library size filter.", 
@@ -757,7 +770,7 @@ observeEvent(omicsData$objPP, {
             title = "Library size filter",
             value = "Libfilt_plot_tab",
             br(),
-            withSpinner(plotOutput("Libfilt_plot"))
+            withSpinner(plotlyOutput("Libfilt_plot"))
           )
         )
       } else {
@@ -785,7 +798,7 @@ observeEvent(omicsData$objPP, {
           title = "Library size filter",
           value = "Libfilt_plot_tab",
           br(),
-          withSpinner(plotOutput("Libfilt_plot"))
+          withSpinner(plotlyOutput("Libfilt_plot"))
         )
       )
     })
@@ -798,6 +811,7 @@ observeEvent(omicsData$objPP, {
                   pmartR::RNA_filter,
                   settings = list(min_nonzero = input[[paste0(name, "_min_nonzero")]])
       )
+      removeTab("filter_previews", target = "NZfilt_plot_tab")
       
       NZfilt_exists <- !is.null(filters[[name]]$NZfilt)
       
@@ -809,7 +823,7 @@ observeEvent(omicsData$objPP, {
             title = "Non-zero filter",
             value = "NZfilt_plot_tab",
             br(),
-            withSpinner(plotOutput("NZfilt_plot"))
+            withSpinner(plotlyOutput("NZfilt_plot"))
           )
         )
       } else {
@@ -837,7 +851,7 @@ observeEvent(omicsData$objPP, {
           title = "Non-zero filter",
           value = "NZfilt_plot_tab",
           br(),
-          withSpinner(plotOutput("NZfilt_plot"))
+          withSpinner(plotlyOutput("NZfilt_plot"))
         )
       )
     })
@@ -853,6 +867,7 @@ observeEvent(omicsData$objPP, {
                 )),
                 settings = list(pvalue_threshold = input[[paste0(name, "_pvalue_threshold")]])
     )
+    removeTab("filter_previews", target = "rmdfilt_plot_tab")
     
     rmdfilt_exists <- !is.null(filters[[name]]$rmdfilt)
     
@@ -864,7 +879,7 @@ observeEvent(omicsData$objPP, {
           title = "RMd filter",
           value = "rmdfilt_plot_tab",
           br(),
-          withSpinner(plotOutput("rmdfilt_plot"))
+          withSpinner(plotlyOutput("rmdfilt_plot"))
         )
       )
     } else {
@@ -939,7 +954,7 @@ observeEvent(omicsData$objPP, {
         title = "RMd filter",
         value = "rmdfilt_plot_tab",
         br(),
-        withSpinner(plotOutput("rmdfilt_plot"))
+        withSpinner(plotlyOutput("rmdfilt_plot"))
       )
     )
   })
@@ -993,7 +1008,7 @@ observeEvent(omicsData$objPP, {
     #       title = "Custom biomolecule filter",
     #       value = "edata_customfilt_plot_tab",
     #       br(),
-    #       withSpinner(plotOutput("edata_customfilt_plot"))
+    #       withSpinner(plotlyOutput("edata_customfilt_plot"))
     #     )
     #   )
     # } else {
@@ -1069,7 +1084,7 @@ observeEvent(omicsData$objPP, {
     #       title = "Custom sample filter",
     #       value = "fdata_customfilt_plot_tab",
     #       br(),
-    #       withSpinner(plotOutput("fdata_customfilt_plot"))
+    #       withSpinner(plotlyOutput("fdata_customfilt_plot"))
     #     )
     #   )
     # } else {
@@ -1540,7 +1555,7 @@ output$missing_options_filter_UI <- renderUI({
 observeEvent(input$em_select, ignoreNULL = T, once = T, {
   name  <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
   
-  # output[[paste0(name, "_filter_plots")]] <- renderPlot({
+  # output[[paste0(name, "_filter_plots")]] <- renderPlotly({
   #   
   #   req(!is.null(filter_flags[[name]]$last_created), cancelOutput = T)
   #   req(input$complete_filters == 0, cancelOutput = T)
@@ -1840,17 +1855,19 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
     function(filter_tag){
       
       
-  output[[paste0(filter_tag, "_plot")]] <- renderPlot({
+  output[[paste0(filter_tag, "_plot")]] <- renderPlotly({
     
     tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
+    isolate(table_table_current$PP$filters[[filter_tag]] <- filter$e_data)
     
     req(!is.null(filter))
     
     if(filter_tag == "imputefilt"){
       
       selections <- filter_settings[[tabname]]$imputefilt
+
       tmp <- filter
       
       if(!is.null(isolate(get_group_DF(omicsData$objPP)))){
@@ -1896,22 +1913,32 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
         }
       }
 
-      wrap_plots(p1, p2, guides = "collect")
+      p <- wrap_plots(p1, p2, guides = "collect")
 
     } else if (filter_tag == "cvfilt" ){
+      
+      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
 
       if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
-              do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
+        p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                               settings))
       } else {
-        do.call(plot, list(filters[[tabname]][[filter_tag]]))
+        p <- do.call(plot, list(filters[[tabname]][[filter_tag]]))
       }
+      
+      p <- p + labs(title = "Coefficient of Variation (CV)")
 
     } else {
+      
+      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
 
-      do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
+      p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                       settings))
     }
+    
+    isolate(plot_table_current$PP$filters[[filter_tag]] <- p)
+    
+    p
   })
 })
 

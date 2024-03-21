@@ -98,7 +98,7 @@ filter_tab_temp <- function(tabname, keep_missing, user_level) {
                  br(),
                  tabsetPanel(id = "filter_previews")
                  # br(),
-                 # withSpinner(plotOutput(paste0(tabname, "_filter_plots")))
+                 # withSpinner(plotlyOutput(paste0(tabname, "_filter_plots")))
                ) # ,
                # collapseBox('Axes options', value = 'axes_options',
                # collapsed = F,

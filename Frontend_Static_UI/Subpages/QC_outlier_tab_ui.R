@@ -79,13 +79,13 @@ QC_outliers <- function(){
         tabPanel(
           value = "all_out",
           "Visualize all potential outliers",
-          plotOutput("rmd_plot_qc_all")
+          plotlyOutput("rmd_plot_qc_all")
         ),
         
         tabPanel(
           value = "inspect_samp",
           "Inspect samples",
-          plotOutput("rmd_plot_qc_select")
+          plotlyOutput("rmd_plot_qc_select")
         )
         
       )
@@ -95,7 +95,7 @@ QC_outliers <- function(){
       #     "Visualize all potential outliers",
       #     value = "outlier_plots_all",
       #     collapsed = F,
-      #     plotOutput("rmd_plot_qc_all")
+      #     plotlyOutput("rmd_plot_qc_all")
       #   )
       # )
     ), # column 8
@@ -108,7 +108,7 @@ QC_outliers <- function(){
     #       "Inspect samples",
     #       value = "outlier_plots_select",
     #       collapsed = F,
-    #       plotOutput("rmd_plot_qc_select")
+    #       plotlyOutput("rmd_plot_qc_select")
     #     )
     # ))
   )

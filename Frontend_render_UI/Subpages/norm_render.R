@@ -654,6 +654,8 @@ load_norm_observers <- function(tab) {
           )
         }
         
+        isolate(table_table_current$PP$SPANS <- SPANS_res[[tab]])
+        
       })
 
       ### SPANS defaults ###
@@ -791,7 +793,8 @@ load_norm_observers <- function(tab) {
     observeEvent(input[[paste0(tab, "_inspect_norm")]], {
 
       # req(tab %in% ALL_DATATYPE_NAMES)
-      req(input[[paste0(tab, "_inspect_norm")]] > 0)
+      req(input[[paste0(tab, "_inspect_norm")]] > 0 && 
+            !get_data_norm(omicsData$objPP), cancelOutput = T)
       
       temp_dat <- omicsData$objPP
       
@@ -876,7 +879,9 @@ load_norm_observers <- function(tab) {
         )
 
         output[[paste0(tab, "_normalize_eval_location")]] <- renderPlotly({
-          eval$loc_boxplot
+          p <- eval$loc_boxplot
+          isolate(plot_table_current$PP$bias$location <- p)
+          p
         })
 
         updateTabsetPanel(
@@ -913,7 +918,9 @@ load_norm_observers <- function(tab) {
         )
 
         output[[paste0(tab, "_normalize_eval_scale")]] <- renderPlotly({
-          eval$scale_boxplot
+          p <- eval$scale_boxplot
+          isolate(plot_table_current$PP$bias$scale <- p)
+          p
         })
 
         updateTabsetPanel(
@@ -940,8 +947,7 @@ load_norm_observers <- function(tab) {
     ## Load normalization parameters and lock all inputs
     observeEvent(input[[paste0(tab, "_lock_norm")]], {
 
-      req(#tab %in% ALL_DATATYPE_NAMES && 
-            !is.null(input[[paste0(tab, "_normalize_option")]]))
+      req(!is.null(input[[paste0(tab, "_normalize_option")]]))
 
       UI_elements <- paste0(tab, c(
         "_normalize_option",
@@ -1035,18 +1041,22 @@ load_norm_observers <- function(tab) {
         updateTabsetPanel(session, paste0(tab, "_normalize_boxplot_tabset"), selected = "Normalization Preview")
 
       } else {
-        omicsData$objNorm <- NULL
-        norm_settings[[tab]] <- NULL
-        map(UI_elements, enable)
+        if(!get_data_norm(omicsData$objPP)){
+          omicsData$objNorm <- NULL
+          norm_settings[[tab]] <- NULL
+          map(UI_elements, enable)
+        }
       }
+      
+      isolate(table_table_current$PP$normalization <- omicsData$objNorm$e_data)
     })
 
     ## Reactions to other inputs ##
 
     # Remove bias tabs when new normalization option selected
     observeEvent(input[[paste0(tab, "_normalize_option")]], {
-
-      # req(tab %in% ALL_DATATYPE_NAMES)
+      
+      req(!get_data_norm(omicsData$objPP), cancelOutput = T)
 
       removeTab(
         inputId = paste0(tab, "_normalize_boxplot_tabset"),
@@ -2115,7 +2125,8 @@ assign_norm_output <- function(tab) {
       
       p <- plot(SPANS_res[[tab]], interactive = T)
       p$x$source <- "SPANS"
-      isolate(plots[[tab]][[paste0(tab, "_Normalization_spans_plot")]] <- p)
+      
+      isolate(plot_table_current$PP$SPANS <- p)
       
       p
     }),
@@ -2143,9 +2154,12 @@ assign_norm_output <- function(tab) {
       )
     }),
     
-    output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ #### Is the group column name saved somewhere???
+    output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
       
-      req(input[["normalized"]] == "Yes" ||  get_data_norm(isolate(omicsData$objPP)) == F, cancelOutput = T)
+      if(!(input[["normalized"]] == "Yes" ||  
+            get_data_norm(isolate(omicsData$objPP)) == F)){
+        return(isolate(plot_table_current$PP$normalization$pre))
+      }
       
       if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
         df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
@@ -2172,15 +2186,16 @@ assign_norm_output <- function(tab) {
         )
       }
       
-      p <- p %>% ggplotly()
+      isolate(plot_table_current$PP$normalization$pre <- p)
       
-      isolate(plots[[tab]][[paste0(tab, "_Normalization_boxplots_pre")]] <- p)
+      p <- p %>% ggplotly()
       
       p
     }),
     
     # Post Norm
     output[[paste0(tab, "_normalized_boxplots_post_UI")]] <- renderUI({
+      
       if (
         !is.null(omicsData$objNorm)
       ) {
@@ -2219,9 +2234,9 @@ assign_norm_output <- function(tab) {
         )
       }
       
-      p <- p %>% ggplotly()
+      isolate(plot_table_current$PP$normalization$post <- p)
       
-      isolate(plots[[tab]][[paste0(tab, "_Normalization_boxplots_post")]] <- p)
+      p <- p %>% ggplotly()
       
       p
     })

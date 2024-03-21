@@ -1,0 +1,173 @@
+---
+params:
+  titleName: NULL
+  plots_rendered: NULL
+  tables_rendered: NULL
+title: "`r params$titleName`"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, 
+                      warning = FALSE, error = FALSE, 
+                      include = FALSE)
+library(dplyr)
+library(pmartR)
+library(knitr)
+library(DT)
+library(ggplot2)
+library(plotly)
+library(data.table)
+library(patchwork)
+library(purrr)
+options(DT.TOJSON_ARGS = list(na = 'string'))
+```
+
+```{r}
+
+plots_rendered <- params$plots_rendered
+tables_rendered <- params$tables_rendered
+upload_obj_attr <- yay
+upload_obj_summary <- yay
+
+```
+
+## User experience
+This report was generated from processing in SLOPE at the $beginner$ user level. Report structure and results may differ for other user levels.
+
+## Upload Data
+
+$Abundance/count data$ for $datatype$ was uploaded into SLOPE for analysis. The $Abundance/count$ data was intially on $data_scale$ scale, $TF_norm$ been statistically normalized prior to processing in SLOPE. $e_data_cname$ was used to designate unique biomolecules.
+
+```{r}
+
+edata
+```
+
+```{r}
+
+plots_rendered$Upload$boxplots
+## Fig 1. Distribution of $biomolecule$ $abundance/counts$ across all samples.
+
+```
+
+$if !is.null$ Biomolecule meta data was also uploaded into SLOPE for analysis. $e_meta_cname$ was used to designate $Protein/biomolecule groupings$ of interest.
+
+```{r}
+emeta
+```
+
+$if !is.null$ Additionally, sample data was also uploaded into SLOPE for analysis. Columns in the $Abundance/count data$ corresponded to the $f_data_cname$ column to designate unique samples.
+
+```{r}
+fdata
+```
+
+The attributes of the data before processing are summarized below:
+
+```{r}
+## Table 1. Summary of data uploaded into SLOPE.
+data.table(upload_obj_summary)
+```
+
+## Quality Control
+
+$if single mol filter applied $ Features observed only once across samples were removed from the dataset. This removed $XX$ features, or $XX%$ of the original number of features.
+
+```{r}
+
+plots_rendered$QC$single_obvs
+## Fig 2. Total number of features observed by the number of times observed across samples.
+
+```
+
+```{r}
+single_obvs_table
+```
+
+Samples were evaluated as outliers using a Robust Malhobinis distance of the metrics $XX, XX, XX$. $XX$ sample(s) fell below a p-value of $pval$ and were considered potential outliers. $no samples, XXXX$ were removed as outliers.
+
+```{r}
+
+plots_rendered$QC$rmd_all
+## Fig 3. RMD of all samples, where line indicates pval.
+
+```
+
+```{r}
+
+plots_rendered$QC$rmd_outliers
+## Fig 4. Outlier performance for metrics used in RMD.
+
+```
+
+```{r}
+rmd_table
+```
+
+Samples with XX% or more of features observed were kept for further processing. Samples $XXX$ did not meet this threshold and were removed.
+
+```{r}
+
+plots_rendered$QC$sample_missingness
+## Fig 5. Missigness by sample
+
+```
+
+```{r}
+missingness_sample_table
+```
+
+Several machine learning models do not support features are not observed across all samples. Different methods are often utilized to handle this scenario, via estimation by imputation, converting features with missingness to 1 and 0 for presence and absence, respectively; or by removing of features with missingness. $methods$ handling methods were implemented for thresholds $sa$ and $sa$.
+
+```{r}
+plots_rendered$QC$sample_missingness
+## Fig 6. Handling thresholds by sample
+```
+
+```{r}
+plots_rendered$PP$impute_boxplots
+## Fig 7. Before and after imputation
+```
+
+```{r}
+missingness_bio_table
+```
+
+## Model Set-Up
+
+To ensure manageability of model features, XX columns from sample data and XX columns from e_meta data were indicated as columns of interest for further processing. The kept columns were designated as factor levels or numeric values per the table below:
+
+```{r}
+factor_numeric_table
+```
+
+The following interaction effects were added to the sample data file:
+
+```{r}
+interaction_effect_table
+```
+
+Analysis goals were specified to be XXX, with interest in XXX. The response variable of interest was designated as XX.
+
+```{r}
+f_data_group_plot
+```
+
+Based on the data attributes and user specifications, SLOPE's expert_mentor ranked applicable models for the data per the below table:
+
+```{r}
+expert_mentor_table
+```
+
+From these, the XX model was selected.
+
+```{r}
+xx_model_summary
+```
+
+## Pre-Processing
+
+
+
+## Run Model

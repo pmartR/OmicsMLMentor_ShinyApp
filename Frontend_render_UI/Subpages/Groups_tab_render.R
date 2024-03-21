@@ -79,7 +79,7 @@ output$Group_plot_picker <- renderUI({
   )
 })
 
-output$Group_tab_plots <- renderPlot({
+output$Group_tab_plots <- renderPlotly({
   
   req(!is.null(reactive_dataholder$f_data$file) && !is.null(input$Gplot_picker))
   
@@ -91,21 +91,21 @@ output$Group_tab_plots <- renderPlot({
   df <- df[df$key %in% input$Gplot_picker,]
   
   if(all(is.na(as.numeric(as.character(df$value))))){
-    return(
-      ggplot(df, aes(x = value, fill = value)) + 
+      p <- ggplot(df, aes(x = value, fill = value)) + 
         geom_bar(color = "black", show.legend = F) + theme_bw() + 
         ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
         labs(x = "Level", y = "Samples per level", title = input$Gplot_picker)
-    )
   } else {
     
     df$value <-  as.numeric(as.character(df$value))
-    return(
-      ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() + 
+    p <- ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() + 
       ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
       labs(x = "Value", y = "Frequency")
-    )
   }
+
+  isolate(plot_table_current$Upload$grouping[[input$Gplot_picker]] <- p)
+  
+  p
   
 })
 
@@ -117,7 +117,7 @@ output$detected_box_group <- renderUI({
   collapseBox("Detected Data Properties",
               value = "fdata_plots",
               uiOutput("Group_plot_picker"),
-              plotOutput("Group_tab_plots")
+              plotlyOutput("Group_tab_plots")
               # uiOutput("group_tab_boxplots")
   )
 })
