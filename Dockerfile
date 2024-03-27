@@ -14,7 +14,7 @@ WORKDIR /srv/shiny-server/slope
 
 COPY . .
 
-ARG PORT=8301
+ARG PORT=2800
 EXPOSE ${PORT}
 ENV PORT=${PORT}
 

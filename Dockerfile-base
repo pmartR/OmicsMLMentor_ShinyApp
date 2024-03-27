@@ -45,9 +45,6 @@ RUN cp Makevars-docker $HOME/.R/Makevars
 COPY renv ./renv 
 COPY renv.lock .
 
-# pre-install renv
-RUN R -e "install.packages('renv', repos = 'https://cran.rstudio.com')"
-
 # install all packages listed in renv.lock
 # RUN --mount=type=secret,id=gitlab_pat export GITLAB_PAT="$(cat /run/secrets/gitlab_pat)" \
 && R -e 'renv::restore()'
