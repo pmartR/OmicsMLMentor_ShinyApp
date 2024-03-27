@@ -1,21 +1,5 @@
 
-# destroy_advanced <- function(){
-#   
-# }
-# 
-# destroy_unguided <- function(){
-#   
-# }
-
 observeEvent(input$welcome_confirm, {
-  
-  # if(input$user_level_pick == "beginner"){
-  #   destroy_advanced()
-  # } else if (input$user_level_pick == "familiar") {
-  #   destroy_unguided()
-  # } else {
-  #   NULL
-  # }
   
   updateNavbarPage(session, "top_page", "Upload")
   
@@ -73,52 +57,6 @@ observeEvent(input$launch_data_requirements, {
   )
   })
 
-patch_notes <- list(
-  "v 1.0" = "Added functionality for introjs and user experience levels",
-  "test" = "test yay"
-)
-
-subtext <- c(
-  "12Dec2023",
-  "test"
-)
-
-
-observeEvent(input$launch_app_info,{
-  
-  # Modal
-  showModal(
-    modalDialog(
-      size = "l",
-      title = "Current version and patch notes",
-      
-      br(),
-      
-      "SLOPE version: 1.0",
-      br(),
-      "Last updated: 12Dec2023",
-      br(),
-      br(),
-      pickerInput("patch_picker", 
-                  "Select version:",
-                  choices = names(patch_notes),
-                  choicesOpt = list(
-                    subtext = subtext
-                    )
-                  ),
-      
-      br(),
-      
-      textOutput("patch_notes_text")
-      
-    )
-  )
-  
-})
-
-output$patch_notes_text <- renderText({
-  patch_notes[[input$patch_picker]]
-})
 
 
 observeEvent(input$launch_glossary_models, {
