@@ -73,8 +73,8 @@ MakeFdataFromEdataServer <- function(id,
       observeEvent(c(file_reactive$how_make, file_reactive$data_select_val, 
                      file_reactive$use_example), {
         
-        if(!file_reactive$use_example){
-        
+        if(!file_reactive$use_example && !AWS){
+
           removeTab(preview_tabset, "Sample data", session = parentSession)
           
           if("f_data" %in% file_reactive$data_select_val){

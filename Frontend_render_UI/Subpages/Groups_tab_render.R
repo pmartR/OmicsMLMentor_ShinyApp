@@ -4,7 +4,7 @@ output$f_data_upload_UI <- renderUI({
   
   req(!is.null(input$use_fdata) && input$use_fdata == "f_data" && 
         !input$use_example_fdata && input$fdata_options_done > 0 &&
-        input$how_make_fdata == "upload")
+        input$how_make_fdata == "upload" && !AWS)
   
   div(
     collapseBox(
@@ -26,6 +26,21 @@ output$f_data_upload_UI <- renderUI({
   )
 })
 
+output$how_make_fdata_UI <- renderUI({
+  
+  req(input$use_fdata == 'f_data' && !input$use_example_fdata && !AWS)
+  
+  div(
+    br(),
+    radioGroupButtons(
+      inputId = "how_make_fdata", label = "Create sample data from:",
+      choices = c("Uploaded file" = "upload", 
+                  "Experimental data column names" = "colnames"),
+      selected = character(0)
+    )
+  )
+})
+
 output$f_data_generate_UI <- renderUI({
   req(input[["use_fdata"]] == "f_data" && 
         !is.null(reactive_dataholder[["f_data"]]$file) &&
@@ -41,7 +56,7 @@ output$f_meta_spec_UI <- renderUI({
         ## Upload, example, or generated fdata
         ((!is.null(input$fdata_upload_done) && input$fdata_upload_done > 0) || 
            input$fdata_options_done > 0 && 
-           (input$use_example_fdata || input$how_make_fdata == "colnames"))
+           (input$use_example_fdata || AWS || input$how_make_fdata == "colnames"))
       )
   
   collapseBox(
@@ -80,33 +95,33 @@ output$Group_plot_picker <- renderUI({
 })
 
 output$Group_tab_plots <- renderPlotly({
-  
+
   req(!is.null(reactive_dataholder$f_data$file) && !is.null(input$Gplot_picker))
-  
+
   df <- reactive_dataholder$f_data$file
   df <- df[colnames(df) != input$f_data_id_col]
   df <- gather(df)
   df <- df[!is.na(df$value),]
-  
+
   df <- df[df$key %in% input$Gplot_picker,]
-  
+
   if(all(is.na(as.numeric(as.character(df$value))))){
-      p <- ggplot(df, aes(x = value, fill = value)) + 
-        geom_bar(color = "black", show.legend = F) + theme_bw() + 
+      p <- ggplot(df, aes(x = value, fill = value)) +
+        geom_bar(color = "black", show.legend = F) + theme_bw() +
         ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
         labs(x = "Level", y = "Samples per level", title = input$Gplot_picker)
   } else {
-    
+
     df$value <-  as.numeric(as.character(df$value))
-    p <- ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() + 
+    p <- ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() +
       ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
       labs(x = "Value", y = "Frequency")
   }
 
   isolate(plot_table_current$Upload$grouping[[input$Gplot_picker]] <- p)
-  
+
   p
-  
+
 })
 
 ## Accordion behavior

@@ -1,4 +1,7 @@
 
+## AWS
+# Create a reactive value to hold AWS-specific objects
+AWSobj <- reactiveValues(e_data = NULL, f_data = NULL, e_meta = NULL)
 
 ## Data holder up until object creation
 reactive_dataholder <- reactiveValues(e_data = NULL,

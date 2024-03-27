@@ -30,18 +30,7 @@ groups_tab <- function() {
                      )
                    ),
                    
-                   conditionalPanel(
-                     condition = "input.use_fdata == 'f_data' && input.use_example_fdata == false",
-                     div(
-                       br(),
-                       radioGroupButtons(
-                         inputId = "how_make_fdata", label = "Create sample data from:",
-                         choices = c("Uploaded file" = "upload", 
-                                     "Experimental data column names" = "colnames"),
-                         selected = character(0)
-                       )
-                     )
-                   ),
+                   uiOutput("how_make_fdata_UI"),
                    
                    br(),
                    br(),

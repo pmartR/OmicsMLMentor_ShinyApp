@@ -3,6 +3,7 @@ suppressPackageStartupMessages({
   ## R stuff
   library(pmartR)
   library(pmartRdata)
+  # devtools::install_github("pmartR/pmartRdata")
   library(readr)
   library(reshape2)
   library(stringr)
@@ -10,9 +11,13 @@ suppressPackageStartupMessages({
   library(V8)
   library(future)
   library(slopeR) ## Must be installed manually
+  # devtools::install("../sloper", repos = NULL, type="source")
+  library(forcats)
+  library(Amelia)
   
   ## Plot/table stuff
   library(plotly)
+  library(ggplot2)
   library(DT)
   library(RColorBrewer)
   library(patchwork)
@@ -20,6 +25,8 @@ suppressPackageStartupMessages({
   library(dendextend)
   
   ## Reporting
+  library(yaml)
+  library(devtools)
   library(markdown)
   
   ## Shiny stuff
@@ -38,10 +45,15 @@ suppressPackageStartupMessages({
   
   ## Model stuff
   library(mixOmics)
+  # BiocManager::install('mixOmics')
   library(factoextra)
-  library(tune)
   library(xgboost)
   library(kernlab)
+  library(tidyclust)
+  library(randomForest)
+  library(parsnip)
+  library(tune)
+  library(yardstick)
   
   ## Don't let these get masked by other functions
   library(dplyr)
@@ -50,6 +62,8 @@ suppressPackageStartupMessages({
 
 ## GLOBAL VARIABLES ##
 MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
+AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
+# AWS <- T
 
 # Load files
 file_loads <- c(
@@ -78,7 +92,7 @@ ALL_DATATYPE_NAMES <- c(
   "Peptide-level Label Free" = "Label-free",
   "Peptide-level Isobaric" = "Isobaric",
   "Protein-level Label Free" = "Protein",
-  "Protein-level Isobaric" = "Protein", 
+  "Protein-level Isobaric" = "ProteinTMT", 
   "Lipidomics-Negative" = "Negative",
   "Lipidomics-Positive" = "Positive",
   "Metabolomics-GC/LC-MS" = "GC-MS",

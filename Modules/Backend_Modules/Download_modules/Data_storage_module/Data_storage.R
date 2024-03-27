@@ -89,13 +89,13 @@ output$preview_selected_dwn_plot <- renderPlotly({
   req(download_preview$plot)
   download_preview$current
   })
-output$preview_selected_dwn_table <- renderDT(height = "300px",{
+output$preview_selected_dwn_table <- renderDT(height = "450px",{
   req(!download_preview$plot)
   download_preview$current
   }, 
   selection = "none",
   options = list(dom = "tp", 
-                 scrollX = TRUE, scrollY = TRUE))
+                 scrollY = "300px"))
 
 ## Load up previews
 
@@ -135,7 +135,7 @@ map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
 
 ## Table fillings
 
-output$download_plot_table_Upload <- renderDT(height = "300px",{
+output$download_plot_table_Upload <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_Upload")
   list_el <- plot_table_current$Upload
@@ -157,13 +157,13 @@ output$download_plot_table_Upload <- renderDT(height = "300px",{
     preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
     drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
     dom = "t", 
-    scrollX = TRUE, scrollY = TRUE
+    scrollY = "300px"
     ),
   selection = "single",
   escape = FALSE
 )
 
-output$download_table_table_Upload <- renderDT(height = "300px",{
+output$download_table_table_Upload <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_Upload")
@@ -189,14 +189,14 @@ output$download_table_table_Upload <- renderDT(height = "300px",{
     preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
     drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
     dom = "t", 
-    scrollX = TRUE, scrollY = TRUE
+    scrollY = "300px"
   ),
   selection = "single",
   escape = FALSE
 )
 
 
-output$download_plot_table_QC <- renderDT(height = "300px",{
+output$download_plot_table_QC <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_QC")
   list_el <- plot_table_current$QC
@@ -224,13 +224,13 @@ output$download_plot_table_QC <- renderDT(height = "300px",{
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE
 )
 
-output$download_table_table_QC <- renderDT(height = "300px",{
+output$download_table_table_QC <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_QC")
@@ -257,13 +257,13 @@ options = list(
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE
 )
 
-output$download_plot_table_MSU <- renderDT(height = "300px",{
+output$download_plot_table_MSU <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_MSU")
   list_el <- plot_table_current$MSU
@@ -278,13 +278,13 @@ output$download_plot_table_MSU <- renderDT(height = "300px",{
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "none",
 escape = FALSE
 )
 
-output$download_table_table_MSU <- renderDT(height = "300px",{
+output$download_table_table_MSU <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_MSU")
@@ -308,13 +308,13 @@ options = list(
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE
 )
 
-output$download_plot_table_PP <- renderDT(height = "300px",{
+output$download_plot_table_PP <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_PP")
   list_el <- plot_table_current$PP
@@ -343,13 +343,13 @@ output$download_plot_table_PP <- renderDT(height = "300px",{
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE
 )
 
-output$download_table_table_PP <- renderDT(height = "300px",{
+output$download_table_table_PP <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_PP")
@@ -376,13 +376,13 @@ options = list(
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE
 )
 
-output$download_plot_table_RM <- renderDT(height = "300px",{
+output$download_plot_table_RM <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_RM")
   list_el <- plot_table_current$RM
@@ -413,13 +413,13 @@ output$download_plot_table_RM <- renderDT(height = "300px",{
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE
 )
 
-output$download_table_table_RM <- renderDT(height = "300px",{
+output$download_table_table_RM <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_RM")
   list_el <- table_table_current$RM
@@ -452,7 +452,7 @@ options = list(
   preDrawCallback = JS("function() { Shiny.unbindAll(this.api().table().node()); }"),
   drawCallback = JS("function() { Shiny.bindAll(this.api().table().node()); } "),
   dom = "t", 
-  scrollX = TRUE, scrollY = TRUE
+  scrollY = "300px"
 ),
 selection = "single",
 escape = FALSE

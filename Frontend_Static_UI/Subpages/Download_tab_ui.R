@@ -25,12 +25,12 @@ download_tab <- function(tabname) {
           column(
             6,
                 br(),
-                wellPanel(DTOutput(height = "300px","download_plot_table_Upload"))
+                wellPanel(DTOutput(height = "350px","download_plot_table_Upload"))
               ),
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_table_table_Upload"))
+            wellPanel(DTOutput(height = "350px","download_table_table_Upload"))
             ),
           
           br(),
@@ -57,12 +57,12 @@ download_tab <- function(tabname) {
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_plot_table_QC"))
+            wellPanel(DTOutput(height = "350px","download_plot_table_QC"))
           ),
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_table_table_QC"))
+            wellPanel(DTOutput(height = "350px","download_table_table_QC"))
           ),
           
           br(),
@@ -89,12 +89,12 @@ download_tab <- function(tabname) {
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_plot_table_MSU"))
+            wellPanel(DTOutput(height = "350px","download_plot_table_MSU"))
           ),
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_table_table_MSU"))
+            wellPanel(DTOutput(height = "350px","download_table_table_MSU"))
           ),
           
           br(),
@@ -121,12 +121,12 @@ download_tab <- function(tabname) {
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_plot_table_PP"))
+            wellPanel(DTOutput(height = "350px","download_plot_table_PP"))
           ),
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_table_table_PP"))
+            wellPanel(DTOutput(height = "350px","download_table_table_PP"))
           ),
           
           br(),
@@ -153,12 +153,12 @@ download_tab <- function(tabname) {
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_plot_table_RM"))
+            wellPanel(DTOutput(height = "350px","download_plot_table_RM"))
           ),
           column(
             6,
             br(),
-            wellPanel(DTOutput(height = "300px","download_table_table_RM"))
+            wellPanel(DTOutput(height = "350px","download_table_table_RM"))
           ),
           
           br(),

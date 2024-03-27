@@ -77,7 +77,7 @@ observeEvent(input$check_group_cols, ignoreInit = T, {
       cv_filter(omicsData$obj)
     
     shinyalert(title = "Success!", "Continue to next page or review results?",
-               showCancelButton = T, closeOnEsc = F, 
+               showCancelButton = T, closeOnEsc = F,
                confirmButtonText = "Continue",
                cancelButtonText = "Review results",
                callbackR = function(value){
@@ -85,7 +85,7 @@ observeEvent(input$check_group_cols, ignoreInit = T, {
                    shinyjs::hide(id = "experimental_upload_box")
                    shinyjs::hide(id = "sample_upload_box")
                    shinyjs::show(id = "review_upload_box")
-                   
+
                    shinyjs::removeClass("show_exp_upload", "blueoutline")
                    shinyjs::removeClass("show_sample_upload", "blueoutline")
                    shinyjs::addClass("review_upload", "blueoutline")
@@ -97,9 +97,9 @@ observeEvent(input$check_group_cols, ignoreInit = T, {
     
   }, error = function(e){
     
-    shinyalert(title = "Something went wrong processing your data.", 
+    shinyalert(title = "Something went wrong processing your data.",
                "Un-doing log transformation appears to generate very large numbers. Should these be raw abundance values?",
-               showCancelButton = T, closeOnEsc = F, 
+               showCancelButton = T, closeOnEsc = F,
                confirmButtonText = "Yes",
                cancelButtonText = "No",
                callbackR = function(value){

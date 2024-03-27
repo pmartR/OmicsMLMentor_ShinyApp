@@ -36,7 +36,7 @@ cfg_path = if(isTruthy(Sys.getenv("MAP_CONFIG")))
 ## ADDED FOR MAP ##
 if (MAP_ACTIVE) {
   # Connect to map data access library
-  library(mapDataAccess)
+  # library(mapDataAccess)
   
   # Pull data types
   dataTypes <- MapConnect$DataTypes
@@ -89,7 +89,7 @@ if (MAP_ACTIVE) {
   
   conda_envs <- tryCatch(
     {
-      reticulate::conda_list()$python
+      # reticulate::conda_list()$python
     },
     error = function(e) {
       NULL

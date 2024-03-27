@@ -16,7 +16,42 @@ shinyServer(function(session, input, output) {
     source(f, local = TRUE)
   }
   
-  hide(id = "loading-gray-overlay")
+  if (AWS) {
+    
+    message("AWS VERSION ENABLED")
+    
+    # Load AWS specific R library
+    library(aws.s3)
+    
+    # Load AWS specific code
+    source("./AWS_Functions.R", local = TRUE)
+    
+    ######## comment this out before push
+    
+    # wd <-"/Users/rich401/OneDrive-PNNL (Archive)/Desktop/Cleaned_Data_for_Rachel"
+    # # wd <-"data_temp"
+    # 
+    # # AWSobj$e_data <- read.csv(file.path(wd, "e_data.csv"))
+    # # AWSobj$f_data <- read.csv(file.path(wd, "f_data.csv"))
+    # # AWSobj$e_meta <- read.csv(file.path(wd, "e_meta.csv"))
+    # 
+    # # AWSobj$e_data <- read.csv(file.path(wd, "e_data_pmartR.csv"))
+    # AWSobj$e_data <- read.csv(file.path(wd, "e_data_pmartR_no_log.csv"))
+    # AWSobj$f_data <- read.csv(file.path(wd, "f_data_pmartR.csv"))
+    # AWSobj$e_meta <- read.csv(file.path(wd, "e_meta_pmartR.csv"))
+    # # 
+    # ## Temp fix for razor proteins
+    # observeEvent(AWSobj$e_meta, {
+    #   AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
+    # }, once = T)
+    # 
+    # # Specify file type and disable input
+    # updatePickerInput(session, "data_type", selected = "Protein")
+    
+  } else {
+    hide(id = "loading-gray-overlay")
+  }
+
   launch_tutorial()
  
   

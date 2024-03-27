@@ -66,10 +66,13 @@ FileInputServer <- function(id,
                           data_type, ## Determine what example data to load
                           data_select, ## For example data, only load if its actually needed
                           label, ## e_data, f_data, or e_meta 
+                          use_AWS, ## AWS flag
                           preview_tabset) {
   moduleServer(
     id,
     function(input, output, session) {
+      
+      
       
       # parent session (for tabset appending)
       parentSession <- get("session", envir = parent.frame(2))
@@ -116,7 +119,7 @@ FileInputServer <- function(id,
           )
         } else {
           
-          if(label == "f_data") browser()
+          if(label == "f_data") 
           store_data$filename <- NULL
           store_data$file <- NULL
         }
@@ -125,6 +128,12 @@ FileInputServer <- function(id,
       
       ## If example files are used, load it up
       observeEvent(c(use_example(), data_type(), data_select()), ignoreInit = TRUE, {
+        
+        use_example_val <- use_example()
+        data_type_val <- data_type()
+        data_select_val <- c("e_data", data_select())
+        
+        req(use_example_val && !is.null(data_type_val) && !is.null(data_select_val))
         
         tablabel <- switch(label,
                            e_data = ifelse(data_type() == "RNA-seq", 
@@ -135,12 +144,6 @@ FileInputServer <- function(id,
         )
         
         removeTab(preview_tabset, tablabel, session = parentSession)
-        
-        use_example_val <- use_example()
-        data_type_val <- data_type()
-        data_select_val <- c("e_data", data_select())
-        
-        req(use_example_val && !is.null(data_type_val))
         
         if(label %in% data_select_val){
           pmartRdata_prefix <- switch(data_type_val,
@@ -160,53 +163,6 @@ FileInputServer <- function(id,
           store_data$filename <- "Example file"
           store_data$file <- default_factor(data_grab)
           
-          # if(pmartRdata_prefix == "pro_"){
-          #   
-          #   
-          #   ###
-          #   ## Update sample names and f_data columns
-          #   
-          #   # Covid strains -- COV2_IT, COV2_WA, Mock
-          #   # Time points -- 12, 24, 36 hour increments
-          #   
-          #   ## Strain, timepoint
-          #   
-          #   ##
-          #   
-          #   if(label == "e_data"){
-          #     colnames(store_data$file) <- gsub("Phenotype1", "COV2_IT", colnames(store_data$file))
-          #     colnames(store_data$file) <- gsub("Phenotype2", "COV2_WA", colnames(store_data$file))
-          #     colnames(store_data$file) <- gsub("Phenotype3", "Mock", colnames(store_data$file))
-          #     
-          #     colnames(store_data$file) <- gsub("A$", "12hr", colnames(store_data$file))
-          #     colnames(store_data$file) <- gsub("B$", "36hr", colnames(store_data$file))
-          #   }
-          #   
-          #   if(label == "f_data"){
-          #   
-          #     store_data$file$SampleID <- gsub("Phenotype1", "COV2_IT", store_data$file$SampleID)
-          #     store_data$file$SampleID <- gsub("Phenotype2", "COV2_WA", store_data$file$SampleID)
-          #     store_data$file$SampleID <- gsub("Phenotype3", "Mock", store_data$file$SampleID)
-          #     
-          #     store_data$file$SampleID <- gsub("A$", "12hr", store_data$file$SampleID)
-          #     store_data$file$SampleID <- gsub("B$", "36hr", store_data$file$SampleID)
-          #     
-          #     
-          #     colnames(store_data$file) <- gsub("^Phenotype$", "Strain", colnames(store_data$file))
-          #     colnames(store_data$file) <- gsub("^SecondPhenotype$", "Timepoint", colnames(store_data$file))
-          #     colnames(store_data$file) <- gsub("^Characteristic$", "Initial conc (mg/ml)", colnames(store_data$file))
-          #     
-          #     store_data$file$Strain <- gsub("Phenotype1", "COV2_IT", store_data$file$Strain)
-          #     store_data$file$Strain <- gsub("Phenotype2", "COV2_WA", store_data$file$Strain)
-          #     store_data$file$Strain <- gsub("Phenotype3", "Mock", store_data$file$Strain)
-          #     
-          #     store_data$file$Timepoint <- gsub("A$", "12hr", store_data$file$Timepoint)
-          #     store_data$file$Timepoint <- gsub("B$", "36hr", store_data$file$Timepoint)
-          # 
-          #   }
-          #   
-          # }
-          
           appendTab(preview_tabset, 
                     select = T,
                     tabPanel(tablabel,
@@ -222,21 +178,59 @@ FileInputServer <- function(id,
         }
       })
       
-      ## Disable clear file for example data
-      observeEvent(use_example(), {
+      ## If AWS, load it up
+      observeEvent(c(use_AWS, data_type(), data_select()), ignoreInit = TRUE, {
+
+        req(use_AWS)
+        
+        tablabel <- switch(label,
+                           e_data = ifelse(data_type() == "RNA-seq",
+                                           "Expression data",
+                                           "Abundance data"),
+                           f_data = "Sample data",
+                           e_meta = "Biomolecule information"
+        )
+
+        removeTab(preview_tabset, tablabel, session = parentSession)
+
         use_example_val <- use_example()
+        data_select_val <- c("e_data", data_select())
+
+        if(label %in% data_select_val){
+
+          store_data$filename <- "Loaded from S3 bucket"
+          store_data$file <- default_factor(AWSobj[[label]])
+
+          appendTab(preview_tabset,
+                    select = T,
+                    tabPanel(tablabel,
+                             br(),
+                             DTOutput(paste0("DT_", label)),
+                             br()
+                    ),
+                    session = parentSession
+          )
+        } else {
+          store_data$filename <- NULL
+          store_data$file <- NULL
+        }
+      })
+      
+      ## Disable clear file for example data
+      observeEvent(c(use_example()), {
+        use_example_val <- use_example() || use_AWS
         toggleState(id = "clear_file", condition = !use_example_val)
       })
       
       ## On clear file, reset holder
       observeEvent(input$clear_file, {
         
-        if(label == "f_data") browser()
+        if(label == "f_data") 
         store_data$filename <- NULL
         store_data$file <- NULL
         reset("file")
       })
-
+      
       return(store_data)
     }
   )
@@ -259,24 +253,27 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
     ds <- reactive(input$data_select)
   }
   
+  req(!all(map_lgl(c(pt, UE, ds), is.null)))
+  
   reactive_dataholder[[label]] <- FileInputServer(paste0(label, "_upload"), 
                                                   use_example= UE,
-                                                data_type = reactive(input$data_type),
-                                                data_select = ds,
-                                                label = label,
-                                                preview_tabset = pt
+                                                  data_type = reactive(input$data_type),
+                                                  data_select = ds,
+                                                  label = label,
+                                                  preview_tabset = pt,
+                                                  use_AWS = AWS
   )
   
   ## Render from uploaded files
   output[[paste0("DT_", label)]] <- renderDT({
-    
+
     reactive_dataholder[[label]]$file
   },
   selection = 'none',
-  options = list(dom = 'tpi', 
-    pageLength = 10, 
+  options = list(dom = 'tpi',
+    pageLength = 10,
     scrollX = T
-    
+
     ))
   
   outputOptions(output, paste0("DT_", label), suspendWhenHidden = T)
