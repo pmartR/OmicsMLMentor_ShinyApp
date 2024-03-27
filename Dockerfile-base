@@ -1,17 +1,12 @@
-## SLOPER base dependencies image.  Installs system libraries, R libraries, and others.  
-## Top image extends this image and copies the source code for the app
-
-## Must provide a secret file for access to private github repos with the build argument:  
-## docker build --secret id=github_pat,src=.mysecret ...
+## slope 'base' container.  Installs system and R libraries.
 
 # Install latest version of rocker image
-FROM rocker/shiny:4.2.3
+FROM rocker/shiny:4.1.1
 
 # Load general use libraries
-# Keep gettext-base for MultiProbe
 RUN apt-get update && apt-get install -y \
     sudo \
-    gettext-base \ 
+    gettext-base \
     pandoc \
     pandoc-citeproc \
     libssl-dev \
@@ -23,44 +18,26 @@ RUN apt-get update && apt-get install -y \
     libzmq3-dev \
     libxml2-dev \
     libcurl3-gnutls \
-	vim python3-venv \
-	automake
-    
-USER root
+	vim python3-venv
 
-# Keep for MultiProbe, direct to correct url
-#WORKDIR /srv/shiny-server/slope
+WORKDIR /srv/shiny-server/slope
 
-# pre-install renv
-ENV RENV_VERSION 1.0.3
-RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org'))"
-RUN R -e "options('repos'=c(CRAN = 'https://cloud.r-project.org'));remotes::install_version('renv', version = '${RENV_VERSION}')"
+# only need this to restore
+COPY renv.lock .
+COPY requirements.txt .
 
-# Need to set linker flags to install pmartR in linux environment
+# The following 3 lines are needed to successfully install pmartR.
 RUN mkdir $HOME/.R
 COPY Makevars-docker .
 RUN cp Makevars-docker $HOME/.R/Makevars
 
-# Keep for MultiProbe, local DT use due to issue in download
-COPY renv ./renv 
-COPY renv.lock .
+# pre-install renv
+RUN R -e "install.packages('renv', repos = 'https://cran.rstudio.com')"
 
 # install all packages listed in renv.lock
 # RUN --mount=type=secret,id=gitlab_pat export GITLAB_PAT="$(cat /run/secrets/gitlab_pat)" \
-&& R -e 'renv::restore()'
+# && R -e 'renv::restore()'
 
-## Keep for MultiProbe AWS
+RUN R -e 'renv::restore()'
 RUN R -e "install.packages('aws.s3')"
 RUN R -e "install.packages('aws.ec2metadata')"
-
-# install packages in active development, this helps with build times as these
-# are often changed and require re-installation of all files in the lockfile.
-RUN --mount=type=secret,id=access_tokens set -a \
-&& . /run/secrets/access_tokens && set +a \
-&& R -e "options(repos = BiocManager::repositories())"
-
-# python and requirements
-COPY python_requirements.txt .
-RUN python3 -m venv /venv
-RUN /venv/bin/pip install --upgrade pip
-RUN /venv/bin/pip install -r requirements.txt
