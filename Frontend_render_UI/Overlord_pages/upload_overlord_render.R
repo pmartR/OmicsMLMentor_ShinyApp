@@ -65,15 +65,16 @@ observeEvent(input$upload_done, ignoreInit = T, {
   
 })
 
-observeEvent(input$check_group_cols, ignoreInit = T, {
+observeEvent(c(input$check_group_cols), ignoreInit = T, {
   
-  if(!is.null(input$check_group_cols) && input$check_group_cols > 0){
-    enable("review_upload")
-  }
+  req(!is.null(input$check_group_cols) && 
+     input$check_group_cols > 0)
   
   
   tryCatch({
     if(!inherits(omicsData$obj, "seqData"))
+      
+      print(attr(omicsData$obj, "data_info")$data_scale_orig)
       cv_filter(omicsData$obj)
     
     shinyalert(title = "Success!", "Continue to next page or review results?",
@@ -94,26 +95,68 @@ observeEvent(input$check_group_cols, ignoreInit = T, {
     
     updateProgressBar(session, "upload_exp_done", value = 100)
     updateProgressBar(session, "upload_samp_done", value = 100)
+    enable("review_upload")
     
   }, error = function(e){
     
-    shinyalert(title = "Something went wrong processing your data.",
-               "Un-doing log transformation appears to generate very large numbers. Should these be raw abundance values?",
-               showCancelButton = T, closeOnEsc = F,
-               confirmButtonText = "Yes",
-               cancelButtonText = "No",
-               callbackR = function(value){
-                 if(value){
-                   attr(omicsData$obj, "data_info")$data_scale_orig <- "abundance"
-                   updatePickerInput(session, "datascale", selected = "abundance")
-                 } else {
-                   shinyalert(title = "Please double check uploaded data for any anomalies.")
-                 }
-               })
-    
-    
-    
-    
+    if(e$message == "missing value where TRUE/FALSE needed" && 
+       attr(omicsData$obj, "data_info")$data_scale_orig != "abundance"){
+      shinyalert(title = "Something went wrong processing your data.",
+                 "Un-doing log transformation appears to generate very large numbers. Should these be raw abundance values?",
+                 inputId = "cv_error",
+                 showCancelButton = T, closeOnEsc = F,
+                 confirmButtonText = "Yes",
+                 cancelButtonText = "No",
+                 callbackR = function(value){
+                   if(value){
+                     
+                     closeAlert(id = "cv_error")
+                     attr(omicsData$obj, "data_info")$data_scale_orig <- "abundance"
+                     attr(omicsData$obj, "data_info")$data_scale <- "abundance"
+                     updatePickerInput(session, "datascale", selected = "abundance")
+                     
+                     tryCatch({
+                       print(attr(omicsData$obj, "data_info")$data_scale_orig)
+                       cv_filter(omicsData$obj)
+                       
+                       shinyalert(title = "Success!", 
+                                  "Continue to next page or review results?",
+                                  showCancelButton = T, closeOnEsc = F,
+                                  confirmButtonText = "Continue",
+                                  cancelButtonText = "Review results",
+                                  callbackR = function(value){
+                                    if(value){
+                                      shinyjs::hide(id = "experimental_upload_box")
+                                      shinyjs::hide(id = "sample_upload_box")
+                                      shinyjs::show(id = "review_upload_box")
+                                      
+                                      shinyjs::removeClass("show_exp_upload", "blueoutline")
+                                      shinyjs::removeClass("show_sample_upload", "blueoutline")
+                                      shinyjs::addClass("review_upload", "blueoutline")
+                                    }
+                                  })
+                       
+                       updateProgressBar(session, "upload_exp_done", value = 100)
+                       updateProgressBar(session, "upload_samp_done", value = 100)
+                       enable("review_upload")
+                       
+                     }, error = function(e){
+                         shinyalert(title = "Something went wrong processing your data.",
+                                    e$message,
+                                    closeOnEsc = F
+                         )
+                       })
+                     } else {
+                     shinyalert(title = "Please double check uploaded data for any anomalies.")
+                   }
+                 })
+    } else {
+            shinyalert(title = "Something went wrong processing your data.",
+                 e$message,
+                 closeOnEsc = F
+                 )
+    }
+
   })
   
 })

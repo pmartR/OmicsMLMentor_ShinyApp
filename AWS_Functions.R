@@ -28,7 +28,7 @@ observeEvent(input$`__startup__`, {
       ## Temp fix for razor proteins
       AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
     }
-    if(!is.null(query$fdata)){
+    if(!is.null(query$f_data)){
       AWSobj$f_data <- s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket)
     }
     
