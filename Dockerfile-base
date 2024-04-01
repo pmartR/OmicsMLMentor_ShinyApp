@@ -1,7 +1,7 @@
 ## slope 'base' container.  Installs system and R libraries.
 
 # Install latest version of rocker image
-FROM rocker/shiny:4.1.1
+FROM rocker/shiny:4.2.0
 
 # Load general use libraries
 RUN apt-get update && apt-get install -y \
@@ -17,12 +17,21 @@ RUN apt-get update && apt-get install -y \
     libhiredis-dev \
     libzmq3-dev \
     libxml2-dev \
+    libgsl-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    cmake \
     libcurl3-gnutls \
 	vim python3-venv
 
 WORKDIR /srv/shiny-server/slope
 
 # only need this to restore
+COPY renv/local .
 COPY renv.lock .
 COPY requirements.txt .
 
@@ -39,5 +48,27 @@ RUN R -e "install.packages('renv', repos = 'https://cran.rstudio.com')"
 # && R -e 'renv::restore()'
 
 RUN R -e 'renv::restore()'
+
+RUN R -e 'message(getwd())'
+RUN R -e 'message(list.files())'
+
+RUN R -e "install.packages('future')"
+RUN R -e "install.packages('markdown')"
+RUN R -e "install.packages('DT')"
+RUN R -e "install.packages('estimability')"
+RUN R -e "install.packages('FactoMineR')"
+RUN R -e "install.packages('emmeans')"
+RUN R -e "install.packages('lme4')"
+RUN R -e "install.packages('factoextra')"
+RUN R -e "install.packages('gh')"
+RUN R -e "install.packages('future.apply')"
+RUN R -e "install.packages('pmart')"
+RUN R -e "devtools::install_github('pmartR/pmartRdata')"
+
 RUN R -e "install.packages('aws.s3')"
 RUN R -e "install.packages('aws.ec2metadata')"
+
+
+
+
+RUN R -e 'devtools::install_local(paste0("./sloper.zip"), repos = NULL, type="source", upgrade = c("never"))'
