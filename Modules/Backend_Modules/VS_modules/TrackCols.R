@@ -95,12 +95,12 @@ KeepColsServer <- function(id,
         
         if(!is.null(f_data) && file_reactive$user_level != "expert"){
           track_f_data <- colnames(f_data[apply(f_data, 2, function(x) 
-            var(as.numeric(as.factor(x)))) > 0])
+            var(as.numeric(as.factor(x)), na.rm = T)) > 0])
         } else track_f_data <- colnames(file_reactive$f_data_file)
         
         if(!is.null(e_meta) && file_reactive$user_level != "expert"){
           track_e_meta <- colnames(e_meta[apply(e_meta, 2, function(x) 
-            var(as.numeric(as.factor(x)))) > 0])
+            var(as.numeric(as.factor(x)), na.rm = T)) > 0])
         } else track_e_meta <- colnames(file_reactive$e_meta_file)
 
         # track_e_data <- track_e_data[track_e_data != file_reactive$e_data_cname]
