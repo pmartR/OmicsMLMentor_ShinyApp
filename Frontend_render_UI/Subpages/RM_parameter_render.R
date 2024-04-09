@@ -509,6 +509,11 @@ pca_params <- function(){
   div(strong("Not available for selected model"), br(), br())
 }
 
+### Not yet available
+ppca_params <- function(){
+  div(strong("Not available for selected model"), br(), br())
+}
+
 
 
 output[["model_specific_parameters"]] <- renderUI({

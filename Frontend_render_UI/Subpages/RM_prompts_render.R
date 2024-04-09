@@ -53,6 +53,7 @@ holdout_valid <- reactive({
       hclust = 0,
       pls = 20,
       pca = 0,
+      ppca = 0,
       umap = 0,
       gbtree = 20,
     )

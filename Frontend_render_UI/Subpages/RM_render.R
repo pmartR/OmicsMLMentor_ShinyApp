@@ -1092,7 +1092,7 @@ output$unsup_picker_UI <- renderUI({
 
   req(length(colors) > 0)
   
-  choices <- if(method == "pca"){
+  choices <- if(method %in% c("pca", "ppca")){
     colors
   } else {
     c("Parameter clusters", colors)
@@ -1193,11 +1193,11 @@ output$structure_plot <- renderPlotly({
     # hclust_fit %>%
     #   extract_centroids(cut_height = 250)
 
-  } else if (method == "pca"){
+  } else if (method %in% c("pca", "ppca")){
 
     ## this seems off maybe
     df <- slopeR:::embed_unsup(runner,
-                         slMethod = "pca",
+                         slMethod = method,
                          axis = input$pick_axis,
                          bake = T
     )

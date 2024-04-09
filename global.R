@@ -142,6 +142,7 @@ models_long_name <- c(
   `K-means clustering` = "kmeans",
   `Hierarchical clustering` = "hclust",
   `Principal Components Analysis` = "pca",
+  `Probabilistic Principal Components Analysis` = "ppca",
   `Uniform Manifold Approximation and Projection (UMAP)` = "umap",
   `Gradient boosted tree` = "gbtree",
   `Partial least squares` = "pls"
