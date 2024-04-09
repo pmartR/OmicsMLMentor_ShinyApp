@@ -2162,7 +2162,7 @@ assign_norm_output <- function(tab) {
       }
       
       if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
-        df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
+        df <- as.data.frame(table(melt(omicsData$objPP$e_data)[2:3]))
         p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
           geom_col() + theme_bw() + 
           labs(

@@ -33,11 +33,11 @@ observeEvent(input$param_opti, {
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
       if(input$numb_test == "Proportion"){
-        ntest <- floor(input$nTest_prop * ncol(runner$e_data[-1]))
+        ptest <- input$nTest_prop
       } else {
-        ntest <- input$nTest_count
+        ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
-    } else ntest <- 0
+    } else ptest <- 0
     
     ## Get custom/optimized parameters
     custom_args <- list()
@@ -96,7 +96,7 @@ observeEvent(input$param_opti, {
       slMethod = method,
       cvMethod = cvMethod,
       nFolds = nFolds,
-      nTest = ntest,
+      pTest = ptest,
       return_cv = T
     )
     

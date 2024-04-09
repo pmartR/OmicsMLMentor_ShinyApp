@@ -54,6 +54,7 @@ suppressPackageStartupMessages({
   library(parsnip)
   library(tune)
   library(yardstick)
+  library(glmnet)
   
   ## Don't let these get masked by other functions
   library(dplyr)
@@ -63,7 +64,7 @@ suppressPackageStartupMessages({
 ## GLOBAL VARIABLES ##
 MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
 AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
-AWS <- T
+# AWS <- T
 
 # Load files
 file_loads <- c(

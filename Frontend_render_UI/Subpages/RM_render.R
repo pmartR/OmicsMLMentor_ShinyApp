@@ -555,11 +555,11 @@ observeEvent(input$run_sl, {
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
       if(input$numb_test == "Proportion"){
-        ntest <- floor(input$nTest_prop * ncol(runner$e_data[-1]))
+        ptest <- input$nTest_prop
       } else {
-        ntest <- input$nTest_count
+        ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
-    } else ntest <- 0
+    } else ptest <- 0
 
     ## Get custom/optimized parameters
     custom_args <- list()
@@ -626,7 +626,7 @@ observeEvent(input$run_sl, {
       slMethod = method,
       cvMethod = cvMethod,
       nFolds = nFolds,
-      nTest = ntest,
+      pTest = ptest,
       return_cv = T
     )
     
@@ -735,11 +735,11 @@ observeEvent(input$feature_select_posthoc, {
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
       if(input$numb_test == "Proportion"){
-        ntest <- floor(input$nTest_prop * ncol(runner$e_data[-1]))
+        ptest <- input$nTest_prop
       } else {
-        ntest <- input$nTest_count
+        ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
-    } else ntest <- 0
+    } else ptest <- 0
     
     ## Get custom/optimized parameters
     custom_args <- list()
@@ -806,7 +806,7 @@ observeEvent(input$feature_select_posthoc, {
       slMethod = method,
       cvMethod = cvMethod,
       nFolds = nFolds,
-      nTest = ntest,
+      pTest = ptest,
       return_cv = T
     )
     
@@ -858,7 +858,9 @@ output$roc_curve <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  p <- plot(omicsData$objRM, "roc_curve")
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot(omicsData$objRM, "roc_curve", split = split)
   
   isolate(plot_table_current$RM$model_eval$full$roc_curve <- p)
   isolate(table_table_current$RM$model_eval$full$roc_curve <- p$data)
@@ -871,7 +873,9 @@ output$roc_curve_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  p <- plot(omicsData$objRM_reduced, "roc_curve")
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot(omicsData$objRM_reduced, "roc_curve", split = split)
   
   isolate(plot_table_current$RM$model_eval$reduced$roc_curve <- p)
   isolate(table_table_current$RM$model_eval$reduced$roc_curve <- p$data)
@@ -886,8 +890,11 @@ output$confidence_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  p <- plot( omicsData$objRM, plotType = "confidence_bar") + 
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = split) + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  
   
   isolate(plot_table_current$RM$model_eval$full$confidence_bar <- p)
   isolate(table_table_current$RM$model_eval$full$confidence_bar <- p$data)
@@ -900,7 +907,9 @@ output$confidence_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar") + 
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split = split) + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
   isolate(plot_table_current$RM$model_eval$reduced$confidence_bar <- p)
@@ -914,7 +923,9 @@ output$prediction_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  p <- plot( omicsData$objRM, plotType = "prediction_bar")
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot( omicsData$objRM, plotType = "prediction_bar", split = split)
   
   isolate(plot_table_current$RM$model_eval$full$prediction_bar <- p)
   isolate(table_table_current$RM$model_eval$full$prediction_bar <- p$data)
@@ -927,7 +938,9 @@ output$prediction_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar")
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split = split)
   
   isolate(plot_table_current$RM$model_eval$reduced$prediction_bar <- p)
   isolate(table_table_current$RM$model_eval$reduced$prediction_bar <- p$data)
@@ -940,7 +953,9 @@ output$confusion_heatmap <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
-  p <- plot( omicsData$objRM, plotType = "confusion_heatmap")
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split = split)
   
   isolate(plot_table_current$RM$model_eval$full$confusion_heatmap <- p)
   isolate(table_table_current$RM$model_eval$full$confusion_heatmap <- p$data)
@@ -954,7 +969,9 @@ output$confusion_heatmap_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
-  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap")
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
+  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split = split)
   
   isolate(plot_table_current$RM$model_eval$reduced$confusion_heatmap <- p)
   isolate(table_table_current$RM$model_eval$reduced$confusion_heatmap <- p$data)
@@ -967,9 +984,11 @@ output$confidence_scatter <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
 
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
   p <- plot( omicsData$objRM, 
         plotType = "confidence_scatter", 
-        pos_class = input$true_pos_picker)
+        pos_class = input$true_pos_picker, split = split)
   
   isolate(plot_table_current$RM$model_eval$full$confidence_scatter <- p)
   isolate(table_table_current$RM$model_eval$full$confidence_scatter <- p$data)
@@ -982,8 +1001,10 @@ output$confidence_scatter_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
   
+  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  
   p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
-        pos_class = input$true_pos_picker_reduced)
+        pos_class = input$true_pos_picker_reduced, split = split)
   
   isolate(plot_table_current$RM$model_eval$reduced$confidence_scatter <- p)
   isolate(table_table_current$RM$model_eval$reduced$confidence_scatter <- p$data)
