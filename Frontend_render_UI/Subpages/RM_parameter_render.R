@@ -506,12 +506,26 @@ umap_params <- function(){
 
 ### Not yet available
 pca_params <- function(){
-  div(strong("Not available for selected model"), br(), br())
+  n_samps = attributes(omicsData$objPP)$data_info$num_samps
+  n_feats = attributes(omicsData$objPP)$data_info$num_edata
+  
+  max_pcs = min(n_feats, n_samps - 1)
+  
+  div(
+    sliderInput("pca_num_comp", "Number of components", min=2, max=max_pcs, value = 2)
+  )
 }
 
 ### Not yet available
 ppca_params <- function(){
-  div(strong("Not available for selected model"), br(), br())
+  n_samps = attributes(omicsData$objPP)$data_info$num_samps
+  n_feats = attributes(omicsData$objPP)$data_info$num_edata
+  
+  max_pcs = min(n_feats, n_samps - 1)
+  
+  div(
+    sliderInput("ppca_num_comp", "Number of components", min=2, max=max_pcs, value = 2)
+  )
 }
 
 

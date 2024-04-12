@@ -528,7 +528,7 @@ unsupervised_tab <- function() {
                   # DTOutput("train_metrics"),
                   withSpinner(plotlyOutput("structure_plot")),
                 br(),
-                column(6, uiOutput("unsup_picker_UI")),
+                column(6, uiOutput("unsup_res_aes_UI")),
                 column(6, uiOutput("unsup_slider_UI"))
                 
               )
@@ -706,11 +706,23 @@ observeEvent(input$run_sl, {
       )
 
     } else {
-
-      omicsData$objRM <- slopeR:::embed_unsup(runner,
-                                              slMethod = method,
-                                              axis = "samples", ## should be able to change this
-                                              bake = F
+      args = list(
+        slData = runner,
+        slMethod = method,
+        axis = input$pick_axis,
+        bake = F
+      )
+      
+      if (method == 'pca') {
+        args[['num_comp']] = input$pca_num_comp
+      } else if (method == 'ppca') {
+        args[['num_comp']] = input$ppca_num_comp
+      }
+      
+      
+      omicsData$objRM <- do.call(
+        slopeR:::embed_unsup,
+        args
       )
 
     }
@@ -1073,12 +1085,14 @@ output$confidence_scatter_reduced <- renderPlotly({
 #
 # })
 # 
-output$unsup_picker_UI <- renderUI({
+output$unsup_res_aes_UI <- renderUI({
 
   req(!is.null(input$pick_model_EM) && input$ag_prompts != "supervised")
 
   method <- input$pick_model_EM ## While summary getting fixed
 
+  element_list <- list()
+  
   # req(method %in% c())
 
   if(input$pick_axis == "samples"){
@@ -1098,8 +1112,48 @@ output$unsup_picker_UI <- renderUI({
     c("Parameter clusters", colors)
   }
 
-  pickerInput("color_by_unsup", "Color by:", choices = choices)
+  color_by_picker <- pickerInput("color_by_unsup", "Color by:", choices = choices)
+  
+  element_list[[length(element_list) + 1]] <- color_by_picker
+  ### plot the pcs
+  
+  if (inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca"))) {
+    element_list[[length(element_list) + 1]] <- uiOutput("pc_xaxis_UI")
+    element_list[[length(element_list) + 1]] <- uiOutput("pc_yaxis_UI")
+  }
+  
+  return(do.call(tagList, element_list))
+  
+})
 
+output$pc_xaxis_UI <- renderUI({
+  req(inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca")))
+  num_comp <- omicsData$objRM$steps[[1]]$num_comp
+  
+  choices = c(1:num_comp)
+  
+  picker_out <- pickerInput(
+    "unsup_pca_xaxis_pc", "Plot which component on x-axis?" , choices = choices,
+    selected = input$unsup_pca_xaxis_pc
+  )
+  
+  return(picker_out)
+})
+
+output$pc_yaxis_UI <- renderUI({
+  req(inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca")))
+  num_comp <- omicsData$objRM$steps[[1]]$num_comp
+  
+  choices = c(1:num_comp)
+  
+  selected = if(!is.null(input$unsup_pca_yaxis_pc)) input$unsup_pca_yaxis_pc else choices[2] 
+  
+  picker_out <- pickerInput(
+    "unsup_pca_yaxis_pc", "Plot which component on y-axis?", choices = choices,
+    selected = selected
+  )
+  
+  return(picker_out)
 })
 
 output$unsup_slider_UI <- renderUI({
@@ -1116,8 +1170,8 @@ output$unsup_slider_UI <- renderUI({
 output$structure_plot <- renderPlotly({
   
   req(!is.null(input$pick_model_EM) && 
-        input$ag_prompts != "supervised" && 
-        !is.null(omicsData$objRM))
+        input$ag_prompts != "supervised")
+  validate(need(!is.null(omicsData$objRM), "No model results found.  Please run the model to see results plots."))
 
   method <- input$pick_model_EM ## While summary getting fixed
 
@@ -1194,12 +1248,21 @@ output$structure_plot <- renderPlotly({
     #   extract_centroids(cut_height = 250)
 
   } else if (method %in% c("pca", "ppca")){
-
-    ## this seems off maybe
-    df <- slopeR:::embed_unsup(runner,
-                         slMethod = method,
-                         axis = input$pick_axis,
-                         bake = T
+    args = list(
+      slData = runner,
+      axis = input$pick_axis,
+      bake = T
+    )
+    
+    if (method == 'pca') {
+      args[['num_comp']] = input$pca_num_comp
+    } else if (method == 'ppca') {
+      args[['num_comp']] = input$ppca_num_comp
+    }
+    
+    df <- do.call(
+      slopeR:::embed_unsup,
+      args
     )
 
     df <- as.data.frame(df)
@@ -1213,13 +1276,16 @@ output$structure_plot <- renderPlotly({
       select_cols <- unique(c(get_edata_cname(runner), input$color_by_unsup))
       df <- left_join(df, runner$e_meta[select_cols])
     }
-
+    
+    xvar = if (!is.null(input$unsup_pca_xaxis_pc)) paste0("PC", input$unsup_pca_xaxis_pc) else "PC1"
+    yvar =  if (!is.null(input$unsup_pca_yaxis_pc)) paste0("PC", input$unsup_pca_yaxis_pc) else "PC2"
+    
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = PC1, y = PC2, color = !!color_by)) + 
+      return(ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
                geom_point(size = 3) + theme_bw())
     } else {
       ## Where is R2?
-      p <- ggplot(df, aes(x = PC1, y = PC2)) + geom_point(size = 3) + theme_bw()
+      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]])) + geom_point(size = 3) + theme_bw()
     }
 
   } else {
