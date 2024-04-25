@@ -293,6 +293,8 @@ output$Variable_importance_plot <- renderPlotly({
 
 output$Variable_importance_plot_reduced <- renderPlotly({
   
+  req(!is.null(omicsData$objRM_reduced) && !is.null(input$reduced_vi))
+  
   plotting_df <- left_join(attr(omicsData$objRM_reduced, "feature_info"), 
                            attr(omicsData$objRM_reduced, "vi_info"), 
                            by = c(names_compact = "var_name"))
@@ -302,6 +304,8 @@ output$Variable_importance_plot_reduced <- renderPlotly({
   
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
                                    levels = plotting_df$names_orig)
+  
+  req(nrow(plotting_df) > 0)
   
   p <- ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
     geom_col() +

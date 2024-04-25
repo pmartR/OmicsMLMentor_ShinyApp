@@ -10,7 +10,6 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(V8)
   library(future)
-  library(slopeR) ## Must be installed manually
   # devtools::install("../sloper", repos = NULL, type="source")
   library(forcats)
   library(Amelia)
@@ -59,7 +58,10 @@ suppressPackageStartupMessages({
   ## Don't let these get masked by other functions
   library(dplyr)
   library(purrr)
+  library(slopeR) ## Must be installed manually
 })
+
+options(renv.config.sandbox.enabled = FALSE)
 
 ## GLOBAL VARIABLES ##
 MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)

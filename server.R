@@ -28,18 +28,18 @@ shinyServer(function(session, input, output) {
     
     ######## comment this out before push
     
-    # wd <-"/Users/rich401/OneDrive-PNNL (Archive)/Desktop/Cleaned_Data_for_Rachel"
+    wd <-"/Users/rich401/OneDrive-PNNL (Archive)/Desktop/Cleaned_Data_for_Rachel"
     # wd <-"data_temp"
-    wd <-"tmp/s3-data"
+    # wd <-"tmp/s3-data"
 
-    # AWSobj$e_data <- read.csv(file.path(wd, "e_data.csv"))
-    # AWSobj$f_data <- read.csv(file.path(wd, "f_data.csv"))
-    # AWSobj$e_meta <- read.csv(file.path(wd, "e_meta.csv"))
+    AWSobj$e_data <- read.csv(file.path(wd, "e_data.csv"))
+    AWSobj$f_data <- read.csv(file.path(wd, "f_data.csv"))
+    AWSobj$e_meta <- read.csv(file.path(wd, "e_meta.csv"))
 
     # AWSobj$e_data <- read.csv(file.path(wd, "e_data_pmartR.csv"))
-    AWSobj$e_data <- read.csv(file.path(wd, "956f165a-5752-4214-b9c7-114664ce2ed6_e_data.csv"))[1:12000,]
-    AWSobj$f_data <- read.csv(file.path(wd, "b76efbf1-f698-482c-9df0-f1978957fd6e_f_data.csv"))
-    AWSobj$e_meta <- read.csv(file.path(wd, "d78a0ef5-bfc4-4afa-bf96-db7c68ea0dde_e_meta.csv"))
+    # AWSobj$e_data <- read.csv(file.path(wd, "956f165a-5752-4214-b9c7-114664ce2ed6_e_data.csv"))[1:12000,]
+    # AWSobj$f_data <- read.csv(file.path(wd, "b76efbf1-f698-482c-9df0-f1978957fd6e_f_data.csv"))
+    # AWSobj$e_meta <- read.csv(file.path(wd, "d78a0ef5-bfc4-4afa-bf96-db7c68ea0dde_e_meta.csv"))
     #
     
     
@@ -47,9 +47,9 @@ shinyServer(function(session, input, output) {
     # observeEvent(AWSobj$e_data, {
     #   AWSobj$e_data <- AWSobj$e_data[apply(!is.na(AWSobj$e_data), 2, sum) > 2,]
     #   
-    #   write.csv(AWSobj$e_data, "e_data_short.csv", row.names = F)
-    #   write.csv(AWSobj$f_data, "f_data_short.csv", row.names = F)
-    #   # write.csv(AWSobj$e_meta, "e_meta.csv", row.names = F)
+      # write.csv(AWSobj$e_data, "e_data_short.csv", row.names = F)
+      # write.csv(AWSobj$f_data, "f_data_short.csv", row.names = F)
+      # # write.csv(AWSobj$e_meta, "e_meta.csv", row.names = F)
     # }, once = T)
     # 
     # observeEvent(AWSobj$e_meta, {

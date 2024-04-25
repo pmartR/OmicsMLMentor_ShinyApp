@@ -3350,7 +3350,7 @@
         "tidyr",
         "yardstick"
       ],
-      "Hash": "e7a12bbf70884c996bb513b24d8ef859"
+      "Hash": "0d3cdf4475bcfc0a8447fe9611126342"
     },
     "snow": {
       "Package": "snow",

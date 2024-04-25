@@ -1535,7 +1535,8 @@ output$missing_options_filter_UI <- renderUI({
     "Remove biomolecules with incomplete detection" = "remove"
   )
   
-  handles_missing <- map_lgl(map(algo_rules, function(x) x$hard$any_is_na), 1)
+  is_na <- map(algo_rules, function(x) x$hard$any_is_na)
+  handles_missing <- map_lgl(is_na[!map_lgl(is_na, is.null)], 1)
   
   if(!(handles_missing[input$pick_model_EM])){
     all_choices <- all_choices[-1]
