@@ -1,59 +1,74 @@
-## SLOPER base dependencies image.  Installs system libraries, R libraries, and others.  
-## Top image extends this image and copies the source code for the app
-
-## Must provide a secret file for access to private github repos with the build argument:  
-## docker build --secret id=github_pat,src=.mysecret ...
+## slope 'base' container.  Installs system and R libraries.
 
 # Install latest version of rocker image
-FROM rocker/shiny:4.1.1
+FROM rocker/shiny:4.2.0
 
 # Load general use libraries
 RUN apt-get update && apt-get install -y \
     sudo \
+    gettext-base \
     pandoc \
     pandoc-citeproc \
     libssl-dev \
     libcurl4-openssl-dev \
     libcairo2-dev \
     libxt-dev \
-    libv8-dev \
     libssh2-1-dev \
     libhiredis-dev \
-    libmagick++-dev \
     libzmq3-dev \
     libxml2-dev \
-    vim python3-venv
-    
-USER root
+    libgsl-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    libfreetype6-dev \
+    libpng-dev \
+    libtiff5-dev \
+    libjpeg-dev \
+    cmake \
+    libcurl3-gnutls \
+	vim python3-venv
 
-WORKDIR /srv/shiny-server/
+WORKDIR /srv/shiny-server/slope
 
-# Need to set linker flags to install pmartR in linux environment
+# only need this to restore
+COPY renv/local .
+COPY renv.lock .
+COPY requirements.txt .
+
+# The following 3 lines are needed to successfully install pmartR.
 RUN mkdir $HOME/.R
 COPY Makevars-docker .
 RUN cp Makevars-docker $HOME/.R/Makevars
-
-# only need this to restore
-COPY renv.lock .
 
 # pre-install renv
 RUN R -e "install.packages('renv', repos = 'https://cran.rstudio.com')"
 
 # install all packages listed in renv.lock
-RUN --mount=type=secret,id=access_tokens set -a \
-&& . /run/secrets/access_tokens && set +a \
-&& R -e 'renv::restore()'
+# RUN --mount=type=secret,id=gitlab_pat export GITLAB_PAT="$(cat /run/secrets/gitlab_pat)" \
+# && R -e 'renv::restore()'
 
-# install packages in active development, this helps with build times as these
-# are often changed and require re-installation of all files in the lockfile.
-RUN --mount=type=secret,id=access_tokens set -a \
-&& . /run/secrets/access_tokens && set +a \
-&& R -e "renv::install('gitlab@code.emsl.pnl.gov::multiomics-analyses/mapdataaccess-lib@72e880781d8f4cea7e9045c088020d04fce66d0d')" \
-&& R -e "renv::install('EMSL-computing/pallid@d07c0330fbd29f3bb22e7aadd0e212735e7c50d8')" \
-&& R -e "options(repos = BiocManager::repositories());renv::install('pmartR/pmartR@2d922a3ef3709f5164660210591d15e69ee81f6c')"
+RUN R -e 'renv::restore()'
 
-# python and requirements
-COPY python_requirements.txt .
-RUN python3 -m venv /venv
-RUN /venv/bin/pip install --upgrade pip
-RUN /venv/bin/pip install -r python_requirements.txt
+RUN R -e 'message(getwd())'
+RUN R -e 'message(list.files())'
+
+RUN R -e "install.packages('future')"
+RUN R -e "install.packages('markdown')"
+RUN R -e "install.packages('DT')"
+RUN R -e "install.packages('estimability')"
+RUN R -e "install.packages('FactoMineR')"
+RUN R -e "install.packages('emmeans')"
+RUN R -e "install.packages('lme4')"
+RUN R -e "install.packages('factoextra')"
+RUN R -e "install.packages('gh')"
+RUN R -e "install.packages('future.apply')"
+RUN R -e "install.packages('pmart')"
+RUN R -e "devtools::install_github('pmartR/pmartRdata')"
+
+RUN R -e "install.packages('aws.s3')"
+RUN R -e "install.packages('aws.ec2metadata')"
+
+
+
+
+RUN R -e 'devtools::install_local(paste0("./sloper.zip"), repos = NULL, type="source", upgrade = c("never"))'

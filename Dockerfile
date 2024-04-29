@@ -3,15 +3,23 @@
 
 # Change this when we bump versions, or if you have some test version of the
 # base container you can specify --build-arg base_tag=<yourtag> in docker run.
-ARG base_tag=0.0.1
 
-FROM code-registry.emsl.pnl.gov/multiomics-analyses/SLOPE-app/base:$base_tag
+ARG BASE_IMAGE=slope-base
+ARG BASE_TAG=latest
 
-# copy app source
+# Note ARGs are "forgotten" after FROM statement
+FROM ${BASE_IMAGE}:${BASE_TAG}
+
+WORKDIR /srv/shiny-server/slope
+
 COPY . .
 
-# Make this shiny app available at port 8300
-EXPOSE 8301
+ARG PORT=2800
+EXPOSE ${PORT}
+ENV PORT=${PORT}
 
-# Launch App
-CMD ["R", "-e", "shiny::runApp('/srv/shiny-server/', host = '0.0.0.0', port = 8301, launch.browser = FALSE)"]
+# Add $PORT to shiny config file
+RUN mkdir -p /etc/shiny-server && \
+    envsubst < shiny-server.conf.tmpl > /etc/shiny-server/shiny-server.conf
+
+WORKDIR /srv/shiny-server
