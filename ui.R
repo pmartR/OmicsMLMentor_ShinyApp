@@ -3,9 +3,10 @@ ui <- function(request) {
   tagList(
     useShinyjs(),
     use_prompt(),
-    useShinydashboardPlus(),
+    useShinydashboardPlus(), ## This causes the hovers for picker input, pages
+    introjsUI(),
     
-    extendShinyjs(script = "../Helper_functions/shinyui.js", functions = c(
+    extendShinyjs(script = "./Helpers/shinyui.js", functions = c(
       "isTabdisabled", # For testing purposes
       "isIconhidden", # For testing purposes
       "disableTab", # Disables a tab
@@ -16,14 +17,43 @@ ui <- function(request) {
     )), # Custom JS code
     
     tags$head(
-      tags$link(rel = "stylesheet", type = "text/css", href = "../Helpers/SLOPER.css"),
+      # tags$link(rel = "stylesheet", type = "text/css", href = "./Helpers/SLOPER.css"),
+      
+      # tags$style(HTML("
+      # .btn-dropdown-toggle:hover, {
+      #               background-color: blue;
+      #               color: black;
+      #               font-weight: bold;
+      #           }
+      #                 ")),
+      # 
+      # tags$style(HTML("
+      # .bs-placeholder:hover, {
+      #               background-color: blue;
+      #               color: black;
+      #               font-weight: bold;
+      #           }
+      #                 ")),
+      
+      ## update collapses
+      tags$script(HTML(updateCollapse_script)),
       
       # Hack to replicate the addTooltip functionality with prompter
-      tags$script(HTML(addTooltip_handler_script))
+      tags$script(HTML(addTooltip_handler_script)),
+      
+      ## DT fun
+      tags$script('Shiny.addCustomMessageHandler("unbind-DT-RR", function(x) {
+                      Shiny.unbindAll($(document.getElementById(x)).find(".dataTable"));
+                      });'),
+      
+      ## Css
+      includeCSS("./Helpers/SLOPER.css")
     ),
     
-    list(tags$head(HTML('<link rel="icon", href="pmartlogo.png", type="image/png" />'))),
-    div(style = "display:none", titlePanel(title = "", windowTitle = "SLOPE")),
+    list(tags$head(HTML('<link rel="icon", href="slope_icon.png", 
+                        type="image/png" />'))),
+    
+    div(style = "display:none", titlePanel(title = "", windowTitle = "")),
     
     # Loading mask, can hide/show/edit html when wanting to show "loading" but a
     # progress indicator doesn't make sense (like at startup, where a bunch of
@@ -31,71 +61,24 @@ ui <- function(request) {
     div(
       id = "loading-gray-overlay",
       class = "loading-mask",
-      div(class = "fadein-out busy relative-centered", style = "font-size:xx-large", "Loading app resources...")
+      div(class = "fadein-out busy relative-centered",
+          style = "font-size:xx-large",
+          "Loading app resources...")
     ), 
+    
+    inlineCSS('.navbar-default .navbar-brand {padding: 2px;}'),
     #
     navbarPage(
-      title = tags$span(tags$img(src = "pmartlogo.png", style = "max-height:100%"), "SLOPE"),
+      title = tags$span(tags$img(src = "slope_icon.png", style = "max-height:100%"), ""),
       id = "top_page",
-      ##### LANDING TAB ######
-      navbarMenu(
-        "Welcome",
-        tabPanel(
-          "Instructions",
-          includeMarkdown("Static_UI/datareqs.md")
-        ),
-        tabPanel("Example Data"),
-        tabPanel("Glossary")
-      ),
-
-      ##### GOALS TAB ######
-      # goals_tab(),
-
-      ##### UPLOAD TAB ######
-      upload_tab(),
-
-      ##### REFERENCE TAB ######
-      # reference_tab(),
-
-      ###### Groups TAB #######
-      groups_tab(),
       
-      ###### Variable Selection #######
-      tabPanel("Variable Specifications"),
       
-      ###### Variable Selection #######
-      tabPanel("Model Selection"),
-      
-      navbarMenu("Pre-processing",
-                 tabPanel("Scaling and Transformation"),
-                 
-                 #### Filter Tab ####
-                 filter_tab(),
-                 
-                 ###### Normalization TAB #######
-                 norm_tab(),
-                 
-                 # #### Statistics Tab #####
-                 # pepstats_tab(),
-                 
-                 ###### Roll-up Tab ######
-                 rollup_tab("")
-                 ),
-      
-      # #### EDA Tab #####
-
-
-      # #### EDA Tab #####
-      # EDA_tab(),
-
-      # #### Statistics Tab #####
-      # stats_tab(),
-
-      #### Stats Integration Tab ####
-      # integration_tab(),
-
-      ### Run model ###
-      tabPanel("Run Model"),
+      tabPanel("Welcome", welcome_tab()),
+      tabPanel("Upload", upload_tab_overlord()),
+      tabPanel("Quality Control", QC_tab_overlord()),
+      tabPanel("Model Set-Up", Model_setup_tab_overlord()),
+      tabPanel("Pre-processing", preprocessing_tab_overlord()),
+      tabPanel("Run Model", RM_tab_overlord()),
       
       # #### Download Tab #####
       download_tab(),
@@ -111,19 +94,37 @@ ui <- function(request) {
                         class = "btn-warning", 
                         style = "position:fixed;left:15px;bottom:15px")),
     
-    actionButton("model_reccomendations", 
-                        "Model Suggestions",
-                        style = "position:absolute;top:3px;right:16px;z-index:1100;"),
+    hidden(actionButton("model_reccomendations", 
+                 "Model Requirements",
+                 width = "170px",
+                 style = "position:absolute;top:8px;right:325px;z-index:1100;")),
     
-    uiOutput("developer_buttons"),
+    actionButton("glossary_button", 
+                 "Glossary",
+                 width = "80px",
+                 style = "position:absolute;top:8px;right:235px;z-index:1100;"),
     
+    actionButton("help_button", 
+                 "Help",
+                 width = "55px",
+                 style = "position:absolute;top:8px;right:170px;z-index:1100;"),
+    
+    actionButton("contact",
+                 "Contact Maintainer",
+                 width = "150px",
+                 style = "position:absolute;top:8px;right:10px;z-index:1100;"),
+    
+
     ## ADDED FOR MAP
     div(
       style = "position:absolute;top:3px;right:16px;z-index:1100;",
       div(
         uiOutput("MAP_button")
       )
-    )
+    ),
+    
+    
+    uiOutput("developer_buttons")
     
     
   )

@@ -1,0 +1,8 @@
+Tracking document
+
+To dos:
+
+14Jun2023
+Why are plots refusing to show numerics? -- its wild, it works on the laptop screen but not on second monitor screen
+Complete preprocessing tasks
+rmd check needs to happen on QC page as well as filters
