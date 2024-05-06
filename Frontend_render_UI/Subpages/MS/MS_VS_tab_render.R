@@ -1,12 +1,12 @@
 ## VS UI rendering
 
 ## Column tracking module
-output$vs_cols_select_UI <- renderUI(KeepColsModule("keepcols"))
+output$vs_cols_select_UI <- renderUI(KeepColsModule())
 
 # ## Categorical/factor adjust -- depends on tracked cols
-output$vs_cols_categorical_UI <- renderUI(FactorColsModule("factor_cols"))
+output$vs_cols_categorical_UI <- renderUI(FactorColsModule())
 
-output$vs_cols_addint_UI <- renderUI(AddInteractionModule("add_int"))
+output$vs_cols_addint_UI <- renderUI(AddInteractionModule())
 
 
 ## Previews
@@ -25,13 +25,13 @@ output$preview_all_data_UI <- renderUI({
                        e_data = ifelse(input$data_type == "RNA-seq",
                                        "Expression data",
                                        "Abundance data"),
-                       f_data = "Sample data",
+                       f_data = "Sample Information",
                        e_meta = "Biomolecule information"
     )
     
     tabPanel(tablabel,
              br(),
-             strong("Note: Categorical columns are highlighted in yellow"),
+             strong("Note: Categorical columns are highlighted in yellow. Numeric columns are highlighted in blue."),
              br(),
              DTOutput(paste0("DT_VS_", lab))
     )
@@ -59,6 +59,9 @@ map(c("e_data", "f_data", "e_meta"), function(lab) {
     dt <- formatStyle(dt, columns = which(class_cols %in% c("factor", "character")), 
                       backgroundColor = "#fcf4d9")
     
+    dt <- formatStyle(dt, columns = which(!(class_cols %in% c("factor", "character"))), 
+                      backgroundColor = "#DFE9F5")
+    
     dt
     
   })
@@ -68,7 +71,7 @@ output$vs_tab_plots_UI <- renderUI({
   
   switch_text <- if(inherits(omicsData$objMSU, "seqData")) "Count data" else "Abundance data"
   
-  names <- c(switch_text, "Sample data", "Biomolecule data")
+  names <- c(switch_text, "Sample Information", "Biomolecule data")
   choices <- names(omicsData$objMSU)
   if(!("f_data" %in% choices)) names <- names[-2]
   names(choices) <- names[1:length(choices)]
@@ -172,7 +175,7 @@ output$vs_tab_plots <-  renderPlotly({
 output$detected_box_varsel <- renderUI({
   
   req(input$vscols_ints_done > 0)
-  collapseBox("Detected Data Properties",
+  collapseBox("Data Properties",
               value = "detected_plots",
               uiOutput("vs_tab_plots_UI")
   )

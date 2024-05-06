@@ -78,7 +78,7 @@ upload_tab <- function() {
           ## Plots and stats here
           uiOutput("detected_box_upload")
           # div(collapseBox(
-          #   "Detected Data Properties",
+          #   "Data Properties",
           #   value = "summary",
           #   # uiOutput("Characteristics_module_tabset")
           #   withSpinner(plotlyOutput("boxplot_UI"))#,

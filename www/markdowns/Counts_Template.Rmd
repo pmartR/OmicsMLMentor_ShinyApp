@@ -86,7 +86,7 @@ if (!is.null(omicDataAttr$cnames$emeta_cname)) {
 ```
 
 
-`r if (!("Var1" %in% colnames(omicData$f_data))) {paste0("### *Sample data*\nAn associated Sample data file was also uploaded called **", file_fdata_name, "**. Trimmed samples names **", ifelse(pmart_inputs$usevizsampnames == "No", "were not", "were"), "** used. The column in the Sample data file which indicates sample names was designated as **", omicDataAttr$cnames$fdata_cname, "**.")}`
+`r if (!("Var1" %in% colnames(omicData$f_data))) {paste0("### *Sample Information*\nAn associated Sample Information file was also uploaded called **", file_fdata_name, "**. Trimmed samples names **", ifelse(pmart_inputs$usevizsampnames == "No", "were not", "were"), "** used. The column in the Sample Information file which indicates sample names was designated as **", omicDataAttr$cnames$fdata_cname, "**.")}`
 
 `r if (!is.null(omicDataAttr$group_DF)) {paste0("*Grouping Information*")}`
 

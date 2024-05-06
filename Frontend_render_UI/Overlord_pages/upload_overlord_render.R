@@ -65,10 +65,11 @@ observeEvent(input$upload_done, ignoreInit = T, {
   
 })
 
-observeEvent(c(input$check_group_cols), ignoreInit = T, {
+observeEvent(c(input$check_group_cols), ignoreInit = T, priority = -1, {
   
   req(!is.null(input$check_group_cols) && 
-     input$check_group_cols > 0)
+     input$check_group_cols > 0 &&
+       !is.null(omicsData$obj))
   
   
   tryCatch({
