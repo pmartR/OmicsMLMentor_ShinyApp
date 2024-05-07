@@ -111,6 +111,7 @@ supervised_tab <- function() {
                             "Confidence in sample predictions - scatter"
                           )
               ),
+              uiOutput("visualize_perf_split_ui"),
               style= "float:right;z-index:1100;"
             ),
             
@@ -128,6 +129,26 @@ supervised_tab <- function() {
   ) # tabPanel
   
 }
+
+# determine the split used
+output$visualize_perf_split_ui <- renderUI({
+  req(input$performance_tabset)
+  has_test_preds <- if(input$performance_tabset == "Full model") {
+    !is.null(attr(omicsData$objRM, "prediction_test"))
+  } else if (input$performance_tabset == "Full model") {
+    !is.null(attr(omicsData$objRM_reduced, "prediction_test"))
+  }
+  
+  selected = if (has_test_preds) "test" else 'train'
+  choicesOpt = list("disabled" = c(FALSE, !has_test_preds))
+  
+  pickerInput("visualize_perf_which_split",
+              "Plot performance for which split:",
+              choices = c("Training" = "train", "Testing" = "test"),
+              selected = selected,
+              choicesOpt = choicesOpt
+              )
+})
 
 output[["VI_tabset_UI_collapse"]] <- renderUI({
   
@@ -564,7 +585,6 @@ observeEvent(input$run_sl, {
         ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
     } else ptest <- 0
-
     ## Get custom/optimized parameters
     custom_args <- list()
     
@@ -608,6 +628,11 @@ observeEvent(input$run_sl, {
         learn_rate = input$learn_rate,
         stop_iter = input$stop_iter,
         sample_size = input$sample_prop
+      )
+    } else if (method == "pls") {
+      custom_args <- list(
+        num_comp = input$pls_num_comp,
+        predictor_prop = input$pls_predictor_prop
       )
     }
     
@@ -858,28 +883,25 @@ output$true_pos_picker_ui_reduced <- renderUI({
   
 })
 
+#### Performance Plots ####
+
 output$roc_curve <- renderPlotly({
-
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot(omicsData$objRM, "roc_curve", split = split)
+  p <- plot(omicsData$objRM, "roc_curve", split = input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$roc_curve <- p)
   isolate(table_table_current$RM$model_eval$full$roc_curve <- p$data)
   
   p
-
 })
 
 output$roc_curve_reduced <- renderPlotly({
-  
   req(!is.null(omicsData$objRM_reduced))
+validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot(omicsData$objRM_reduced, "roc_curve", split = split)
+  p <- plot(omicsData$objRM_reduced, "roc_curve", split = input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$roc_curve <- p)
   isolate(table_table_current$RM$model_eval$reduced$roc_curve <- p$data)
@@ -893,10 +915,9 @@ output$roc_curve_reduced <- renderPlotly({
 output$confidence_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = split) + 
+  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = input$visualize_perf_which_split) + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
   
@@ -910,10 +931,9 @@ output$confidence_bar <- renderPlotly({
 output$confidence_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split = split) + 
+  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split=input$visualize_perf_which_split) +
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
   isolate(plot_table_current$RM$model_eval$reduced$confidence_bar <- p)
@@ -926,10 +946,9 @@ output$confidence_bar_reduced <- renderPlotly({
 output$prediction_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM, plotType = "prediction_bar", split = split)
+  p <- plot( omicsData$objRM, plotType = "prediction_bar", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$prediction_bar <- p)
   isolate(table_table_current$RM$model_eval$full$prediction_bar <- p$data)
@@ -941,10 +960,9 @@ output$prediction_bar <- renderPlotly({
 output$prediction_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split = split)
+  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$prediction_bar <- p)
   isolate(table_table_current$RM$model_eval$reduced$prediction_bar <- p$data)
@@ -956,26 +974,23 @@ output$prediction_bar_reduced <- renderPlotly({
 output$confusion_heatmap <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split = split)
+  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$confusion_heatmap <- p)
   isolate(table_table_current$RM$model_eval$full$confusion_heatmap <- p$data)
   
   
   p
-
 })
 
 output$confusion_heatmap_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split = split)
+  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$confusion_heatmap <- p)
   isolate(table_table_current$RM$model_eval$reduced$confusion_heatmap <- p$data)
@@ -987,12 +1002,11 @@ output$confusion_heatmap_reduced <- renderPlotly({
 output$confidence_scatter <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
   p <- plot( omicsData$objRM, 
-        plotType = "confidence_scatter", 
-        pos_class = input$true_pos_picker, split = split)
+        plotType = "confidence_scatter",
+        pos_class = input$true_pos_picker, split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$confidence_scatter <- p)
   isolate(table_table_current$RM$model_eval$full$confidence_scatter <- p$data)
@@ -1004,11 +1018,10 @@ output$confidence_scatter <- renderPlotly({
 output$confidence_scatter_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
-  
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
   p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
-        pos_class = input$true_pos_picker_reduced, split = split)
+             pos_class = input$true_pos_picker_reduced, split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$confidence_scatter <- p)
   isolate(table_table_current$RM$model_eval$reduced$confidence_scatter <- p$data)

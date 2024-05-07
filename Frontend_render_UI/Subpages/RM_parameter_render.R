@@ -415,6 +415,19 @@ gbtree_params <- function(){
   
 }
 
+#' Parameters for partial least squares.
+#' pls_num_comp:  Between 2 and min(n_features, n_samples - 1)
+#' pls_predictor_prop:  The proportion of features to keep between 0 and 1.  If this is 1, then it's just pls, anything less than 1 and we are doing sparse pls.
+pls_params <- function() {
+  n_samps = attributes(omicsData$objPP)$data_info$num_samps
+  n_feats = attributes(omicsData$objPP)$data_info$num_edata
+  
+  max_pcs = min(n_feats, n_samps - 1)
+  div(
+    sliderInput("pls_num_comp", "Number of components", min=2, max=max_pcs, value = 2),
+    numericInput("pls_predictor_prop", "Proportion of features", min=0, max=1, value=1)
+  )
+}
 
 ## Split into appropriate later
 

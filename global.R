@@ -54,6 +54,7 @@ suppressPackageStartupMessages({
   library(tune)
   library(yardstick)
   library(glmnet)
+  library(plsmod)
   
   ## Don't let these get masked by other functions
   library(dplyr)
@@ -142,7 +143,8 @@ models_long_name <- c(
   `Hierarchical clustering` = "hclust",
   `Principal Components Analysis` = "pca",
   `Uniform Manifold Approximation and Projection (UMAP)` = "umap",
-  `Gradient boosted tree` = "gbtree"
+  `Gradient boosted tree` = "gbtree",
+  `Partial least squares` = "pls"
   # `K-nearest neighbors` = "knn" ## not implemented yet
 )
 
