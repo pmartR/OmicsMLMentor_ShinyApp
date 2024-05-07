@@ -10,27 +10,6 @@ rollup_tab <- function(tabname) {
                  id = paste0(tabname, "_rollup_sidebar"),
                  
                  collapseBox(
-                   "Isoform Identification",
-                   value = "isoform_ident",
-                   
-                   uiOutput(paste0(tabname, "_bpquant_options")),
-                   uiOutput(paste0(tabname, "_bpquant_filter_anova_UI")),
-                   hr(),
-                   
-                   splitLayout(
-                     actionButton(
-                       paste0(tabname, "_bpquant"),
-                       "Compute Isoforms"
-                     ),
-                     prettySwitch(
-                       inputId = paste0(tabname, "_bpquant_lock"),
-                       label = "Unlock/Lock",
-                       width = "100%"
-                     )
-                   )
-                 ),
-                 
-                 collapseBox(
                    "Protein Rollup Options",
                    icon_id = paste0(tabname, "_rollup_picker_icon"),
                    icon = icon("exclamation-sign", lib = "glyphicon"),
@@ -93,7 +72,7 @@ rollup_tab <- function(tabname) {
                
                
                
-              actionButton("complete_rollup", "Confirm Selections")
+              hidden(actionButton("complete_rollup", "Confirm Selections"))
              ), # column 4
              
              column(
