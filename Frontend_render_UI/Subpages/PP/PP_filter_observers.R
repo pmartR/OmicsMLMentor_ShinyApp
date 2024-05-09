@@ -2,7 +2,7 @@
 ## Top page of filters
 observeEvent(input$em_select, once = T, {
   output$filter_page <- renderUI({
-    filter_tab_temp(isolate(str_to_title(class(omicsData$objPP)[[1]])),
+    filter_tab_temp(isolate(get_omicsData_type(omicsData$objPP)),
                     # F,
                     input$keep_missing == "Yes",
                     input$user_level_pick)
@@ -28,7 +28,7 @@ filter_settings_stored <- reactiveValues()
 apply_filt_flags <- reactive({
   
   req(!is.null(omicsData$objPP))
-  front <- str_to_title(class(omicsData$objPP)[[1]])
+  front <- get_omicsData_type(omicsData$objPP)
   input_text <- grep(paste0(front, "_add_"), names(input), value = T)
   flags <- map_lgl(input_text, function(x) input[[x]])
   names(flags) <- gsub(paste0(front, "_add_"), "", input_text)
@@ -40,7 +40,7 @@ apply_filt_flags <- reactive({
 output$cv_threshold_UI <- renderUI({
   
   max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
-  nm <- str_to_title(class(omicsData$objMSU)[[1]])
+  nm <- get_omicsData_type(omicsData$objMSU)
   
   numericInput(paste0(nm, "_cv_threshold"), 
                "Maximum CV", value = round(min(150, max_cv - 1)), 
@@ -51,7 +51,7 @@ output$cv_threshold_UI <- renderUI({
 ## For more robustness -- check applied filter settings against stored settings
 observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   flags <- apply_filt_flags()
   active_filters <- names(flags[flags])
   active_filters <- gsub("edata|fdata", "", active_filters)
@@ -161,7 +161,7 @@ get_filters_ipmart <- function(omicsData, filter_type, element = NULL) {
 }
 
 observeEvent(omicsData$objPP, ignoreNULL = T, {
-  filters[[str_to_title(class(omicsData$objPP)[[1]])]] <- list(
+  filters[[get_omicsData_type(omicsData$objPP)]] <- list(
     imdanovafilt = NULL,
     cvfilt = NULL,
     molfilt = NULL,
@@ -186,7 +186,7 @@ observe({
   ### For each datatype, for each filter, we store the removed molecules and samples for that filter
   removed_mols <- list()
   removed_samples <- list()
-  classy <- str_to_title(class(omicsData$objPP)[[1]])
+  classy <- get_omicsData_type(omicsData$objPP)
   
   #
   tryCatch(
@@ -325,7 +325,7 @@ observe({
 # Whenever we observe object creation, create the observers for the filter tab of that object
 observeEvent(omicsData$objPP, {
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   
   # ### Low varience ###
   # observeEvent(input[[paste0("_add_LVmol")]], {
@@ -607,7 +607,11 @@ observeEvent(omicsData$objPP, {
     thresholds <- list(
       keep = input[["filter_filt_keep"]],
       impute = input[["filter_filt_impute"]],
-      convert = input[["filter_filt_convert"]],
+      convert = ifelse(
+        get_omicsData_type(omicsData) == "pepData",
+        NULL,
+        input[["filter_filt_convert"]]
+      ),
       remove = input[["filter_filt_remove"]]
     )
     edata_nathresh_transform(as.slData(omicsData), thresholds)
@@ -1124,8 +1128,8 @@ observeEvent(omicsData$objMSU, {
   tryCatch({
     if(!inherits(omicsData$objMSU, "seqData")){
       max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
-      nm <- paste(str_to_title(class(omicsData$objPP)[[1]]), "_cv_threshold")
-      filter_flags[["max_cv"]][[str_to_title(class(omicsData$objPP)[[1]])]] <- max_cv
+      nm <- paste(get_omicsData_type(omicsData$objPP), "_cv_threshold")
+      filter_flags[["max_cv"]][[get_omicsData_type(omicsData$objPP)]] <- max_cv
     }
   }, error = function(e){""})
 },
@@ -1137,7 +1141,7 @@ priority = 10
 ### Apply filters ###
 observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   
   # gather indices in f_data of removed samples from all sample filters
   removed_indices <- NULL
@@ -1178,6 +1182,10 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
           input[[paste0(name, "_add_imputefilt")]]) {
         
         thresholds <- filter_settings[[name]]$imputefilt
+        
+        if (get_omicsData_type(tmp) == "Pepdata") {
+          thresholds$convert = NULL
+        }
         
         tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
         attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
@@ -1262,7 +1270,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     selector = '.dropdown-toggle[data-value="Filter"]'
   )
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   all_filts <- names(filters[[name]])[!map_lgl(filters[[name]], is.null)]
   
   if(length(all_filts) > 0){
@@ -1382,7 +1390,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
 #       input[[id]]
 #     }) %>% any()
 # 
-#     has_filters[[str_to_title(class(omicsData$objPP)[[1]])]] <- anyselected
+#     has_filters[[get_omicsData_type(omicsData$objPP)]] <- anyselected
 # 
 #     if (!anyselected && (is.null(input$apply_filters) || input$apply_filters < 1)) {
 #       tooltip_span <- generate_warning_tooltip(paste0(name, "filter-", name, "-warning-tooltip"))
@@ -1564,7 +1572,7 @@ output$missing_options_filter_UI <- renderUI({
 
 
 observeEvent(input$em_select, ignoreNULL = T, once = T, {
-  name  <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+  name  <- isolate(get_omicsData_type(omicsData$objPP))
   
   # output[[paste0(name, "_filter_plots")]] <- renderPlotly({
   #   
@@ -1868,7 +1876,7 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       
   output[[paste0(filter_tag, "_plot")]] <- renderPlotly({
     
-    tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+    tabname <- isolate(get_omicsData_type(omicsData$objPP))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
     isolate(table_table_current$PP$filters[[filter_tag]] <- filter$e_data)
@@ -1955,7 +1963,7 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
 output$add_impute_ui <- renderUI({
   
-  tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+  tabname <- isolate(get_omicsData_type(omicsData$objPP))
   
   out1 <- prettySwitch(
     inputId = paste0(tabname, "_add_imputefilt"),

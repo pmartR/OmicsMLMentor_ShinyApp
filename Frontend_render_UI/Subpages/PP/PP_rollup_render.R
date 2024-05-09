@@ -3,7 +3,7 @@
 
 
 output$rollup_tab <- renderUI({
-  isolate(nm <- str_to_title(class(omicsData$objPP)[[1]]))
+  isolate(nm <- get_omicsData_type(omicsData$objPP))
   out <- rollup_tab(nm)
   # if(!(nm %in% c("Pepdata", "Isobaricpepdata"))){
   #   out <- div()
@@ -51,6 +51,16 @@ load_rollup_observers <- function(tab) {
                                                   combine_fn = input[[paste0(tab, "_which_combine_fn")]],
                                                   parallel = TRUE
         )
+        
+        thresholds <- list(
+          keep = NULL,
+          impute = NULL,
+          convert = filter_settings[[tab]][["imputefilt"]]$convert,
+          remove = NULL
+        )
+        omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), thresholds)
+        
+        
         
         updateTabsetPanel(session, paste0(tab, "_rollup_res_tabpanel"),
                           selected = "Roll-up Visualization"
