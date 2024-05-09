@@ -170,7 +170,7 @@ output$download_table_table_Upload <- renderDT(height = "450px",{
   list_el <- table_table_current$Upload
   
   rows <- c("Abundance data",
-            "Sample data",
+            "Sample Information",
             "Feature data",
             "Data summary"
   )

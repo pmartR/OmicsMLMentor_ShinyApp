@@ -9,7 +9,7 @@ output$pick_model_UI <- renderUI({
     function(x)
       switch(
         x,
-        "TRUE" = "Requires sample data",
+        "TRUE" = "Requires Sample Information",
         "FALSE" = ""
         )
     )
@@ -35,7 +35,7 @@ output$ag_prompt_UI <- renderUI({
   
   out <- if(is.null(omicsData$objMSU$f_data)){
     div(
-      "Note: When sample data is uploaded, additional options are available.",
+      "Note: When Sample Information is uploaded, additional options are available.",
       radioButtons(
         "ag_prompts",
         label = "",
@@ -119,7 +119,7 @@ observeEvent(input$ag_prompts, {
     
     updateRadioButtons(session, "ag_prompts", selected = "unsupervised")
     shinyalert("Not enough data!", 
-               "No sample data has been uploaded. Please upload or generate sample data to use this option.")
+               "No Sample Information has been uploaded. Please upload or generate Sample Information to use this option.")
   }
 })
 

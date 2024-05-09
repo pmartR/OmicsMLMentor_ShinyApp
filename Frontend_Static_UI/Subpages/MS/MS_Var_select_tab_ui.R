@@ -53,7 +53,7 @@ var_select_tab <- function() {
                  ("input.vscols_cats_done > 0 & input.user_level_pick != 'beginner'", {
                  # div( id = "int_col_collapse",
                    collapseBox(
-                     "Specify Sample data interaction effects",
+                     "Specify Sample Information interaction effects",
                      icon_id = "vs-intcols",
                      icon = icon("exclamation-sign", lib = "glyphicon"),
                      value = "int_cols_vs",
@@ -89,7 +89,7 @@ var_select_tab <- function() {
                  ),
                  
                  uiOutput("detected_box_varsel")
-                 # collapseBox("Detected Data Properties",
+                 # collapseBox("Data Properties",
                  #             value = "detected_plots",
                  #             uiOutput("vs_tab_boxplots")
                  # )

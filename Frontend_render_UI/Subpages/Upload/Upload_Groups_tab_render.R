@@ -8,7 +8,7 @@ output$f_data_upload_UI <- renderUI({
   
   div(
     collapseBox(
-      "Upload Sample Data",
+      "Upload Sample Information",
       icon_id = "fdata_params_icon",
       icon = icon("exclamation-sign", lib = "glyphicon"),
       value = "upload_fdata_UI_box",
@@ -33,7 +33,7 @@ output$how_make_fdata_UI <- renderUI({
   div(
     br(),
     radioGroupButtons(
-      inputId = "how_make_fdata", label = "Create sample data from:",
+      inputId = "how_make_fdata", label = "Create Sample Information from:",
       choices = c("Uploaded file" = "upload", 
                   "Experimental data column names" = "colnames"),
       selected = character(0)
@@ -59,8 +59,16 @@ output$f_meta_spec_UI <- renderUI({
            (input$use_example_fdata || AWS || input$how_make_fdata == "colnames"))
       )
   
+  check_cols <- colnames(reactive_dataholder[["e_data"]]$file)
+  f_data <- reactive_dataholder[["f_data"]]$file
+  best_col <- which.max(map_int(colnames(f_data), function(col){
+    sum(as.character(f_data[[col]]) %in% check_cols)
+  }))
+  
+  selected <- colnames(f_data)[best_col]
+  
   collapseBox(
-    "Specify Sample Data Properties",
+    "Specify Sample Information Properties",
     icon_id = "fdata_params_icon",
     icon = icon("exclamation-sign", lib = "glyphicon"),
     value = "data_props_fdata",
@@ -68,9 +76,9 @@ output$f_meta_spec_UI <- renderUI({
     
     pickerInput(
       "f_data_id_col",
-      "Which column identifies samples?",
+      "Which column identifies unique samples?",
       choices = colnames(reactive_dataholder[["f_data"]]$file),
-      selected = isolate(if(!is.null(input$e_meta_id_col)) input$e_meta_id_col else character(0))
+      selected = isolate(if(!is.null(input$f_data_id_col)) input$f_data_id_col else selected)
     ),
     # div(style="display:inline-block",actionButton("specify_fdata_done", "Done", style="float:right"))
     
@@ -129,7 +137,7 @@ output$Group_tab_plots <- renderPlotly({
 output$detected_box_group <- renderUI({
   
   req(input$specify_fdata_done > 0)
-  collapseBox("Detected Data Properties",
+  collapseBox("Data Properties",
               value = "fdata_plots",
               uiOutput("Group_plot_picker"),
               plotlyOutput("Group_tab_plots")
