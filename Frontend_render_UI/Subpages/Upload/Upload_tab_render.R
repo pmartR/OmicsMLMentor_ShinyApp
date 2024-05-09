@@ -25,17 +25,17 @@ output$data_select_UI <- renderUI({
   div(
     p(tags$b("What experimental files do you have?")),
     
-    disabled(prettySwitch("have_edata", label_edata, value = T, fill = T)),
+    disabled(prettySwitch("have_edata", label_edata, value = T, fill = T, status = "primary")),
     p("Required", style = "margin-top: -10px;"),
     br(),
     if (input$data_type %in% c("Label-free", "Isobaric")) {
       tagList(
-        disabled(prettySwitch("have_emeta", label_emeta, value = T, fill = T)),
+        disabled(prettySwitch("have_emeta", label_emeta, value = T, fill = T, status = "primary")),
         div("Required", relevant_examples, style = "margin-top: -10px;")
       )
     } else {
       tagList(
-        prettySwitch("have_emeta", label_emeta, value = F, fill = T),
+        prettySwitch("have_emeta", label_emeta, value = F, fill = T, status = "primary"),
         div("Optional", relevant_examples, style = "margin-top: -10px;")
       )
     },
