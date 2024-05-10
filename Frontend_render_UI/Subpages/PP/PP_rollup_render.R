@@ -124,6 +124,47 @@ assign_rollup_output <- function(tab) {
     } else {
       p <- "Roll-up has not been applied."
     }
+    
     return(p)
   })
+  
+  output[[paste0(tab, "_rollup_data_summary")]] <- renderDT(
+    {
+      df <- as.data.frame(summary(omicsData$objPP))
+      df <- df[2:nrow(df), ]
+      df[[1]] <- as.numeric(as.character(df[[1]]))
+      
+      if (is.na(df[str_detect(row.names(df), "e_meta"), ])) {
+        df <- df[-3, ]
+        
+        row.names(df) <- c(
+          "Unique Samples",
+          paste0("Unique ", get_edata_cname(omicsData$objQC)),
+          # paste0("Unique ", datatypes_pos$dataholder[[type]]$Emeta_cname),
+          "Missing Observations",
+          "Proportion Missing",
+          row.names(df)[5:nrow(df)]
+        )
+        
+        colnames(df) <- " "
+      } else {
+        row.names(df) <- c(
+          "Unique Samples",
+          paste0("Unique ", get_edata_cname(omicsData$objQC)),
+          paste0("Unique ", get_emeta_cname(omicsData$objPP)),
+          "Missing Observations",
+          "Proportion Missing",
+          row.names(df)[6:nrow(df)]
+        )
+        
+        colnames(df) <- " "
+      }
+      
+      isolate(table_table_current$PP$rollup <- df)
+      
+      return(df)
+    },
+    options = list(dom = "t", scrollX = TRUE),
+    selection = "none"
+  )
 }

@@ -18,7 +18,8 @@ plot_table_current <- reactiveValues(
     filters = NULL,
     normalization = NULL,
     bias = NULL,
-    SPANS = NULL
+    SPANS = NULL,
+    rollup = NULL
   ),
   RM = list(
     # training_structure = NULL,
@@ -51,7 +52,8 @@ table_table_current <- reactiveValues(
     transform = NULL,
     filters = NULL,
     normalization = NULL,
-    SPANS = NULL
+    SPANS = NULL,
+    rollup = NULL
   ),
   RM = list(
     training_structure = NULL,
@@ -324,7 +326,8 @@ output$download_plot_table_PP <- renderDT(height = "450px",{
             paste0("Filter info: ", names(list_el$filters)),
             "Normalization: Pre",
             "Normalization: Post",
-            paste0("Normalization bias: ", names(list_el$bias))
+            paste0("Normalization bias: ", names(list_el$bias)),
+            "Rollup"
             )
   
   
@@ -358,7 +361,8 @@ output$download_table_table_PP <- renderDT(height = "450px",{
   rows <- c("Transformed data",
             "SPANS (Normalization recommendations)",
             "Normalization",
-            paste0("Filter info: ", names(list_el$filters))
+            paste0("Filter info: ", names(list_el$filters)),
+            "Rollup"
   )
   
   req(any(!map_lgl(list_el, is.null)))
