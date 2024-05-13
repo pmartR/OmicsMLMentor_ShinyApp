@@ -1906,7 +1906,8 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
     tabname <- isolate(get_omicsData_type(omicsData$objPP))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
-    isolate(table_table_current$PP$filters[[filter_tag]] <- filter$e_data)
+    isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
+    isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     req(!is.null(filter))
     
@@ -1963,7 +1964,9 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
     } else if (filter_tag == "cvfilt" ){
       
-      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
 
       if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
         p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
@@ -1976,13 +1979,15 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
     } else {
       
-      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
 
       p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                       settings))
     }
     
-    isolate(plot_table_current$PP$filters[[filter_tag]] <- p)
+    isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
+    isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     p
   })

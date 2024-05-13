@@ -143,7 +143,7 @@ output$missing_data_hist_biomolecule <- renderPlotly({
     p <- p + ggtitle("Protein level preview")
   }
   
-  isolate(plot_table_current$QC$missing_features <- p)
+  isolate(plot_table_current$table$QC__missing_features <- p)
   
   p
   
@@ -179,9 +179,9 @@ output$missing_data_hist_sample <- renderPlotly({
   p <- plot(missingval_result(temp_dat), temp_dat, 
        nonmissing = T, proportion = T)
   
-  isolate(plot_table_current$QC$missing_samples <- p)
-  isolate(table_table_current$QC$missing_samples <- missingval_result(temp_dat)[[1]])
-  isolate(table_table_current$QC$missing_features <- missingval_result(temp_dat)[[2]])
+  isolate(plot_table_current$table$QC__missing_samples <- p)
+  isolate(table_table_current$table$QC__missing_samples <- missingval_result(temp_dat)[[1]])
+  isolate(table_table_current$table$QC__missing_features <- missingval_result(temp_dat)[[2]])
   
   p
   

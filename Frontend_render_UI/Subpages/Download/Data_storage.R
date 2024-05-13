@@ -1,66 +1,157 @@
 ## Data storage module
 
 plot_table_current <- reactiveValues(
-  Upload = list(
-    boxplot = NULL,
-    grouping = NULL ## only applicable if a group variable is selected down the line? Whatever ones the user generates?
+  table = list(
+    Upload__boxplot = NULL,
+    #Upload__grouping = NULL, ## only applicable if a group variable is selected down the line? Whatever ones the user generates?
+    
+    QC__single_obs = NULL,
+    QC__rmd_overall = NULL,
+    QC__rmd_outliers = NULL,
+    QC__missing_samples = NULL,
+    QC__missing_features = NULL,
+    
+    PP__transform = NULL,
+    # PP__filters__* added via code
+    PP__normalization__pre = NULL,
+    PP__normalization__post = NULL,
+    PP__bias__location = NULL,
+    PP__bias__scale = NULL,
+    PP__SPANS = NULL,
+    # RM__training_structure = NULL,
+    
+    RM__rec_folds = NULL,
+    RM__param_optim = NULL,
+    RM__training_structure = NULL,
+    RM__model_eval__full__roc_curve = NULL,
+    RM__model_eval__full__roc_curve = NULL,
+    RM__model_eval__full__confidence_bar = NULL,
+    RM__model_eval__full__prediction_bar = NULL,
+    RM__model_eval__full__confusion_heatmap = NULL,
+    RM__model_eval__full__confidence_scatter = NULL,
+    RM__model_eval__reduced__roc_curve = NULL,
+    RM__model_eval__reduced__confidence_bar = NULL,
+    RM__model_eval__reduced__prediction_bar = NULL,
+    RM__model_eval__reduced__confusion_heatmap = NULL,
+    RM__model_eval__reduced__confidence_scatter = NULL,
+    RM__variable_importance__full = NULL,
+    RM__variable_importance__reduced = NULL
   ),
-  QC = list(
-    single_obs = NULL,
-    rmd_overall = NULL,
-    rmd_outliers = NULL,
-    missing_samples = NULL,
-    missing_features = NULL
-  ),
-  MSU = NULL,
-  PP = list(
-    transform = NULL,
-    filters = NULL,
-    normalization = NULL,
-    bias = NULL,
-    SPANS = NULL,
-    rollup = NULL
-  ),
-  RM = list(
-    # training_structure = NULL,
-    rec_folds = NULL,
-    param_optim = NULL,
-    training_structure = NULL,
-    model_eval = NULL,
-    variable_importance = NULL
+  
+  names = list(
+    Upload__boxplot = "Data boxplots",
+    #Upload__grouping = NULL,
+    
+    QC__single_obs = "Single feature observations",
+    QC__rmd_overall = "Outlier plot: All",
+    QC__rmd_outliers = "Outlier plot: Selected",
+    QC__missing_samples = "Missingness by sample",
+    QC__missing_features = "Missingness handling thresholds",
+    
+    PP__transform = "Transformed boxplots",
+    # PP__filters__* added via code
+    PP__normalization__pre = "Normalization: Pre",
+    PP__normalization__post = "Normalization: Post",
+    PP__bias__location = "Normalization: bias location",
+    PP__bias__scale = "Normalization: bias scale",
+    PP__SPANS = "SPANS (Normalization recommendations)",
+
+    RM__rec_folds = "Fold recommendation",
+    RM__param_optim = "Parameter optimization",
+    RM__training_structure = "Training structure",
+    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence bar (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: prediction bar (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confusion heatmap (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence bar (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: prediction bar (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confusion heatmap (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (reduced)",
+    RM__variable_importance__full = "Variable importance (full)",
+    RM__variable_importance__reduced = "Variable importance (reduced)"
   )
 )
 
 
 table_table_current <- reactiveValues(
-  Upload = list(
-    e_data = NULL,
-    e_meta = NULL,
-    f_data = NULL,
-    summary = NULL
+  table = list(
+    Upload__e_data = NULL,
+    Upload__e_meta = NULL,
+    Upload__f_data = NULL,
+    Upload__summary = NULL,
+    QC__single_obs = NULL,
+    QC__rmd_table = NULL,
+    QC__missing_samples = NULL,
+    QC__missing_features = NULL,
+    MSU__expert_mentor_summary = NULL,
+    PP__transform = NULL,
+
+    # PP__filters__*
+    
+    PP__normalization = NULL,
+    PP__SPANS = NULL,
+    
+    RM__training_structure__performance = NULL,
+    RM__training_structure__tuning = NULL,
+    
+    RM__rec_folds = NULL,
+    RM__param_optim = NULL,
+
+    RM__model_eval = NULL,
+    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence bar (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: prediction bar (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confusion heatmap (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (full)",
+    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence bar (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: prediction bar (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confusion heatmap (reduced)",
+    RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (reduced)",
+    
+    RM__variable_importance__full = NULL,
+    RM__variable_importance__reduced = NULL
   ),
-  QC = list(
-    single_obs = NULL,
-    rmd_table = NULL,
-    missing_samples = NULL,
-    missing_features = NULL
-  ),
-  MSU = list(
-    expert_mentor_summary = NULL
-  ),
-  PP = list(
-    transform = NULL,
-    filters = NULL,
-    normalization = NULL,
-    SPANS = NULL,
-    rollup = NULL
-  ),
-  RM = list(
-    training_structure = NULL,
-    rec_folds = NULL,
-    param_optim = NULL,
-    model_eval = NULL,
-    variable_importance = NULL
+  names = list(
+    Upload__e_data = "Abundance Data",
+    Upload__e_meta = "Biomolecule Information",
+    Upload__f_data = "Sample Information",
+    Upload__summary = "Data summary",
+    QC__single_obs = "N feature observations",
+    QC__rmd_table = "Outlier table",
+    QC__missing_samples = "Missingness by sample",
+    QC__missing_features = "Missingness by feature",
+    MSU__expert_mentor_summary = "Expert mentor summary",
+    PP__transform = "Transformed data",
+    
+    # PP__filters__*
+    
+    PP__normalization = "Normalization",
+    PP__SPANS = "SPANS (Normalization recommendations)",
+    
+    RM__training_structure__performance = "Training structure performance",
+    RM__training_structure__tuning = "Training structure tuning",
+    
+    RM__rec_folds = "Fold recommendation",
+    RM__param_optim = "Parameter optimization",
+    
+    RM__model_eval = "Model evaluation",
+    RM__model_eval__full__roc_curve = "NULL",
+    RM__model_eval__full__confidence_bar = "NULL",
+    RM__model_eval__full__prediction_bar = "NULL",
+    RM__model_eval__full__confusion_heatmap = "NULL",
+    RM__model_eval__full__confidence_scatter = "NULL",
+    RM__model_eval__reduced__roc_curve = "NULL",
+    RM__model_eval__reduced__confidence_bar = "NULL",
+    RM__model_eval__reduced__prediction_bar = "NULL",
+    RM__model_eval__reduced__confusion_heatmap = "NULL",
+    RM__model_eval__reduced__confidence_scatter = "NULL",
+    
+    RM__variable_importance__full = "Variable importance (full)",
+    RM__variable_importance__reduced = "Variable importance (reduced)"
   )
 )
 
@@ -120,14 +211,19 @@ map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
     
     observeEvent(input[[str]], {
         
-        req(length(input[[str]]) > 0)
-        
-        pull_info <- get(paste0(type, "_table_current"))[[pg]]
-        req(!is.null(pull_info))
-        index <- input[[str]]$row
-        flat_info <- flattenlist(pull_info)
-        download_preview$current <- flat_info[!map_lgl(flat_info, is.null)][[index]]
-        download_preview$plot <- type == "plot"
+      req(length(input[[str]]) > 0)
+      
+      pull_info <- get(paste0(type, "_table_current"))
+      req(!is.null(pull_info))
+      index <- input[[str]]$row
+
+      pull_table <- tibble(
+        rows = pull_info$names[which(startsWith(names(pull_info$table), paste0(pg, "__")))],
+        list_el = pull_info$table[which(startsWith(names(pull_info$table), paste0(pg, "__")))] 
+      ) %>% filter(!map_lgl(list_el, is.null))
+      
+      download_preview$current <- pull_table$list_el[[index]]
+      download_preview$plot <- type == "plot"
       
     })
     
@@ -140,18 +236,15 @@ map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
 output$download_plot_table_Upload <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_Upload")
-  list_el <- plot_table_current$Upload
-  
-  if(!is.null(list_el$grouping)){
-    rows <- c("Data boxplots",
-              paste0("Group info: ", names(list_el$grouping)))
-  } else {
-    rows <- c("Data boxplots")
-  }
+  pg <- "Upload"
+  plot_table <- tibble(
+    rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+    list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
 
   data.frame(
-    Visualization = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows), value = T, "checkplot_upload", width = "10%"),
+    Visualization = unname(unlist(plot_table$rows)),
+    `Download?` = shinyInput(safeCheckboxInput, length(unlist(plot_table$rows)), value = T, "checkplot_upload", width = "10%"),
     check.names = F
   )
   
@@ -167,23 +260,16 @@ output$download_plot_table_Upload <- renderDT(height = "450px",{
 
 output$download_table_table_Upload <- renderDT(height = "450px",{
   
-  
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_Upload")
-  list_el <- table_table_current$Upload
-  
-  rows <- c("Abundance data",
-            "Sample Information",
-            "Feature data",
-            "Data summary"
-  )
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(list_el, is.null)]
+  pg <- "Upload"
+  table_table <- tibble(
+    rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+    list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Table = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows), value = T, "checktable_upload", width = "10%"),
+    Table = unname(unlist(table_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(table_table$rows)), value = T, "checktable_upload", width = "10%"),
     check.names = F
   )
   }, 
@@ -201,24 +287,15 @@ output$download_table_table_Upload <- renderDT(height = "450px",{
 output$download_plot_table_QC <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_QC")
-  list_el <- plot_table_current$QC
-  
-  rows <- c(
-    "Single feature observations",
-    "Outlier plot: All",
-    "Outlier plot: Selected",
-    "Missingness by sample",
-    "Missingness handling thresholds"
-  )
-  
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(list_el, is.null)]
+  pg <- "QC"
+  plot_table <- tibble(
+    rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+    list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Visualization = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows),value = T, "checkplot_QC", width = "10%"),
+    Visualization = unname(unlist(plot_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(plot_table$rows)), value = T, "checkplot_QC", width = "10%"),
     check.names = F
   )
   
@@ -236,22 +313,15 @@ output$download_table_table_QC <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_QC")
-  list_el <- table_table_current$QC
-  
-  rows <- c(
-    "N feature observations",
-    "Outlier table",
-    "Missingness by sample",
-    "Missingness by feature"
-  )
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(list_el, is.null)]
+  pg <- "QC"
+  table_table <- tibble(
+    rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+    list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Table = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows),value = T, "checktable_QC", width = "10%"),
+    Table = unname(unlist(table_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(table_table$rows)), value = T, "checktable_QC", width = "10%"),
     check.names = F
   )
 }, 
@@ -268,11 +338,15 @@ escape = FALSE
 output$download_plot_table_MSU <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_MSU")
-  list_el <- plot_table_current$MSU
+  pg <- "MSU"
+  plot_table <- tibble(
+    rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+    list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Visualization = character(0),
-    `Download?` = character(0),
+    Visualization = unname(unlist(plot_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(plot_table$rows)), value = T, "checktable_QC", width = "10%"),
     check.names = F
   )
   
@@ -290,19 +364,15 @@ output$download_table_table_MSU <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_MSU")
-  list_el <- table_table_current$MSU
-  
-  rows <- c(
-    "Expert mentor summary"
-  )
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(list_el, is.null)]
+  pg <- "MSU"
+  table_table <- tibble(
+    rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+    list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Table = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows),value = T, "checktable_MSU", width = "10%"),
+    Table = unname(unlist(table_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(table_table$rows)), value = T, "checktable_MSU", width = "10%"),
     check.names = F
   )
 }, 
@@ -319,25 +389,16 @@ escape = FALSE
 output$download_plot_table_PP <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_PP")
-  list_el <- plot_table_current$PP
-  
-  rows <- c("Transformed boxplots",
-            "SPANS (Normalization recommendations)",
-            paste0("Filter info: ", names(list_el$filters)),
-            "Normalization: Pre",
-            "Normalization: Post",
-            paste0("Normalization bias: ", names(list_el$bias)),
-            "Rollup"
-            )
-  
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(flattenlist(list_el), is.null)]
+
+  pg <- "PP"
+  plot_table <- tibble(
+    rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+    list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Visualization = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows),value = T, 
+    Visualization = unname(unlist(plot_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(plot_table$rows)), value = T, 
                              "checkplot_PP", width = "10%"),
     check.names = F
   )
@@ -356,22 +417,16 @@ output$download_table_table_PP <- renderDT(height = "450px",{
   
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_PP")
-  list_el <- table_table_current$PP
-  
-  rows <- c("Transformed data",
-            "SPANS (Normalization recommendations)",
-            "Normalization",
-            paste0("Filter info: ", names(list_el$filters)),
-            "Rollup"
-  )
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(flattenlist(list_el), is.null)]
+
+  pg <- "PP"
+  table_table <- tibble(
+    rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+    list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Table = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows), value = T,
+    Table = unname(unlist(table_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(table_table$rows)), value = T,
                              "checktable_PP", width = "10%"),
     check.names = F
   )
@@ -389,27 +444,15 @@ escape = FALSE
 output$download_plot_table_RM <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_plot_table_RM")
-  list_el <- plot_table_current$RM
-  
-  req(!is.null(list_el))
-  
-  model_names <- gsub("\\.", " ", names(flattenlist(list_el$model_eval)))
-  
-  rows <- c(
-    "Fold recommendation",
-    "Parameter optimization",
-    "Training structure",
-    paste0("Variable importance: ", names(list_el$variable_importance)),
-    paste0("Model evaluation: ", model_names)
-  )
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(flattenlist(list_el), is.null)]
+  pg <- "RM"
+  plot_table <- tibble(
+    rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+    list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Visualization = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows),value = T, "checkplot_RM", width = "10%"),
+    Visualization = unname(unlist(plot_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(plot_table$rows)), value = T, "checkplot_RM", width = "10%"),
     check.names = F
   )
   
@@ -426,29 +469,15 @@ escape = FALSE
 output$download_table_table_RM <- renderDT(height = "450px",{
   
   session$sendCustomMessage("unbind-DT-RR", "download_table_table_RM")
-  list_el <- table_table_current$RM
-  
-  req(!is.null(list_el))
-  
-  model_names <- gsub("\\.", " ", names(flattenlist(list_el$model_eval)))
-  train_names <- names(list_el$training_structure)
-  
-  rows <- c(
-    "Fold recommendation",
-    "Parameter optimization",
-    ifelse(length(train_names) < 2,"Training structure",
-           paste0("Training structure: ", names(list_el$training_structure))),
-    paste0("Variable importance: ", names(list_el$variable_importance)),
-    paste0("Model evaluation: ", model_names)
-  )
-  
-  req(any(!map_lgl(list_el, is.null)))
-  
-  rows <- rows[!map_lgl(flattenlist(list_el), is.null)]
+  pg <- "RM"
+  table_table <- tibble(
+    rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+    list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
+  ) %>% filter(!map_lgl(list_el, is.null))
   
   data.frame(
-    Table = rows,
-    `Download?` = shinyInput(checkboxInput, length(rows),value = T, "checktable_RM", width = "10%"),
+    Table = unname(unlist(table_table$rows)),
+    `Download?` = shinyInput(checkboxInput, length(unlist(table_table$rows)), value = T, "checktable_RM", width = "10%"),
     check.names = F
   )
 }, 

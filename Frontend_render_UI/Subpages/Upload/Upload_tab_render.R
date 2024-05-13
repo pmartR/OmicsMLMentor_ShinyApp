@@ -226,7 +226,7 @@ output$boxplot_UI <- renderPlotly({
     ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5)) +
     labs(x = "", y = ifelse(input$data_type != "RNA-seq", "Abundance", "Counts"))
   
-  isolate(plot_table_current$Upload$boxplot <- p)
+  isolate(plot_table_current$table$Upload__boxplot <- p)
   
   p
   
