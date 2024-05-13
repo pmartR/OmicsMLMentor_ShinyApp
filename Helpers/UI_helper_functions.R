@@ -12,6 +12,12 @@ toggleTab <- function(name, condition, class="disabled") {
   } else js$disableTab(name, class)
 }
 
+#'@details Creates a checkbox that will not propagate its mousedown event. For
+#'use in tables to prevent selecting the row when clicking the checkbox.
+safeCheckboxInput <- function(..., class = NULL) {
+  tags$span(checkboxInput(...), class = class, onmousedown = "event.stopPropagation()")
+}
+
 #'@details Creates a sequence of inputs as html, usually to be added the column
 #'of a table.
 buttonInput <- function(FUN, len, id, ...) {
