@@ -174,8 +174,8 @@ output$rmd_plot_qc_all <- renderPlotly({
   p <- plot(QC_rmd$res, pvalue_threshold = pval) + 
     theme(legend.position = 0)
   
-  isolate(plot_table_current$QC$rmd_overall <- p)
-  isolate(table_table_current$QC$rmd_table <- QC_rmd$res)
+  isolate(plot_table_current$table$QC__rmd_overall <- p)
+  isolate(table_table_current$table$QC__rmd_table <- QC_rmd$res)
   
   p
   
@@ -210,7 +210,7 @@ output$rmd_plot_qc_select <- renderPlotly({
   
   p <- plot(QC_rmd$res, sampleID = sampId)
   
-  isolate(plot_table_current$QC$rmd_outliers <- p)
+  isolate(plot_table_current$table$QC__rmd_outliers <- p)
   
   p
   

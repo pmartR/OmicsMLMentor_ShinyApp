@@ -21,8 +21,8 @@ observeEvent(input$makezipfile, {
                      paste0("SLOPE_", method, 
                             "_", gsub("( |:|-)", "_", Sys.time())))
 
-  plots <- flattenlist(reactiveValuesToList(plot_table_current))
-  tables <- flattenlist(reactiveValuesToList(table_table_current))
+  plots <- reactiveValuesToList(plot_table_current)$table
+  tables <- reactiveValuesToList(table_table_current)$table
   
   plots_keep <- getShinyInput(input, "checkplot")
   tables_keep <- getShinyInput(input, "checktable")

@@ -27,8 +27,8 @@ output$param_preview_plot <- renderPlotly({
   p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
     ggplot2::theme_bw()
   
-  isolate(plot_table_current$RM$param_optim <- p)
-  isolate(table_table_current$RM$param_optim <- unnest(
+  isolate(plot_table_current$table$RM__param_optim <- p)
+  isolate(table_table_current$table$RM__param_optim <- unnest(
     hp_res[2:3], cols = c(".metrics")))
   
   p

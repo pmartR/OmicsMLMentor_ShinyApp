@@ -126,7 +126,8 @@ output$Group_tab_plots <- renderPlotly({
       labs(x = "Value", y = "Frequency")
   }
 
-  isolate(plot_table_current$Upload$grouping[[input$Gplot_picker]] <- p)
+  isolate(plot_table_current$table[[paste0("Upload__grouping__", input$Gplot_picker)]] <- p)
+  isolate(plot_table_current$names[[paste0("Upload__grouping__", input$Gplot_picker)]] <- paste0("Group info: ", input$Gplot_picker))
 
   p
 
