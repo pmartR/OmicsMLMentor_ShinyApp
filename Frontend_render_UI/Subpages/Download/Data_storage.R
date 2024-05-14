@@ -55,7 +55,7 @@ plot_table_current <- reactiveValues(
     PP__bias__location = "Normalization: bias location",
     PP__bias__scale = "Normalization: bias scale",
     PP__SPANS = "SPANS (Normalization recommendations)",
-
+    
     RM__rec_folds = "Fold recommendation",
     RM__param_optim = "Parameter optimization",
     RM__training_structure = "Training structure",
@@ -90,7 +90,7 @@ table_table_current <- reactiveValues(
     QC__missing_features = NULL,
     MSU__expert_mentor_summary = NULL,
     PP__transform = NULL,
-
+    
     # PP__filters__*
     
     PP__normalization = NULL,
@@ -101,18 +101,18 @@ table_table_current <- reactiveValues(
     
     RM__rec_folds = NULL,
     RM__param_optim = NULL,
-
+    
     RM__model_eval = NULL,
-    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
-    RM__model_eval__full__roc_curve = "Model evaluation: confidence bar (full)",
-    RM__model_eval__full__roc_curve = "Model evaluation: prediction bar (full)",
-    RM__model_eval__full__roc_curve = "Model evaluation: confusion heatmap (full)",
-    RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (full)",
-    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (reduced)",
-    RM__model_eval__full__roc_curve = "Model evaluation: confidence bar (reduced)",
-    RM__model_eval__full__roc_curve = "Model evaluation: prediction bar (reduced)",
-    RM__model_eval__full__roc_curve = "Model evaluation: confusion heatmap (reduced)",
-    RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (reduced)",
+    RM__model_eval__full__roc_curve = NULL,
+    RM__model_eval__full__confidence_bar = NULL,
+    RM__model_eval__full__prediction_bar = NULL,
+    RM__model_eval__full__confusion_heatmap = NULL,
+    RM__model_eval__full__confidence_scatter = NULL,
+    RM__model_eval__reduced__roc_curve = NULL,
+    RM__model_eval__reduced__confidence_bar = NULL,
+    RM__model_eval__reduced__prediction_bar = NULL,
+    RM__model_eval__reduced__confusion_heatmap = NULL,
+    RM__model_eval__reduced__confidence_scatter = NULL,
     
     RM__variable_importance__full = NULL,
     RM__variable_importance__reduced = NULL
@@ -141,16 +141,16 @@ table_table_current <- reactiveValues(
     RM__param_optim = "Parameter optimization",
     
     RM__model_eval = "Model evaluation",
-    RM__model_eval__full__roc_curve = "NULL",
-    RM__model_eval__full__confidence_bar = "NULL",
-    RM__model_eval__full__prediction_bar = "NULL",
-    RM__model_eval__full__confusion_heatmap = "NULL",
-    RM__model_eval__full__confidence_scatter = "NULL",
-    RM__model_eval__reduced__roc_curve = "NULL",
-    RM__model_eval__reduced__confidence_bar = "NULL",
-    RM__model_eval__reduced__prediction_bar = "NULL",
-    RM__model_eval__reduced__confusion_heatmap = "NULL",
-    RM__model_eval__reduced__confidence_scatter = "NULL",
+    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
+    RM__model_eval__full__confidence_bar = "Model evaluation: confidence bar (full)",
+    RM__model_eval__full__prediction_bar = "Model evaluation: prediction bar (full)",
+    RM__model_eval__full__confusion_heatmap = "Model evaluation: confusion heatmap (full)",
+    RM__model_eval__full__confidence_scatter = "Model evaluation: confidence scatter (full)",
+    RM__model_eval__reduced__roc_curve = "Model evaluation: roc curve (reduced)",
+    RM__model_eval__reduced__confidence_bar = "Model evaluation: confidence bar (reduced)",
+    RM__model_eval__reduced__prediction_bar = "Model evaluation: prediction bar (reduced)",
+    RM__model_eval__reduced__confusion_heatmap = "Model evaluation: confusion heatmap (reduced)",
+    RM__model_eval__reduced__confidence_scatter = "Model evaluation: confidence scatter (reduced)",
     
     RM__variable_importance__full = "Variable importance (full)",
     RM__variable_importance__reduced = "Variable importance (reduced)"
