@@ -1,3 +1,43 @@
+### Reactives for response columns and response types
+
+#' Response types for each column selected as the response, as specified by the user
+response_types_ag <- reactive({
+  req(response_cols_ag())
+  
+  ## Run with correct response variable type
+  rt <- NULL
+  for (i in 1:length(response_cols_ag())){
+    if (!is.null(input[[paste0("pick_model_response_type_", i)]])){
+      rt <- c(rt, input[[paste0("pick_model_response_type_", i)]])
+    } else {
+      rt <- c(rt, ifelse(class(omicsData$objPP$f_data[, response_cols_ag()[i]]) %in% c("factor", "character"), "categorical", "continuous"))
+    }
+  }
+  
+  return(rt)
+})
+
+#' The response columns, based on whether we are using 'expert mode' or not
+response_cols_ag <- reactive({
+  expert_cond <- !is.null(input$skip_ag) && 
+    input$skip_ag && 
+    input$pick_model %in% models_supervised
+  
+  other_cond <- !is.null(input$ag_prompts) && 
+    input$ag_prompts == "supervised"
+  
+  if(expert_cond){
+    response <- input$pick_model_group_pick
+  } else if(other_cond){
+    response <- input$f_data_response_picker
+  } else {
+    response <- NULL
+  }
+  
+  return(response)
+})
+
+
 
 ### Picker for experts
 output$pick_model_UI <- renderUI({
@@ -112,6 +152,35 @@ output$pick_model_group_pick_UI <- renderUI({
   )
 })
 
+#' Output for the response type of each column selected by input$pick_model_group_pick
+output$pick_model_response_type_UI <- renderUI({
+  req(!is.null(input$f_data_response_picker))
+  
+  picker_list <- list(
+    div(strong("Are these responses categorical or continuous?")),
+    br()
+  )
+  
+  for (i in 1:length(input$f_data_response_picker)){
+    selected <- isolate(if(is.null(input[[paste0("pick_model_response_type_", i)]])) 
+      logical(0) else {
+        input[[paste0("pick_model_response_type_", i)]]
+      })
+    
+    picker_list[[i+1]] <- pickerInput(
+      paste0("pick_model_response_type_", i),
+      input$f_data_response_picker[i],
+      choices = c("categorical", "continuous"),
+      selected = selected,
+      width = "60%"
+    )
+  }
+  
+  out_div <- do.call(tagList, picker_list)
+  
+  return(out_div)
+})
+
 ##
 
 observeEvent(input$ag_prompts, {
@@ -140,7 +209,8 @@ observeEvent(input$ag_done, {
                                           main_effects = response)
     
     omicsData$objModel <- as.slData(omicsData$objMSU, 
-                                    response_cols = response)
+                                    response_cols = response,
+                                    response_types = response_typos_ag())
     
   } else if(other_cond){
     
@@ -150,7 +220,8 @@ observeEvent(input$ag_done, {
                                           main_effects = response)
     
     omicsData$objModel <- as.slData(omicsData$objMSU, 
-                                    response_cols = response)
+                                    response_cols = response, 
+                                    response_types = response_types_ag())
     
   } else {
     omicsData$objModel <- as.slData(omicsData$objMSU)

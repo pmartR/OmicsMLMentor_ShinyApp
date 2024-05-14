@@ -22,13 +22,9 @@ observeEvent(input$param_opti, {
       response <- input$f_data_response_picker
     }
     
-    ## Run with correct response variable type
-    class_responses <- apply(omicsData$objPP$f_data[response], 2, class)
-    rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
-    
     runner <- as.slData(omicsData$objPP,
                         response_cols = response,
-                        response_types = rep(rt, length(response)))
+                        response_types = response_types_ag())
     
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
