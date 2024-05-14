@@ -615,3 +615,7 @@ div.box-body .shiny-input-container:not(.shiny-input-container-inline) {
 .dropdown-menu>li>a {
 	color: black;
 }
+
+.ui-tooltip {
+  display: none !important;
+}
