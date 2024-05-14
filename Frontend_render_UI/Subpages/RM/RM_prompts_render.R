@@ -51,7 +51,9 @@ holdout_valid <- reactive({
       rf = 20,
       kmeans = 20, ## For cluster optimization, might have to snag group stufff
       hclust = 0,
+      pls = 20,
       pca = 0,
+      ppca = 0,
       umap = 0,
       gbtree = 20,
     )

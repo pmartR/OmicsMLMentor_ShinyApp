@@ -100,34 +100,59 @@ supervised_tab <- function() {
             
             value = "results_RM",
             
-            
-            div(
-              pickerInput(label = "Select vizualization type:", "super_plot_type", 
-                          choices = c(
-                            "True positive performance",
-                            "Prediction vs. truth",
-                            "Classification accuracy",
-                            "Confidence in sample predictions - bar",
-                            "Confidence in sample predictions - scatter"
-                          )
-              ),
-              style= "float:right;z-index:1100;"
+          div(
+          column(
+              6,
+                pickerInput(label = "Select vizualization type:", "super_plot_type", 
+                            choices = c(
+                              "True positive performance",
+                              "Prediction vs. truth",
+                              "Classification accuracy",
+                              "Confidence in sample predictions - bar",
+                              "Confidence in sample predictions - scatter"
+                            )
+                )
+              
             ),
-            
-            br(),
-            
-            uiOutput("performance_tabset_UI")
+              
+          column(
+            6,
+              uiOutput("visualize_perf_split_ui")
             
           ),
+          style= "float:right;z-index:1100;"),
+          
+          uiOutput("performance_tabset_UI"),
           
           uiOutput("VI_tabset_UI_collapse")
         
+        )# main column
         )
-      ) # main column
+      )
     ) # fluidRow
   ) # tabPanel
   
 }
+
+# determine the split used
+output$visualize_perf_split_ui <- renderUI({
+  req(input$performance_tabset)
+  has_test_preds <- if(input$performance_tabset == "Full model") {
+    !is.null(attr(omicsData$objRM, "prediction_test"))
+  } else if (input$performance_tabset == "Full model") {
+    !is.null(attr(omicsData$objRM_reduced, "prediction_test"))
+  }
+  
+  selected = if (has_test_preds) "test" else 'train'
+  choicesOpt = list("disabled" = c(FALSE, !has_test_preds))
+  
+  pickerInput("visualize_perf_which_split",
+              "Plot performance for which split:",
+              choices = c("Training" = "train", "Testing" = "test"),
+              selected = selected,
+              choicesOpt = choicesOpt
+              )
+})
 
 output[["VI_tabset_UI_collapse"]] <- renderUI({
   
@@ -505,9 +530,10 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
+                br(),
                   withSpinner(plotlyOutput("structure_plot")),
                 br(),
-                column(6, uiOutput("unsup_picker_UI")),
+                column(6, uiOutput("unsup_res_aes_UI")),
                 column(6, uiOutput("unsup_slider_UI"))
                 
               )
@@ -564,7 +590,6 @@ observeEvent(input$run_sl, {
         ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
     } else ptest <- 0
-
     ## Get custom/optimized parameters
     custom_args <- list()
     
@@ -608,6 +633,11 @@ observeEvent(input$run_sl, {
         learn_rate = input$learn_rate,
         stop_iter = input$stop_iter,
         sample_size = input$sample_prop
+      )
+    } else if (method == "pls") {
+      custom_args <- list(
+        num_comp = input$pls_num_comp,
+        predictor_prop = input$pls_predictor_prop
       )
     }
     
@@ -681,11 +711,23 @@ observeEvent(input$run_sl, {
       )
 
     } else {
-
-      omicsData$objRM <- slopeR:::embed_unsup(runner,
-                                              slMethod = method,
-                                              axis = "samples", ## should be able to change this
-                                              bake = F
+      args = list(
+        slData = runner,
+        slMethod = method,
+        axis = input$pick_axis,
+        bake = F
+      )
+      
+      if (method == 'pca') {
+        args[['num_comp']] = input$pca_num_comp
+      } else if (method == 'ppca') {
+        args[['num_comp']] = input$ppca_num_comp
+      }
+      
+      
+      omicsData$objRM <- do.call(
+        slopeR:::embed_unsup,
+        args
       )
 
     }
@@ -858,28 +900,25 @@ output$true_pos_picker_ui_reduced <- renderUI({
   
 })
 
+#### Performance Plots ####
+
 output$roc_curve <- renderPlotly({
-
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot(omicsData$objRM, "roc_curve", split = split)
+  p <- plot(omicsData$objRM, "roc_curve", split = input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$roc_curve <- p)
   isolate(table_table_current$RM$model_eval$full$roc_curve <- p$data)
   
   p
-
 })
 
 output$roc_curve_reduced <- renderPlotly({
-  
   req(!is.null(omicsData$objRM_reduced))
+validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot(omicsData$objRM_reduced, "roc_curve", split = split)
+  p <- plot(omicsData$objRM_reduced, "roc_curve", split = input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$roc_curve <- p)
   isolate(table_table_current$RM$model_eval$reduced$roc_curve <- p$data)
@@ -893,10 +932,9 @@ output$roc_curve_reduced <- renderPlotly({
 output$confidence_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = split) + 
+  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = input$visualize_perf_which_split) + 
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
   
@@ -910,10 +948,9 @@ output$confidence_bar <- renderPlotly({
 output$confidence_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split = split) + 
+  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split=input$visualize_perf_which_split) +
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
   isolate(plot_table_current$RM$model_eval$reduced$confidence_bar <- p)
@@ -926,10 +963,9 @@ output$confidence_bar_reduced <- renderPlotly({
 output$prediction_bar <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM, plotType = "prediction_bar", split = split)
+  p <- plot( omicsData$objRM, plotType = "prediction_bar", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$prediction_bar <- p)
   isolate(table_table_current$RM$model_eval$full$prediction_bar <- p$data)
@@ -941,10 +977,9 @@ output$prediction_bar <- renderPlotly({
 output$prediction_bar_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split = split)
+  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$prediction_bar <- p)
   isolate(table_table_current$RM$model_eval$reduced$prediction_bar <- p$data)
@@ -956,26 +991,23 @@ output$prediction_bar_reduced <- renderPlotly({
 output$confusion_heatmap <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split = split)
+  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$confusion_heatmap <- p)
   isolate(table_table_current$RM$model_eval$full$confusion_heatmap <- p$data)
   
   
   p
-
 })
 
 output$confusion_heatmap_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split = split)
+  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$confusion_heatmap <- p)
   isolate(table_table_current$RM$model_eval$reduced$confusion_heatmap <- p$data)
@@ -987,12 +1019,11 @@ output$confusion_heatmap_reduced <- renderPlotly({
 output$confidence_scatter <- renderPlotly({
 
   req(!is.null(omicsData$objRM))
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
 
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
-  
   p <- plot( omicsData$objRM, 
-        plotType = "confidence_scatter", 
-        pos_class = input$true_pos_picker, split = split)
+        plotType = "confidence_scatter",
+        pos_class = input$true_pos_picker, split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$full$confidence_scatter <- p)
   isolate(table_table_current$RM$model_eval$full$confidence_scatter <- p$data)
@@ -1004,11 +1035,10 @@ output$confidence_scatter <- renderPlotly({
 output$confidence_scatter_reduced <- renderPlotly({
   
   req(!is.null(omicsData$objRM_reduced))
-  
-  split <- ifelse(is.null(attr(omicsData$objRM, "prediction_test")), "train", "test")
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   
   p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
-        pos_class = input$true_pos_picker_reduced, split = split)
+             pos_class = input$true_pos_picker_reduced, split=input$visualize_perf_which_split)
   
   isolate(plot_table_current$RM$model_eval$reduced$confidence_scatter <- p)
   isolate(table_table_current$RM$model_eval$reduced$confidence_scatter <- p$data)
@@ -1060,12 +1090,14 @@ output$confidence_scatter_reduced <- renderPlotly({
 #
 # })
 # 
-output$unsup_picker_UI <- renderUI({
+output$unsup_res_aes_UI <- renderUI({
 
   req(!is.null(input$pick_model_EM) && input$ag_prompts != "supervised")
 
   method <- input$pick_model_EM ## While summary getting fixed
 
+  element_list <- list()
+  
   # req(method %in% c())
 
   if(input$pick_axis == "samples"){
@@ -1079,14 +1111,54 @@ output$unsup_picker_UI <- renderUI({
 
   req(length(colors) > 0)
   
-  choices <- if(method == "pca"){
+  choices <- if(method %in% c("pca", "ppca")){
     colors
   } else {
     c("Parameter clusters", colors)
   }
 
-  pickerInput("color_by_unsup", "Color by:", choices = choices)
+  color_by_picker <- pickerInput("color_by_unsup", "Color by:", choices = choices)
+  
+  element_list[[length(element_list) + 1]] <- color_by_picker
+  ### plot the pcs
+  
+  if (inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca"))) {
+    element_list[[length(element_list) + 1]] <- uiOutput("pc_xaxis_UI")
+    element_list[[length(element_list) + 1]] <- uiOutput("pc_yaxis_UI")
+  }
+  
+  return(do.call(tagList, element_list))
+  
+})
 
+output$pc_xaxis_UI <- renderUI({
+  req(inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca")))
+  num_comp <- omicsData$objRM$steps[[1]]$num_comp
+  
+  choices = c(1:num_comp)
+  
+  picker_out <- pickerInput(
+    "unsup_pca_xaxis_pc", "Plot which component on x-axis?" , choices = choices,
+    selected = input$unsup_pca_xaxis_pc
+  )
+  
+  return(picker_out)
+})
+
+output$pc_yaxis_UI <- renderUI({
+  req(inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca")))
+  num_comp <- omicsData$objRM$steps[[1]]$num_comp
+  
+  choices = c(1:num_comp)
+  
+  selected = if(!is.null(input$unsup_pca_yaxis_pc)) input$unsup_pca_yaxis_pc else choices[2] 
+  
+  picker_out <- pickerInput(
+    "unsup_pca_yaxis_pc", "Plot which component on y-axis?", choices = choices,
+    selected = selected
+  )
+  
+  return(picker_out)
 })
 
 output$unsup_slider_UI <- renderUI({
@@ -1103,8 +1175,10 @@ output$unsup_slider_UI <- renderUI({
 output$structure_plot <- renderPlotly({
   
   req(!is.null(input$pick_model_EM) && 
-        input$ag_prompts != "supervised" && 
-        !is.null(omicsData$objRM))
+        input$ag_prompts != "supervised")
+  validate(
+    need(!is.null(omicsData$objRM), 
+         "No model results found.  Please run the model to see results plots."))
 
   method <- input$pick_model_EM ## While summary getting fixed
 
@@ -1180,13 +1254,22 @@ output$structure_plot <- renderPlotly({
     # hclust_fit %>%
     #   extract_centroids(cut_height = 250)
 
-  } else if (method == "pca"){
-
-    ## this seems off maybe
-    df <- slopeR:::embed_unsup(runner,
-                         slMethod = "pca",
-                         axis = input$pick_axis,
-                         bake = T
+  } else if (method %in% c("pca", "ppca")){
+    args = list(
+      slData = runner,
+      axis = input$pick_axis,
+      bake = T
+    )
+    
+    if (method == 'pca') {
+      args[['num_comp']] = input$pca_num_comp
+    } else if (method == 'ppca') {
+      args[['num_comp']] = input$ppca_num_comp
+    }
+    
+    df <- do.call(
+      slopeR:::embed_unsup,
+      args
     )
 
     df <- as.data.frame(df)
@@ -1200,13 +1283,16 @@ output$structure_plot <- renderPlotly({
       select_cols <- unique(c(get_edata_cname(runner), input$color_by_unsup))
       df <- left_join(df, runner$e_meta[select_cols])
     }
-
+    
+    xvar = if (!is.null(input$unsup_pca_xaxis_pc)) paste0("PC", input$unsup_pca_xaxis_pc) else "PC1"
+    yvar =  if (!is.null(input$unsup_pca_yaxis_pc)) paste0("PC", input$unsup_pca_yaxis_pc) else "PC2"
+    
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = PC1, y = PC2, color = !!color_by)) + 
+      return(ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
                geom_point(size = 3) + theme_bw())
     } else {
       ## Where is R2?
-      p <- ggplot(df, aes(x = PC1, y = PC2)) + geom_point(size = 3) + theme_bw()
+      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]])) + geom_point(size = 3) + theme_bw()
     }
 
   } else {
