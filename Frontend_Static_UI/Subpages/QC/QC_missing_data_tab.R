@@ -24,7 +24,7 @@ missing_data <- function(){
                    
                    numericInput("missing_value_thresh", 
                                 "Keep samples with at least X% of biomolecules detected:", 
-                                min = 0, max = 100, value = 20),
+                                min = 0, max = 100, value = 50),
                  
                  br(),
                  

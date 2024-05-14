@@ -244,7 +244,7 @@ loglasso_params <- function(){
   
   div(
     numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
-                 max = 1e0, value = 1, step = 0.1, width = "100%"),
+                 max = 1e0, value = 1e-6, step = 0.1, width = "100%"),
     if(input$rm_prompts_hp == "tuned")
       checkboxInput("optimize_penalty", "Optimize?", value = F),
     br(),

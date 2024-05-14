@@ -1292,7 +1292,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     df <- df[-1,]
     
     row.names(df) <- gsub("e_data", "Abundance data", row.names(df))
-    row.names(df) <- gsub("f_data", "Sample data", row.names(df))
+    row.names(df) <- gsub("f_data", "Sample Information", row.names(df))
     row.names(df) <- gsub("e_meta", "Biomolecule data", row.names(df))
     row.names(df) <- gsub("sss \\(", "ss \\(", row.names(df))
     
@@ -1306,7 +1306,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     df <- df[-1,]
     
     row.names(df) <- gsub("e_data", "Abundance data", row.names(df))
-    row.names(df) <- gsub("f_data", "Sample data", row.names(df))
+    row.names(df) <- gsub("f_data", "Sample Information", row.names(df))
     row.names(df) <- gsub("e_meta", "Biomolecule data", row.names(df))
     row.names(df) <- gsub("sss \\(", "ss \\(", row.names(df))
     

@@ -2,7 +2,7 @@
 
 ## Examples
 ag_text <- c(
-  "Figure out which (Biomolecules) best predict a (Sample Data column)", ## starting Q
+  "Figure out which (Biomolecules) best predict a (Sample Information column)", ## starting Q
   "Make accurate predictions",
   "Understand why predictions are made",
   "Figure out which (samples/biomolecules) look like other (samples/biomolecules)", ## starting Q

@@ -18,7 +18,7 @@ example_data_UI <- function(){
                        " type name (e.g. Metabolite, Lipid, Peptide).")
                 ),
         
-        tags$li(paste0("Sample data is a cross-tab with rows for each sample",
+        tags$li(paste0("Sample Information is a cross-tab with rows for each sample",
                        "and columns containing ",
                        "additional information about the each sample such as",
                        " experimental groups or conditions. One column must designate",
@@ -41,7 +41,7 @@ example_data_UI <- function(){
     # br(),
     # br(),
     # actionButton("template_edata", "Download template Abundance Data", inline = T),
-    # actionButton("template_fdata", "Download template Sample Data", inline = T),
+    # actionButton("template_fdata", "Download template Sample Information", inline = T),
     # actionButton("template_emeta", "Download template Abundance Data", inline = T)
   )
   

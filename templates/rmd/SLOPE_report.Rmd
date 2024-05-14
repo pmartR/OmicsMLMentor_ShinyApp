@@ -57,7 +57,7 @@ $if !is.null$ Biomolecule meta data was also uploaded into SLOPE for analysis. $
 emeta
 ```
 
-$if !is.null$ Additionally, sample data was also uploaded into SLOPE for analysis. Columns in the $Abundance/count data$ corresponded to the $f_data_cname$ column to designate unique samples.
+$if !is.null$ Additionally, Sample Information was also uploaded into SLOPE for analysis. Columns in the $Abundance/count data$ corresponded to the $f_data_cname$ column to designate unique samples.
 
 ```{r}
 fdata
@@ -136,13 +136,13 @@ missingness_bio_table
 
 ## Model Set-Up
 
-To ensure manageability of model features, XX columns from sample data and XX columns from e_meta data were indicated as columns of interest for further processing. The kept columns were designated as factor levels or numeric values per the table below:
+To ensure manageability of model features, XX columns from Sample Information and XX columns from e_meta data were indicated as columns of interest for further processing. The kept columns were designated as factor levels or numeric values per the table below:
 
 ```{r}
 factor_numeric_table
 ```
 
-The following interaction effects were added to the sample data file:
+The following interaction effects were added to the Sample Information file:
 
 ```{r}
 interaction_effect_table

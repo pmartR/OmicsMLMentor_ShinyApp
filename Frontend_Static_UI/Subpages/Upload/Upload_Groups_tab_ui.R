@@ -8,7 +8,7 @@ groups_tab <- function() {
                  id = "groups_collapse_left",
                  # file upload collapse sub-div
                  collapseBox(
-                   "Sample Data File Options", 
+                   "Sample Information File Options", 
                    icon_id = "groups-upload-fmeta",
                    icon = icon("exclamation-sign", lib = "glyphicon"),
                    value = "fdata_options",
@@ -16,17 +16,17 @@ groups_tab <- function() {
                    
                    
                    radioGroupButtons(
-                     inputId = "use_fdata", label = "Include sample data in workflow?",
+                     inputId = "use_fdata", label = "Include Sample Information in workflow?",
                      choices = c("Yes" = "f_data", "No" = ""), selected = character(0)
                    ),
                    
-                   "(Allows for response or coloring designation on experimental factors or other sample data)",
+                   "(Allows for response or coloring designation on experimental factors or other Sample Information)",
                    
                    conditionalPanel(
                      condition = "input.use_example == true && input.use_fdata == 'f_data'",
                      div(
                        br(),
-                       checkboxInput("use_example_fdata", "Use example sample data?", value = F),
+                       checkboxInput("use_example_fdata", "Use example Sample Information?", value = F),
                      )
                    ),
                    
@@ -60,7 +60,7 @@ groups_tab <- function() {
                8,
                collapseBoxGroup(
                  id = "groups_collapse_right", multiple = TRUE,
-                 collapseBox("Sample Data Preview",
+                 collapseBox("Sample Information Preview",
                              value = "data_preview_fdata",
                              
                              tabsetPanel(id = "preview_data_f_data")
@@ -68,7 +68,7 @@ groups_tab <- function() {
                  ),
                  
                  uiOutput("detected_box_group")
-                 # collapseBox("Detected Data Properties",
+                 # collapseBox("Data Properties",
                  #             value = "fdata_plots",
                  #             uiOutput("Group_plot_picker"),
                  #             plotlyOutput("Group_tab_plots")

@@ -126,7 +126,7 @@ output$e_data_spec_UI <- renderUI({
       
       pickerInput(
         "e_data_id_col",
-        "Which column identifies biomolecules?",
+        "Which column identifies unique biomolecules?",
         choices = colnames(reactive_dataholder[["e_data"]]$file),
         selected = isolate(if(!is.null(input$e_data_id_col)) input$e_data_id_col else character(0))
       ),
@@ -170,6 +170,15 @@ output$e_meta_spec_UI <- renderUI({
   
   req(input$data_type_done > 0 && !is.null(input$data_type))
   
+  choices <- colnames(reactive_dataholder[["e_meta"]]$file)
+  choices <- choices[choices != input$e_data_id_col]
+  
+  if(input$data_type %in% c("Label-free", "Isobaric")){
+    text <- "Which column identifies proteins?"
+  } else {
+    text <- "Which column contains information of interest?"
+  }
+  
   collapseBox(
     "Specify Biomolecule Information Properties",
     icon_id = "edata_params_icon",
@@ -179,8 +188,8 @@ output$e_meta_spec_UI <- renderUI({
     
     pickerInput(
       "e_meta_id_col",
-      "Which column identifies proteins?",
-      choices = colnames(reactive_dataholder[["e_meta"]]$file),
+      text,
+      choices = choices,
       selected = isolate(if(!is.null(input$e_meta_id_col)) input$e_meta_id_col else character(0))
     ),
     
@@ -222,7 +231,7 @@ output$detected_box_upload <- renderUI({
   
   req(input$specify_edata_done > 0)
   div(collapseBox(
-    "Detected Data Properties",
+    "Data Properties",
     value = "summary",
     # uiOutput("Characteristics_module_tabset")
     withSpinner(plotlyOutput("boxplot_UI"))#,
