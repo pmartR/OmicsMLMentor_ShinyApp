@@ -100,19 +100,15 @@ tbl <- function(data, index, namecol)  {
 
 ## Make dashboard -- lots of elements to consider, so we use observe here
 observe({
-  
-  req(!any(
-    map_lgl(
-      list(
-        input$skip_ag,
-        omicsData$objMSU,
-        omicsData$objModel,
-        input$feature_selection
-      ),
-      is.null
-    )
-  ))
-  
+  req(!any(map_lgl(
+    list(
+      input$skip_ag,
+      omicsData$objMSU,
+      omicsData$objModel,
+      input$feature_selection
+    ),
+    is.null
+  )), response_types_ag())
   temp_omic <- omicsData$objModel
   
   if(get_data_scale(temp_omic) == "abundance"){
@@ -121,6 +117,13 @@ observe({
   
   supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
     (!input$skip_ag && input$ag_prompts == "supervised")
+  
+  handles_regression <- if('continuous' %in% response_types_ag()) {
+    TRUE
+  } else {
+    FALSE
+  }
+  
   
   if(is.null(omicsData$objQC$f_data) && supervised){
     temp_omic$f_data <- data.frame(
@@ -134,7 +137,8 @@ observe({
   if(input$user_level_pick == "beginner"){
     
     suggests <- expert_mentor(temp_omic,
-                              supervised = supervised
+                              supervised = supervised,
+                              handles_regression = handles_regression
     )
     
   } else if (input$user_level_pick != "expert"){
@@ -159,7 +163,7 @@ observe({
                               handles_missingness = input$handles_missingness,
                               explainability = input$explainability,
                               equation = input$equation,
-                              
+                              handles_regression = handles_regression,
                               ## Autodetect
                               high_dimensional_data = input$high_dimensional_data,
                               samples_per_feature = samples_per_feature,
@@ -193,7 +197,8 @@ observe({
                               prone_to_overfit = input$prone_to_overfit,
                               handles_missingness = input$handles_missingness,
                               high_dimensional_data = input$high_dimensional_data,
-                              handles_outliers = input$handles_outliers
+                              handles_outliers = input$handles_outliers,
+                              handles_regression = handles_regression
     )
     
   }
@@ -212,11 +217,11 @@ observe({
   
   df <- df[df$supervised,] ## supervised/unsupervised
   df <- df[df$n_levels,] ## Correct number of levels for analysis
-  df[2] <- unlist(suggests)
-  df <- df[-7]
+  df$supervised <- unlist(suggests)
+  df <- df %>% dplyr::select(-dplyr::one_of("any_is_na"))
   
-  df[7] <- signif(df[7], 3)
-  df[8] <- signif(df[8], 3)
+  df$n_predictors_per_sample <- signif(df$n_predictors_per_sample, 3)
+  df$prop_missing <- signif(df$prop_missing, 3)
   
   missingness <- missingval_result(omicsData$objModel)$na.by.sample
   total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
@@ -231,6 +236,7 @@ observe({
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
     paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
     paste0("Runs with a minimum group size of ", group_text, "?"),
+    "Can handle a continuous response?",
     paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
@@ -287,7 +293,7 @@ observe({
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
   } else if(input$user_level_pick == "beginner"){
-    df <- df[1:3,]
+    df <- df[1:4,]
   } else if (input$user_level_pick == "familiar"){
     df <- df[1:min(c(nrow(df), 10)),]
   }
