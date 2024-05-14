@@ -72,7 +72,9 @@ plot_table_current <- reactiveValues(
     RM__model_eval__full__roc_curve = "Model evaluation: confidence scatter (reduced)",
     RM__variable_importance__full = "Variable importance (full)",
     RM__variable_importance__reduced = "Variable importance (reduced)"
-  )
+  ),
+  
+  plot_options = list()
 )
 
 
@@ -158,8 +160,9 @@ table_table_current <- reactiveValues(
 download_preview <- 
   reactiveValues(
     current = NULL,
-    plot = F
-    )
+    plot = F,
+    name = NULL
+  )
 
 
 output$preview_selected_dwn_UI <- renderUI({
@@ -170,7 +173,7 @@ output$preview_selected_dwn_UI <- renderUI({
     div(
       plotlyOutput("preview_selected_dwn_plot"),
       br(),
-      actionButton("edit_plot", "Edit plot")
+      uiOutput("edit_plot")
     )
   } else {
     DTOutput("preview_selected_dwn_table")
@@ -178,10 +181,191 @@ output$preview_selected_dwn_UI <- renderUI({
   
 })
 
+output$edit_plot <- renderUI({
+  req(download_preview$plot)
+  isolate(plot_style <- plot_table_current$plot_options[[download_preview$name]])
+  
+  collapseBoxGroup(
+    id = "download_plot_options_UI",
+    collapseBox(
+      "Axes Options",
+      value = "axes_options",
+      tagList(
+        splitLayout(textInput(paste0("download_xlab"), "X-axis label", value = plot_style$xaxis$title$text),
+                    textInput(paste0("download_ylab"), "Y-axis label", value = plot_style$yaxis$title$text),
+                    numericInput(paste0("download_x_fontsize"), "X-axis font size", value = 11),
+                    numericInput(paste0("download_y_fontsize"), "Y-axis font size", value = 11),
+                    cellWidths = rep("25%", 4)
+        ),
+        splitLayout(numericInput(paste0("download_xangle"), "X-axis tick angle", value = NULL),
+                    numericInput(paste0("download_yangle"), "Y-axis tick angle", value = NULL),
+                    numericInput(paste0("download_x_ticksize"), "X-axis tick size", value = NULL),
+                    numericInput(paste0("download_y_ticksize"), "Y-axis tick size", value = NULL),
+                    cellWidths = rep("25%", 4)
+        ),
+        splitLayout(textInput(paste0("download_title"), "Title", value = plot_style$title$text),
+                    numericInput(paste0("download_title_fontsize"), "Title font size", value = 14),
+                    cellWidths = c("25%", "25%")
+        )
+      ),
+      div(appButton(inputId = "download_apply_style_plot", label = "Update plot style")),
+      div(appButton(inputId = "download_reset_style_plot", label = "Reset plot style"))
+    ),
+    # collapseBox(
+    #   "Save Options",
+    #   value = "save_options",
+    #   div(
+    #     uiOutput("download_plot_selected_save_options"),
+    #     div(class = "inline-wrapper-1",
+    #         div(id = "download_apply_save_options_tooltip", class = "tooltip-wrapper", actionButton("download_apply_save_options", "Apply")),
+    #         conditionalPanel("input.download_file_type!='html'", actionButton("download_preview_image", "Preview"))
+    #     ),
+    #     br(),
+    #     br(),
+    #     div(style="overflow:auto", uiOutput("download_image_preview"))
+    #   )
+    # )
+  )
+})
+
+observeEvent(input$download_apply_style_plot, {
+  req(!is.null(download_preview$current))
+  req(!is.null(download_preview$name))
+  req(download_preview$plot)
+  
+  plot_style <- plot_table_current$plot_options[[download_preview$name]]
+  
+  if (is.null(plot_style)) {
+    adjustments <- list(
+      xaxis = list(
+        title = list(
+          font = list()
+        ),
+        tickfont = list()
+      ),
+      xaxis = list(
+        title = list(
+          font = list()
+        ),
+        tickfont = list()
+      ),
+      title = list(
+        font = list()
+      )
+    )
+  } else {
+    adjustments <- plot_style
+  }
+  
+  adjustments$xaxis$title$text <- input$download_xlab
+  adjustments$yaxis$title$text <- input$download_ylab
+
+  if (!is.na(input$download_x_fontsize)) {
+    adjustments$xaxis$title$font$size <- input$download_x_fontsize
+  } else {
+    adjustments$xaxis$title$font$size <- NULL
+  }
+  
+  if (!is.na(input$download_y_fontsize)) {
+    adjustments$yaxis$title$font$size <- input$download_y_fontsize
+  } else {
+    adjustments$yaxis$title$font$size <- NULL
+  }
+  
+  if (!is.na(input$download_xangle)) {
+    adjustments$xaxis$tickangle <- input$download_xangle
+  } else {
+    adjustments$xaxis$tickangle <- NULL
+  }
+  
+  if (!is.na(input$download_yangle)) {
+    adjustments$yaxis$tickangle <- input$download_yangle
+  } else {
+    adjustments$yaxis$tickangle <- NULL
+  }
+  
+  if (!is.na(input$download_x_ticksize)) {
+    adjustments$xaxis$tickfont$size <- input$download_x_ticksize
+  } else {
+    adjustments$xaxis$tickfont$size <- NULL
+  }
+  
+  if (!is.na(input$download_y_ticksize)) {
+    adjustments$yaxis$tickfont$size <- input$download_y_ticksize
+  } else {
+    adjustments$yaxis$tickfont$size <- NULL
+  }
+  
+  if (!is.na(input$download_title)) {
+    adjustments$title$text <- input$download_title
+  } else {
+    adjustments$title$text <- NULL
+  }
+  
+  if (!is.na(input$download_title_fontsize)) {
+    adjustments$title$font$size <- input$download_title_fontsize
+  } else {
+    adjustments$title$font$size <- NULL
+  }
+  
+  plot_table_current$plot_options[[download_preview$name]] <- adjustments
+})
+
+observeEvent(input$download_reset_style_plot, {
+  req(input$download_reset_style_plot > 0)
+  req(download_preview$plot)
+  plot_table_current$plot_options[[download_preview$name]] <- NULL
+})
+
+### Save options ###
+output$download_plot_selected_save_options <- renderUI({
+  # req(input$download_plot_table_rows_selected) 
+  # 
+  # plot_name <- plots$plot_table[input$download_plot_table_rows_selected, 3]
+  # 
+  # plot_file_type <- plot_save_options[[plot_name]]$type
+  # plot_save_width <- plot_save_options[[plot_name]]$width
+  # plot_save_height <- plot_save_options[[plot_name]]$height
+  # plot_save_scale <- plot_save_options[[plot_name]]$scale
+  # 
+  # plot_type <- PLOT_NAME_TO_DATATYPE[plots$plot_table[input$download_plot_table_rows_selected, 1]]
+  # cur_plot <- plots[[plot_type]][[plot_name]]
+  # 
+  # choices = if(inherits(cur_plot, "plotly")) {
+  #   list("HTML Widget" = "html", "PNG"="png", "JPG"="jpg", "SVG"="svg")
+  # } else list("PNG"="png", "JPG"="jpg", "SVG"="svg")
+  # 
+  # fluidRow(
+  #   column(3, 
+  #          selectInput(
+  #            "download_file_type",
+  #            "File Type",
+  #            choices,
+  #            c(plot_file_type)
+  #          )
+  #   ), 
+  #   conditionalPanel(
+  #     "input.download_file_type!='html'",
+  #     column(3, numericInput("download_plot_width", "Width", plot_save_width)),
+  #     column(3, numericInput("download_plot_height", "Height", plot_save_height)),
+  #     column(3, numericInput("download_plot_scale", "Scale", plot_save_scale, min = 0, step = 0.25))
+  #   )
+  # )
+})
+
 output$preview_selected_dwn_plot <- renderPlotly({
   req(download_preview$plot)
-  download_preview$current
-  })
+  
+  args = plot_table_current$plot_options[[download_preview$name]]
+  
+  if (inherits(download_preview$current, "plotly")) {
+    args$p <- download_preview$current
+  } else {
+    args$p <- ggplotly(download_preview$current) 
+  }
+  
+  do.call(plotly::layout, args)
+})
 output$preview_selected_dwn_table <- renderDT(height = "450px",{
   req(!download_preview$plot)
   download_preview$current
@@ -223,6 +407,7 @@ map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
       ) %>% filter(!map_lgl(list_el, is.null))
       
       download_preview$current <- pull_table$list_el[[index]]
+      download_preview$name <- names(pull_table$list_el)[index]
       download_preview$plot <- type == "plot"
       
     })
