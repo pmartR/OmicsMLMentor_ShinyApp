@@ -100,31 +100,35 @@ supervised_tab <- function() {
             
             value = "results_RM",
             
-            
-            div(
-              pickerInput(label = "Select vizualization type:", "super_plot_type", 
-                          choices = c(
-                            "True positive performance",
-                            "Prediction vs. truth",
-                            "Classification accuracy",
-                            "Confidence in sample predictions - bar",
-                            "Confidence in sample predictions - scatter"
-                          )
-              ),
-              uiOutput("visualize_perf_split_ui"),
-              style= "float:right;z-index:1100;"
+          div(
+          column(
+              6,
+                pickerInput(label = "Select vizualization type:", "super_plot_type", 
+                            choices = c(
+                              "True positive performance",
+                              "Prediction vs. truth",
+                              "Classification accuracy",
+                              "Confidence in sample predictions - bar",
+                              "Confidence in sample predictions - scatter"
+                            )
+                )
+              
             ),
-            
-            br(),
-            
-            uiOutput("performance_tabset_UI")
+              
+          column(
+            6,
+              uiOutput("visualize_perf_split_ui")
             
           ),
+          style= "float:right;z-index:1100;"),
+          
+          uiOutput("performance_tabset_UI"),
           
           uiOutput("VI_tabset_UI_collapse")
         
+        )# main column
         )
-      ) # main column
+      )
     ) # fluidRow
   ) # tabPanel
   
@@ -526,6 +530,7 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
+                br(),
                   withSpinner(plotlyOutput("structure_plot")),
                 br(),
                 column(6, uiOutput("unsup_res_aes_UI")),
@@ -1171,7 +1176,9 @@ output$structure_plot <- renderPlotly({
   
   req(!is.null(input$pick_model_EM) && 
         input$ag_prompts != "supervised")
-  validate(need(!is.null(omicsData$objRM), "No model results found.  Please run the model to see results plots."))
+  validate(
+    need(!is.null(omicsData$objRM), 
+         "No model results found.  Please run the model to see results plots."))
 
   method <- input$pick_model_EM ## While summary getting fixed
 

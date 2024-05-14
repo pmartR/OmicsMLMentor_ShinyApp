@@ -21,11 +21,11 @@ output$transform_picker_UI <- renderUI({
       "No transformation" else "log2"
     
     out <- disabled(pickerInput("transform", "Transform data to:", 
-                       choices = c("No transformation", choices),
+                       choices = c(choices, "No transformation"),
                        selected = set))
     
   } else {
-    out <- pickerInput("transform", "Transform data to:", choices = c("No transformation", choices))
+    out <- pickerInput("transform", "Transform data to:", choices = c(choices, "No transformation"))
   }
   
   out
