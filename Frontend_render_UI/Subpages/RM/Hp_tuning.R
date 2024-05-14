@@ -85,6 +85,11 @@ observeEvent(input$param_opti, {
         stop_iter = if(input$optimize_stop_iter) tune::tune() else input$stop_iter,
         sample_size = if(input$optimize_sample_prop) tune::tune() else input$sample_prop
       )
+    } else if (method == "pls") {
+      custom_args <- list(
+        num_comp = if(input$optimize_pls_num_comp) tune::tune() else input$pls_num_comp,
+        predictor_prop = if(input$optimize_pls_predictor_prop) tune::tune() else input$pls_predictor_prop
+      )
     }
     
     
