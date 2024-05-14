@@ -323,11 +323,28 @@ observeEvent(input$done_sample_miss, {
     rmv_fdata <- 1 - res$num_NA/nrow(temp_dat$e_data) < input$missing_value_thresh/100
     rmv <- res[rmv_fdata, 1]
     
-    if(length(rmv) > 0){
-      temp_dat <- applyFilt(
-        custom_filter(temp_dat, 
-                      f_data_remove = rmv), 
-        temp_dat)
+    tryCatch({
+      if(length(rmv) > 0){
+        sample_count <- length(temp_dat$f_data[[get_fdata_cname(temp_dat)]])
+        
+        if (sample_count - length(rmv) < 6) {
+          stop("The applied filter removes too many samples. Minimum of 6 samples required, ", sample_count - length(rmv), " remaining.")
+        }
+        
+        temp_dat <- applyFilt(
+          custom_filter(temp_dat, 
+                        f_data_remove = rmv), 
+          temp_dat)
+      }
+      errorOccurred <- NULL
+    }, error = function(e) {
+      errorOccurred <<- e
+    })
+    
+    # needs to happen outside trycatch otherwise execution continues
+    if (!is.null(errorOccurred)) {
+      shinyalert("Something went wrong:", paste0("System error: ", errorOccurred$message))
+      return(NULL)
     }
     
     if(is.null(omicsData$objQC$f_data)){
