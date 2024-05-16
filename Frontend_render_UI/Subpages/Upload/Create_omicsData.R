@@ -40,8 +40,7 @@ observeEvent(input$check_group_cols, {
       res <- object_fn(
         e_data = edata, e_meta = emeta, f_data = fdata,
         edata_cname = edata_cname, emeta_cname = emeta_cname, fdata_cname = fdata_cname,
-        data_scale = data_scale, is_normalized = is_normalized,
-        check.names = F
+        data_scale = data_scale, is_normalized = is_normalized
       )
       
       if(input$data_type != "RNA-seq") res <- res %>% edata_replace(na_replace, NA)

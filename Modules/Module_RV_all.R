@@ -13,7 +13,8 @@ omicsData <- reactiveValues(obj = NULL,
                             objQC = NULL,
                             objMSU = NULL,
                             objModel = NULL,
-                            objPP = NULL
+                            objPP = NULL,
+                            objRM = NULL
                             )
 
 popup <- reactiveValues()
