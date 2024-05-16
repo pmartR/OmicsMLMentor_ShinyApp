@@ -174,7 +174,9 @@ output$rmd_plot_qc_all <- renderPlotly({
   p <- plot(QC_rmd$res, pvalue_threshold = pval) + 
     theme(legend.position = 0)
   
-  isolate(plot_table_current$table$QC__rmd_overall <- p)
+  ### FIXME: why does this plot only render with plotly???
+  ### - ECG 5/16/2024
+  isolate(plot_table_current$table$QC__rmd_overall <- ggplotly(p))
   isolate(table_table_current$table$QC__rmd_table <- QC_rmd$res)
   
   p
