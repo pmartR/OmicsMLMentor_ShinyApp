@@ -62,7 +62,13 @@ shinyServer(function(session, input, output) {
   } else {
     hide(id = "loading-gray-overlay")
   }
-
+  
+  # Observe any collapsible panels
+  observeEvent(input$collapseTitleClick, {
+    req(input$collapseTitleClick)
+    updateBoxCollapse(session, input$collapseTitleClick$p, toggle = input$collapseTitleClick$id)
+  })
+  
   launch_tutorial()
  
   
