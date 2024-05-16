@@ -804,7 +804,7 @@ load_norm_observers <- function(tab) {
           temp_dat$f_data$Temp_col_all <- "All"
         } else {
           temp_dat$f_data <- data.frame(
-            SampleId = colnames(temp_dat$e_data)[
+            SampleID = colnames(temp_dat$e_data)[
               colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
             Temp_col_all = "All"
           )
@@ -2181,8 +2181,13 @@ assign_norm_output <- function(tab) {
         )
         
       } else {
+        
+        title_use <- ifelse(input[["normalized"]] == "Yes", 
+                        paste0("Normalized: ", tab, " Data"),
+                        paste0("Un-Normalized: ", tab, " Data"))
+        
         p <- plot_noconv(as.slData(omicsData$objPP)) + labs(
-          title = paste0("Un-Normalized: ", tab, " Data")
+          title = title_use
         )
       }
       

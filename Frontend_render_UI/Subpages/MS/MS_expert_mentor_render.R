@@ -122,9 +122,9 @@ observe({
   supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
     (!input$skip_ag && input$ag_prompts == "supervised")
   
-  if(is.null(omicsData$objQC$f_data) && supervised){
+  if(is.null(get_group_DF(omicsData$objMSU))){
     temp_omic$f_data <- data.frame(
-      SampleId = colnames(temp_omic$e_data)[
+      SampleID = colnames(temp_omic$e_data)[
         colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
       Temp_col_all = "All"
     )
@@ -139,16 +139,16 @@ observe({
     
   } else if (input$user_level_pick != "expert"){
     
-    id_col <- which(colnames(omicsData$objModel$e_data) == 
-                      get_edata_cname(omicsData$objModel))
+    id_col <- which(colnames(temp_omic$e_data) == 
+                      get_edata_cname(temp_omic))
     
-    samples_per_feature <- nrow(omicsData$objModel$e_data)/
-      min(get_group_table(omicsData$objModel)) > 300
+    samples_per_feature <- nrow(temp_omic$e_data)/
+      min(get_group_table(temp_omic)) > 300
     
-    correlation <- any(cor(t(omicsData$objModel$e_data[-id_col])) > .90)
+    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
     
     ## Change based on algorithim for holdout
-    overfit <- min(get_group_table(omicsData$objModel)) < 5
+    overfit <- min(get_group_table(temp_omic)) < 5
     
     rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
     

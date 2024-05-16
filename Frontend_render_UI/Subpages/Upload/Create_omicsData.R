@@ -10,9 +10,9 @@ observeEvent(input$check_group_cols, {
   emeta_cname <- input$e_meta_id_col
   
   if(is.null(fdata)){
-    fdata <- data.frame(SampleId = colnames(edata)[colnames(edata) != edata_cname],
+    fdata <- data.frame(SampleID = colnames(edata)[colnames(edata) != edata_cname],
                         Col1 = colnames(edata)[colnames(edata) != edata_cname])
-    fdata_cname <- "SampleId"
+    fdata_cname <- "SampleID"
   }
   
   data_scale <- input$datascale
