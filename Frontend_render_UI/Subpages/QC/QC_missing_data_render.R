@@ -1,4 +1,66 @@
 
+# change individual slider values into individual thresholds
+missingHandleSliderVals <- reactive({
+  thresholds <- list(
+    md_keep = NULL,
+    md_impute = NULL,
+    md_convert = NULL,
+    md_remove = NULL
+  )
+  
+  if ("keep" %in% input$missing_options) {
+    thresholds$md_keep <- c(0, 100)
+    # keep
+    return(thresholds)
+  }
+  
+  if ("impute" %in% input$missing_options) {
+    if (length(input$missing_options) == 1) {
+      thresholds$md_impute <- c(0, 100)
+      # impute
+      return(thresholds)
+    }
+    
+    thresholds$md_impute <- c(0, input$missingness_handle_slider[1])
+    
+    if ("convert" %in% input$missing_options) {
+      thresholds$md_convert <- c(input$missingness_handle_slider[1], 100)
+      
+      if ("remove" %in% input$missing_options) {
+        thresholds$md_convert[2] <- input$missingness_handle_slider[2]
+        thresholds$md_remove <- c(input$missingness_handle_slider[2], 100)
+      }
+      
+      # impute, convert, [remove]
+      return(thresholds)
+    }
+    
+    thresholds$md_remove <- c(input$missingness_handle_slider[1], 100)
+    # impute, remove
+    return(thresholds)
+  }
+  
+  if ("convert" %in% input$missing_options) {
+    if (length(input$missing_options) == 1) {
+      thresholds$md_convert <- c(0, 100)
+      # convert
+      return(thresholds)
+    }
+    
+    thresholds$md_convert <- c(0, input$missingness_handle_slider[1])
+    thresholds$md_remove <- c(input$missingness_handle_slider[1], 100)
+    # convert, remove
+    return(thresholds)
+  }
+  
+  if ("remove" %in% input$missing_options) {
+    thresholds$md_remove <- c(0, 100)
+  }
+  
+  # none, [remove]
+  return(thresholds)
+})
+
 ## hist to detected
 
 output$missing_data_hist_biomolecule <- renderPlotly({
@@ -20,11 +82,13 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   
   data$Handling <- "Unassigned"
   
+  sliderVals <- missingHandleSliderVals %>% debounce(500)
+  
   if("keep" %in% input$missing_options){
     
     rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= input$md_keep[1],
-      data[["Percentage missing"]] <= input$md_keep[2]
+      data[["Percentage missing"]] >= sliderVals()$md_keep[1],
+      data[["Percentage missing"]] <= sliderVals()$md_keep[2]
     ))
     
     data$Handling[rows] <- "Keep"
@@ -34,8 +98,8 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   if("impute" %in% input$missing_options){
     
     rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= input$md_impute[1],
-      data[["Percentage missing"]] <= input$md_impute[2]
+      data[["Percentage missing"]] >= sliderVals()$md_impute[1],
+      data[["Percentage missing"]] <= sliderVals()$md_impute[2]
     ))
     
     data$Handling[rows] <- "Estimate"
@@ -45,8 +109,8 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   if("convert" %in% input$missing_options){
     
     rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= input$md_convert[1],
-      data[["Percentage missing"]] <= input$md_convert[2]
+      data[["Percentage missing"]] >= sliderVals()$md_convert[1],
+      data[["Percentage missing"]] <= sliderVals()$md_convert[2]
     ))
     
     data$Handling[rows] <- "Convert"
@@ -56,8 +120,8 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   if("remove" %in% input$missing_options){
     
     rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= input$md_remove[1],
-      data[["Percentage missing"]] <= input$md_remove[2]
+      data[["Percentage missing"]] >= sliderVals()$md_remove[1],
+      data[["Percentage missing"]] <= sliderVals()$md_remove[2]
     ))
     
     data$Handling[rows] <- "Remove"
@@ -159,88 +223,39 @@ output$slider_options_ui <- renderUI({
   splitter <- length(input$missing_options)
   req(splitter > 0)
   
-  thresholds <- floor(100/splitter * 1:splitter)
-  thresholds2 <- c(0, thresholds[-length(thresholds)])
+  sliders <- list()
+  if ("impute" %in% input$missing_options &&
+      "convert" %in% input$missing_options)
+  {
+    sliders <- append(sliders, list(
+      list(value = ifelse("remove" %in% input$missing_options, 33, 50),
+           intentAfter = "warning", intentBefore = "success")
+    ))
+  }
+  if ("convert" %in% input$missing_options &&
+      "remove" %in% input$missing_options) {
+    sliders <- append(sliders, list(
+      list(value = ifelse("impute" %in% input$missing_options, 66, 50),
+           intentBefore = "warning", intentAfter = "danger")
+    ))
+  }
+  if ("impute" %in% input$missing_options &&
+      "remove" %in% input$missing_options &&
+      !"convert" %in% input$missing_options) {
+    sliders <- append(sliders, list(
+      list(value = 50, intentAfter = "danger", intentBefore = "success")
+    ))
+  }
   
-  slides <- pmap(list(as.list(input$missing_options), as.list(thresholds), as.list(thresholds2)), 
-                 function(lab, t1, t2){
-                   
-                   vals <- c(t2, t1)
-                   
-                   text <- ifelse(lab == "impute", "Estimate missing values",
-                                  paste0(str_to_title(lab), " missing values"))
-                   slide <- sliderInput(paste0("md_", lab), text, 
-                               min = 0, max = 100, value = vals, round = T, 
-                               width = "100%")
-                   
-                   if(input$keep_missing == "Yes") slide <- disabled(slide)
-                   slide
-                   
-                 })
-  
-  tagList(slides)
+  MultiSlider.shinyInput(
+    "missingness_handle_slider",
+    values = sliders,
+    min = 0,
+    max = 100,
+    labelStepSize = 10
+  )
   
 })
-
-## Fix slider relations
-observeEvent(c(input$md_keep, input$md_impute, input$md_convert, input$md_remove), {
-  
-  ## Minimums
-  ## Must always be zero if no other options
-  min <- 0 ## Always 0
-  min1 <- 0 
-  min2 <- 0
-  min3 <- 0 
-  
-  ## impute
-  if(!is.null(input$md_keep) && 
-     "keep" %in% input$missing_options) min1 <- max(input$md_keep)
-  
-  ## Convert
-  if(!is.null(input$md_keep) && 
-     "keep" %in% input$missing_options) min2 <- max(input$md_keep)
-  if (!is.null(input$md_impute) && 
-      "impute" %in% input$missing_options) min2 <- max(input$md_impute)
-  
-  ## Remove
-  if(!is.null(input$md_keep) && 
-     "keep" %in% input$missing_options) min3 <- max(input$md_keep)
-  if(!is.null(input$md_impute) && 
-     "impute" %in% input$missing_options) min3 <- max(input$md_impute)
-  if (!is.null(input$md_convert) && 
-      "convert" %in% input$missing_options) min3 <- max(input$md_convert)
-  
-  ## Maximums
-  ## Must always be 100 if no other options
-  max <- 100
-  max1 <- 100 
-  max2 <- 100
-  max3 <- 100 ## Always 100
-  
-  ## Keep
-  if (!is.null(input$md_remove) && 
-      "remove" %in% input$missing_options) max <- min3
-  if (!is.null(input$md_convert) && 
-      "convert" %in% input$missing_options) max <- min2
-  if (!is.null(input$md_impute) && 
-      "impute" %in% input$missing_options) max <- min1
-  
-  ## Impute
-  if (!is.null(input$md_remove) && 
-      "remove" %in% input$missing_options) max1 <- min3
-  if (!is.null(input$md_convert) && 
-      "convert" %in% input$missing_options) max1 <- min2
-  
-  ## Convert
-  if (!is.null(input$md_remove) && 
-      "remove" %in% input$missing_options) max2 <- min3
-  
-  updateSliderInput(session, "md_keep", value = c(min, max))
-  updateSliderInput(session, "md_impute", value = c(min1, max1))
-  updateSliderInput(session, "md_convert", value = c(min2, max2))
-  updateSliderInput(session, "md_remove", value = c(min3, max3))
-})
-
 
 output$missing_data_sample_picker_UI <- renderUI({
   

@@ -117,6 +117,7 @@ missing_data <- function(){
                      "Individual biomolecule detection across samples - Plot",
                      value = "missing_data_biomolecule_plot",
                      plotlyOutput("missing_data_hist_biomolecule"),
+                     br(),
                      uiOutput("slider_options_ui")
                      
                    )
