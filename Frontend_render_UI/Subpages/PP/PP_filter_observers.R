@@ -605,14 +605,10 @@ observeEvent(omicsData$objPP, {
   imputation_function <- function(omicsData){
     
     thresholds <- list(
-      keep = input[["filter_filt_keep"]],
-      impute = input[["filter_filt_impute"]],
-      convert = ifelse(
-        get_omicsData_type(omicsData) == "pepData",
-        NULL,
-        input[["filter_filt_convert"]]
-      ),
-      remove = input[["filter_filt_remove"]]
+      keep = missingHandleSliderValsFilter()$md_keep,
+      impute = missingHandleSliderValsFilter()$md_impute,
+      convert = missingHandleSliderValsFilter()$md_convert,
+      remove = missingHandleSliderValsFilter()$md_remove
     )
     edata_nathresh_transform(as.slData(omicsData), thresholds)
     
@@ -629,10 +625,10 @@ observeEvent(omicsData$objPP, {
                 "Something went wrong assigning your imputation filter.", 
                 imputation_function,
                 settings = list(
-                  keep = input[["filter_filt_keep"]],
-                  impute = input[["filter_filt_impute"]],
-                  convert = input[["filter_filt_convert"]],
-                  remove = input[["filter_filt_remove"]]
+                  keep = missingHandleSliderValsFilter()$md_keep,
+                  impute = missingHandleSliderValsFilter()$md_impute,
+                  convert = missingHandleSliderValsFilter()$md_convert,
+                  remove = missingHandleSliderValsFilter()$md_remove
                 )
     )
     
@@ -675,10 +671,10 @@ observeEvent(omicsData$objPP, {
                 func = imputation_function,
                 preview = TRUE,
                 settings = list(
-                  keep = input[["filter_filt_keep"]],
-                  impute = input[["filter_filt_impute"]],
-                  convert = input[["filter_filt_convert"]],
-                  remove = input[["filter_filt_remove"]]
+                  keep = missingHandleSliderValsFilter()$md_keep,
+                  impute = missingHandleSliderValsFilter()$md_impute,
+                  convert = missingHandleSliderValsFilter()$md_convert,
+                  remove = missingHandleSliderValsFilter()$md_remove
                 )
     )
     
@@ -1438,101 +1434,120 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
 output$slider_options_filter_ui <- renderUI({
   
   splitter <- length(input$missing_options_filter)
-  
   req(splitter > 0)
   
-  tested_qc <- map(input$missing_options_filter, function(lab){
-    og_thresh <- input[[paste0("md_", lab)]]
-  })
+  sliders <- list()
+  if ("impute" %in% input$missing_options_filter &&
+      "convert" %in% input$missing_options_filter)
+  {
+    sliders <- append(sliders, list(
+      list(value = 
+             if (!is.null(missingHandleSliderVals()$md_impute[2]))
+               missingHandleSliderVals()$md_impute[2]
+             else if ("remove" %in% input$missing_options_filter)
+               33
+             else
+               50,
+           intentAfter = "warning", intentBefore = "success")
+    ))
+  }
+  if ("convert" %in% input$missing_options_filter &&
+      "remove" %in% input$missing_options_filter) {
+    sliders <- append(sliders, list(
+      list(value = 
+             if (!is.null(missingHandleSliderVals()$md_remove[1]))
+               missingHandleSliderVals()$md_remove[1]
+             else if ("impute" %in% input$missing_options_filter)
+               66
+             else
+               50,
+           intentBefore = "warning", intentAfter = "danger")
+    ))
+  }
+  if ("impute" %in% input$missing_options_filter &&
+      "remove" %in% input$missing_options_filter &&
+      !"convert" %in% input$missing_options_filter) {
+    sliders <- append(sliders, list(
+      list(value = 
+             if (!is.null(missingHandleSliderVals()$md_remove[1]))
+               missingHandleSliderVals()$md_remove[1]
+             else
+               50,
+           intentAfter = "danger", intentBefore = "success")
+    ))
+  }
   
-  thresholds <- floor(100/splitter * 1:splitter)
-  thresholds2 <- c(0, thresholds[-length(thresholds)])
-  
-  slides <- pmap(list(as.list(input$missing_options_filter), 
-                      as.list(thresholds), 
-                      as.list(thresholds2)), 
-                 function(lab, t1, t2){
-
-                   
-                   if(!is.null(input[[paste0("md_", lab)]]) &&
-                      lab %in% input$missing_options_filter &&
-                      lab %in% input$missing_options){
-                     vals <- input[[paste0("md_", lab)]]
-                   } else vals <- c(t2, t1)
-                   
-                   text <- ifelse(lab == "impute", "Estimate missing values",
-                                  paste0(str_to_title(lab), " missing values"))
-                   
-                   sliderInput(paste0("filter_filt_", lab), text,
-                               min = 0, max = 100, value = vals, round = T, width = "100%")
-                   
-                 })
-  
-  tagList(slides)
+  MultiSlider.shinyInput(
+    "missingness_handle_filter_slider",
+    values = sliders,
+    min = 0,
+    max = 100,
+    labelStepSize = 10
+  )
   
 })
 
-## Fix slider relations
-observeEvent(c(input$filter_filt_keep, input$filter_filt_impute, 
-               input$filter_filt_convert, input$filter_filt_remove), {
+# change individual slider values into individual thresholds
+missingHandleSliderValsFilter <- reactive({
+  thresholds <- list(
+    md_keep = NULL,
+    md_impute = NULL,
+    md_convert = NULL,
+    md_remove = NULL
+  )
   
-  ## Minimums
-  ## Must always be zero if no other options
-  min <- 0 ## Always 0
-  min1 <- 0 
-  min2 <- 0
-  min3 <- 0 
+  if ("keep" %in% input$missing_options_filter) {
+    thresholds$md_keep <- c(0, 100)
+    # keep
+    return(thresholds)
+  }
   
-  ## impute
-  if(!is.null(input$filter_filt_keep) && 
-     "keep" %in% input$missing_options_filter) min1 <- max(input$filter_filt_keep)
+  if ("impute" %in% input$missing_options_filter) {
+    if (length(input$missing_options_filter) == 1) {
+      thresholds$md_impute <- c(0, 100)
+      # impute
+      return(thresholds)
+    }
+    
+    thresholds$md_impute <- c(0, input$missingness_handle_filter_slider[1])
+    
+    if ("convert" %in% input$missing_options_filter) {
+      thresholds$md_convert <- c(input$missingness_handle_filter_slider[1], 100)
+      
+      if ("remove" %in% input$missing_options_filter) {
+        thresholds$md_convert[2] <- input$missingness_handle_filter_slider[2]
+        thresholds$md_remove <- c(input$missingness_handle_filter_slider[2], 100)
+      }
+      
+      # impute, convert, [remove]
+      return(thresholds)
+    }
+    
+    thresholds$md_remove <- c(input$missingness_handle_filter_slider[1], 100)
+    # impute, remove
+    return(thresholds)
+  }
   
-  ## Convert
-  if(!is.null(input$filter_filt_keep) && 
-     "keep" %in% input$missing_options_filter) min2 <- max(input$filter_filt_keep)
-  if (!is.null(input$filter_filt_impute) && 
-      "impute" %in% input$missing_options_filter) min2 <- max(input$filter_filt_impute)
+  if ("convert" %in% input$missing_options_filter) {
+    if (length(input$missing_options_filter) == 1) {
+      thresholds$md_convert <- c(0, 100)
+      # convert
+      return(thresholds)
+    }
+    
+    thresholds$md_convert <- c(0, input$missingness_handle_filter_slider[1])
+    thresholds$md_remove <- c(input$missingness_handle_filter_slider[1], 100)
+    # convert, remove
+    return(thresholds)
+  }
   
-  ## Remove
-  if(!is.null(input$filter_filt_keep) && 
-     "keep" %in% input$missing_options_filter) min3 <- max(input$filter_filt_keep)
-  if(!is.null(input$filter_filt_impute) && 
-     "impute" %in% input$missing_options_filter) min3 <- max(input$filter_filt_impute)
-  if (!is.null(input$filter_filt_convert) && 
-      "convert" %in% input$missing_options_filter) min3 <- max(input$filter_filt_convert)
+  if ("remove" %in% input$missing_options_filter) {
+    thresholds$md_remove <- c(0, 100)
+  }
   
-  ## Maximums
-  ## Must always be 100 if no other options
-  max <- 100
-  max1 <- 100 
-  max2 <- 100
-  max3 <- 100 ## Always 100
-  
-  ## Keep
-  if (!is.null(input$filter_filt_remove) && 
-      "remove" %in% input$missing_options_filter) max <- min3
-  if (!is.null(input$filter_filt_convert) && 
-      "convert" %in% input$missing_options_filter) max <- min2
-  if (!is.null(input$filter_filt_impute) && 
-      "impute" %in% input$missing_options_filter) max <- min1
-  
-  ## Impute
-  if (!is.null(input$filter_filt_remove) && 
-      "remove" %in% input$missing_options_filter) max1 <- min3
-  if (!is.null(input$filter_filt_convert) && 
-      "convert" %in% input$missing_options_filter) max1 <- min2
-  
-  ## Convert
-  if (!is.null(input$filter_filt_remove) && 
-      "remove" %in% input$missing_options_filter) max2 <- min3
-  
-  updateSliderInput(session, "filter_filt_keep", value = c(min, max))
-  updateSliderInput(session, "filter_filt_impute", value = c(min1, max1))
-  updateSliderInput(session, "filter_filt_convert", value = c(min2, max2))
-  updateSliderInput(session, "filter_filt_remove", value = c(min3, max3))
+  # none, [remove]
+  return(thresholds)
 })
-
-
 
 output$missing_options_filter_UI <- renderUI({
   

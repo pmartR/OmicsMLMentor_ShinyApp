@@ -55,8 +55,8 @@ load_rollup_observers <- function(tab) {
         thresholds <- list(
           keep = NULL,
           impute = NULL,
-          convert = filter_settings[[tab]][["imputefilt"]]$convert,
-          remove = NULL
+          convert = missingHandleSliderValsFilter()$md_convert,
+          remove = missingHandleSliderValsFilter()$md_remove
         )
         omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), thresholds)
         
