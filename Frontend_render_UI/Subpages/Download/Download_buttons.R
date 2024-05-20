@@ -17,8 +17,6 @@ observeEvent(input$makezipfile, {
   temp_dir <- tempdir()
   setwd(temp_dir)
   
-  browser()
-  
   fname <- file.path(temp_dir, 
                      paste0("SLOPE_", method, 
                             "_", gsub("( |:|-)", "_", Sys.time())))
