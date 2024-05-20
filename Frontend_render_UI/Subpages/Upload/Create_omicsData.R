@@ -59,7 +59,7 @@ observeEvent(input$check_group_cols, {
 
   isolate({
     table_table_current$table$Upload__e_data <- od$e_data
-    table_table_current$table$Upload__f_data <- od$f_data
+    if(!is.null(od$f_data)) table_table_current$table$Upload__f_data <- od$f_data
     if(!is.null(od$e_meta)) table_table_current$table$Upload__e_meta <- od$e_meta
     table_table_current$table$Upload__summary <- summary(od)
   })
