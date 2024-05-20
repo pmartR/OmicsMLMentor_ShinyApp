@@ -1987,7 +1987,7 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
     }
     
     isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
-    isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+    isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     p
   })
