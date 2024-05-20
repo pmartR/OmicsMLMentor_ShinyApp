@@ -1288,8 +1288,8 @@ output$structure_plot <- renderPlotly({
     yvar =  if (!is.null(input$unsup_pca_yaxis_pc)) paste0("PC", input$unsup_pca_yaxis_pc) else "PC2"
     
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw()
     } else {
       ## Where is R2?
       p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]])) + geom_point(size = 3) + theme_bw()
@@ -1318,8 +1318,8 @@ output$structure_plot <- renderPlotly({
     }
 
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw()
     } else {
       ## Where is R2?
       p <- ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
@@ -1329,7 +1329,7 @@ output$structure_plot <- renderPlotly({
   }
   
   isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
-  isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model eval: ", method))
+  isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
   isolate(table_table_current$table$RM__model_eval <- p$data)
 
   p
