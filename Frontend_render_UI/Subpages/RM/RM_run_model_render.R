@@ -185,14 +185,58 @@ output$Variable_importance_ui <- renderUI({
     value = "select_vi",
 
     "Post-hoc feature selection",
-
-    numericInput(
-      "vi_thresh",
-      "Build reduced model with variable importance equal to or above:",
-      min = 0, max = max(vi_info$var_import), value = signif(set_val, 3),
-      step = 0.001,
-      width = "100%"
+    
+    radioButtons(
+      "vi_choose",
+      "Build reduced model which includes...",
+      choiceNames = list(
+        "top ___ features",
+        "top ___% of features",
+        "features in ___ quantile",
+        "features with importance value above ___"
+      ),
+      choiceValues = c(
+        "count",
+        "percent",
+        "quantile",
+        "value"
+      )
     ),
+    conditionalPanel(
+      "input.vi_choose == \"count\"",
+      numericInput(
+        "vi_thresh_count",
+        "Count",
+        min = 0, max = dim(vi_info)[1], 10,
+        step = 1
+      )
+    ),
+    conditionalPanel(
+      "input.vi_choose == \"percent\"",
+      numericInput(
+        "vi_thresh_pct",
+        "Percent",
+        min = 0, max = 100, value = 5
+      )
+    ),
+    conditionalPanel(
+      "input.vi_choose == \"quantile\"",
+      numericInput(
+        "vi_thresh_q",
+        "Quantile",
+        min = 0, max = 1, value = 0.8,
+        step = 0.01
+      )
+    ),
+    conditionalPanel(
+      "input.vi_choose == \"value\"",
+      numericInput(
+        "vi_thresh",
+        "Value",
+        min = 0, value = set_val
+      )
+    ),
+    
     
     br(),
     
@@ -224,6 +268,31 @@ output$preview_n_features <- renderText({
   paste0("At current cut-off, ", kept_features, " features will be kept and ", 
          removed_features, " features will be excluded from the reduced model.")
   
+})
+
+observeEvent(input$vi_thresh_count, {
+  req(input$vi_thresh_count)
+  req(omicsData$objRM)
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(vi_info)
+  updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor(input$vi_thresh_count)] - 0.0001)
+})
+
+observeEvent(input$vi_thresh_pct, {
+  req(input$vi_thresh_pct)
+  req(omicsData$objRM)
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(vi_info)
+  updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor((input$vi_thresh_pct) / 100 * length(vi_info$var_import))] - 0.0001)
+})
+
+observeEvent(input$vi_thresh_q, {
+  req(input$vi_thresh_q)
+  req(input$vi_thresh_q >= 0 && input$vi_thresh_q <= 1)
+  req(omicsData$objRM)
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(vi_info)
+  updateNumericInput(session, "vi_thresh", value = unname(quantile(vi_info$var_import[vi_info$var_import != 0], input$vi_thresh_q)))
 })
 
 output$VI_tabset_UI <- renderUI({
