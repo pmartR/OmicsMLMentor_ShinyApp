@@ -31,7 +31,7 @@ load_rollup_observers <- function(tab) {
           shinyjs::hide(paste0(tab, "_rollup_busy"))
         })
         
-        if (input[[paste0(tab, "_which_rollup")]] == "zrollup") {
+        if (input$qc_which_rollup == "zrollup") {
           single_pep <- TRUE
           single_observation <- TRUE
         } else {
@@ -44,21 +44,19 @@ load_rollup_observers <- function(tab) {
         pep$e_meta[[cname]] <- as.character(pep$e_meta[[cname]])
         
         omicsData$objPP <- protein_quant(pep,
-                                                  method = input[[paste0(tab, "_which_rollup")]],
-                                                  qrollup_thresh = input[[paste0(tab, "_qrollup_thresh")]] / 100,
+                                                  method = input$qc_which_rollup,
+                                                  qrollup_thresh = input$qc_qrollup_thresh / 100,
                                                   single_pep = single_pep,
                                                   single_observation = single_observation,
-                                                  combine_fn = input[[paste0(tab, "_which_combine_fn")]],
+                                                  combine_fn = input$qc_which_combine_fn,
                                                   parallel = TRUE
         )
         
-        thresholds <- list(
-          keep = NULL,
-          impute = NULL,
-          convert = missingHandleSliderValsFilter()$md_convert,
-          remove = missingHandleSliderValsFilter()$md_remove
-        )
-        omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), thresholds)
+        # Remove proteins which got filtered out
+        transforms_df <- pepQCData$transforms_df[
+          -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
+        ]
+        omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
         
         
         
@@ -78,6 +76,20 @@ load_rollup_observers <- function(tab) {
 }
   
 assign_rollup_output <- function(tab) {
+  output[[paste0(tab, "_which_rollup")]] <- renderText({
+    switch(
+      input$qc_which_rollup, 
+      rollup = "Centering only",
+      rrollup = "Reference",
+      qrollup = paste0("Quantile: ", input$qc_qrollup_thresh),
+      zrollup = "Z-Score"
+    )
+  })
+  
+  output[[paste0(tab, "_which_combine_fn")]] <- renderText({
+    input$qc_which_combine_fn
+  })
+  
   output[[paste0(tab, "_rollup_res_UI")]] <- renderUI({
     if (inherits(omicsData$objPP, "proData")) {
       p <- plotlyOutput(paste0(tab, "_rollup_res"))

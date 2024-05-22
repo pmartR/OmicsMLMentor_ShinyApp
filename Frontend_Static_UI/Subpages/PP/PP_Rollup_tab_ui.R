@@ -16,47 +16,11 @@ rollup_tab <- function(tabname) {
                    value = "rollup_opts",
                    collapsed = F,
                    
-                   radioButtons(
-                     paste0(tabname, "_which_rollup"),
-                     div(
-                       "Rollup Method",
-                       div(
-                         style = "color:deepskyblue;display:inline-block",
-                         add_prompt(
-                           icon("question-sign", lib = "glyphicon"),
-                           message = paste(
-                             "Reference: Peptides are scaled based on a reference peptide and protein abundance is set as the mean of these scaled peptides.",
-                             "Z-Score: Peptides are scaled with z-score transformation and protein abundance is set as the mean of these scaled peptides.",
-                             "Quantile: Peptides are selected according to a user selected abundance cutoff value and protein abundance is set as the mean of these selected peptides.",
-                             "Centering only: No scaling and protein abundance is set as the mean or median of peptides.",
-                             sep = "<br/><br/>"
-                           )
-                         )
-                       )
-                     ),
-                     c(
-                       "Reference" = "rrollup",
-                       "Z-Score" = "zrollup",
-                       "Quantile" = "qrollup",
-                       "Centering only" = "rollup"
-                     ),
-                     selected = character(0)
-                   ),
+                   tags$b("Rollup Method: "),
+                   textOutput(paste0(tabname, "_which_rollup")),
                    
-                   radioGroupButtons(
-                     paste0(tabname, "_which_combine_fn"),
-                     "Center By:",
-                     c("Median" = "median", "Mean" = "mean"),
-                     selected = character(0)
-                   ),
-                   
-                   hidden(numericInput(paste0(tabname, "_qrollup_thresh"),
-                                       "Quantile cutoff percent:",
-                                       value = 5, step = 5, min = 1e-308, max = (100 - 1e-308)
-                   )),
-                   
-                   
-                   uiOutput(paste0(tabname, "_bpquant_apply_icon_UI")),
+                   tags$b("Center By: "),
+                   textOutput(paste0(tabname, "_which_combine_fn")),
                    
                    hr(),
                    

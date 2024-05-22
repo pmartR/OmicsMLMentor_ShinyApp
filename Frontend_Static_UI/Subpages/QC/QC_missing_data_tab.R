@@ -35,65 +35,128 @@ missing_data <- function(){
                    column(2, actionButton("done_sample_miss", "Done", style="float:right"))
                  )
 
-               ), 
+               ),
                
                collapseBox(
                  value = "missing_by_biomolecule",
-                 titletext = "Detection by Biomolecule",
+                 titletext = textOutput("qc_biomolecule_title"),
                  
-                 br(),
-                 "Some biomolecules may not be detected in all samples.",
-                 br(),
-                 br(),
-                 paste0("Some unsupervised models accept incomplete detection of biomolecules, however",
-                        " currently supported supervised models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
-                 
-                 br(),
-                 br(),
-                 tags$div(
-                   tags$ul(
-                     tags$li("Removing the biomolecule"),
-                     tags$li("Estimating the undectected biomolecule values from other values"),
-                     tags$li("Convert biomolecule values to 0s where undetected across samples, while dectected biomolecule values are set to 1")
+                 hidden(
+                   
+                   div(
+                     id = "protein_rollup_box",
+                     
+                     "Since some operations run on the protein level, please select a rollup method to use later",
+                     
+                     radioButtons(
+                       paste0("qc_which_rollup"),
+                       div(
+                         "Rollup Method",
+                         div(
+                           style = "color:deepskyblue;display:inline-block",
+                           add_prompt(
+                             icon("question-sign", lib = "glyphicon"),
+                             message = paste(
+                               "Reference: Peptides are scaled based on a reference peptide and protein abundance is set as the mean of these scaled peptides.",
+                               "Z-Score: Peptides are scaled with z-score transformation and protein abundance is set as the mean of these scaled peptides.",
+                               "Quantile: Peptides are selected according to a user selected abundance cutoff value and protein abundance is set as the mean of these selected peptides.",
+                               "Centering only: No scaling and protein abundance is set as the mean or median of peptides.",
+                               sep = "<br/><br/>"
+                             )
+                           )
+                         )
+                       ),
+                       c(
+                         "Reference" = "rrollup",
+                         "Z-Score" = "zrollup",
+                         "Quantile" = "qrollup",
+                         "Centering only" = "rollup"
+                       ),
+                       selected = character(0)
+                     ),
+                     
+                     radioGroupButtons(
+                       paste0("qc_which_combine_fn"),
+                       "Center By:",
+                       c("Median" = "median", "Mean" = "mean"),
+                       selected = character(0)
+                     ),
+                     
+                     hidden(numericInput(paste0("qc_qrollup_thresh"),
+                                         "Quantile cutoff percent:",
+                                         value = 5, step = 5, min = 1e-308, max = (100 - 1e-308)
+                     )),
+                     
+                     hr(),
+                     
+                     actionButton(paste0("qc_apply_rollup"), "Get protein-level information"),
+                     
+                     hidden(div("Getting protein-level information, please wait...",
+                                id = paste0("qc_rollup_busy"),
+                                class = "fadein-out",
+                                style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
+                     )),
+                     
+                     hr()
                    )
                  ),
                  
-                 br(),
-                 
-                 "Refer to graphs and summary on the right for assistance in determining",
-                 " whether or not to keep undetected biomolecule values.",
-                 br(),
-                 strong("Note: percentage of biomolecule detection may change in further processing steps."),
-                 br(),
-                 br(),
-                 
-                 pickerInput(
-                   "missing_options",
-                   "Preview biomolecule detection handling:",
-                   choices = c(
-                     "Keep data as-is" = "keep",
-                     "Estimate values in samples with no biomolecule detection" = "impute",
-                     "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
-                     "Remove biomolecules with incomplete detection" = "remove"
+                 hidden(div(
+                   id = "qc_biomolecule_detect",
+                   br(),
+                   "Some biomolecules may not be detected in all samples.",
+                   br(),
+                   br(),
+                   paste0("Some unsupervised models accept incomplete detection of biomolecules, however",
+                          " currently supported supervised models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
+                   
+                   br(),
+                   br(),
+                   tags$div(
+                     tags$ul(
+                       tags$li("Removing the biomolecule"),
+                       tags$li("Estimating the undectected biomolecule values from other values"),
+                       tags$li("Convert biomolecule values to 0s where undetected across samples, while dectected biomolecule values are set to 1")
+                     )
                    ),
-                   multiple = T
-                 ),
-                 
-                 radioGroupButtons("keep_missing", "Keep data as-is?",
-                                   choices = c("No", "Yes")),
-                 
-                 shiny::textOutput("Note_nonmissing"),
-                 
-                 br(),
-                 
-                 fluidRow(
-                   column(10, ""),
-                   column(2, actionButton("done_biom_miss", "Done", style="float:right"))
+                   
+                   br(),
+                   
+                   "Refer to graphs and summary on the right for assistance in determining",
+                   " whether or not to keep undetected biomolecule values.",
+                   br(),
+                   strong("Note: percentage of biomolecule detection may change in further processing steps."),
+                   br(),
+                   br(),
+                   
+                   pickerInput(
+                     "missing_options",
+                     "Preview biomolecule detection handling:",
+                     choices = c(
+                       "Keep data as-is" = "keep",
+                       "Estimate values in samples with no biomolecule detection" = "impute",
+                       "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
+                       "Remove biomolecules with incomplete detection" = "remove"
+                     ),
+                     multiple = T
+                   ),
+                   
+                   radioGroupButtons("keep_missing", "Keep data as-is?",
+                                     choices = c("No", "Yes")),
+                   
+                   shiny::textOutput("Note_nonmissing"),
+                   
+                   br(),
+                   
+                   fluidRow(
+                     column(10, ""),
+                     column(2, actionButton("done_biom_miss", "Done", style="float:right"))
+                   )
+                   
+                   # actionButton("done_biom_miss", "Done")
                  )
                  
-                 # actionButton("done_biom_miss", "Done")
-                 
-               )
+               ))
                  
                  
                ), 
@@ -112,11 +175,14 @@ missing_data <- function(){
                      collapsed = F,
                      plotlyOutput("missing_data_hist_sample")
                    ),
-                   
+                    
                    collapseBox(
                      "Individual biomolecule detection across samples - Plot",
                      value = "missing_data_biomolecule_plot",
-                     plotlyOutput("missing_data_hist_biomolecule"),
+                     hidden(div(
+                       id = "qc_biomolecule_detect_plot",
+                       plotlyOutput("missing_data_hist_biomolecule")
+                     )),
                      br(),
                      uiOutput("slider_options_ui")
                      

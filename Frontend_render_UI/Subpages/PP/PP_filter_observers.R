@@ -1179,11 +1179,23 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         
         thresholds <- filter_settings[[name]]$imputefilt
         
+        # Only apply impute 
         if (get_omicsData_type(tmp) == "Pepdata") {
-          thresholds$convert = NULL
+          # Impute all of e_data
+          imputed_data <- slopeR::imputation(as.slData(tmp))
+          imputed_data <- cbind(E_DATA_CNAME = tmp$e_data[[get_edata_cname(tmp)]], imputed_data)
+          names(imputed_data)[1] <- get_edata_cname(tmp)
+          
+          # Get the proteins whose peptides will be imputed
+          impute_proteins <- pepQCData$transforms_df[which(pepQCData$transforms_df$Handling == "Estimate"),][[get_edata_cname(pepQCData$objQCPro)]]
+          
+          # Replace just those peptides with their imputed versions
+          impute_pep_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
+          tmp$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
+        } else {
+          tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
         }
         
-        tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
         attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
         # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
 

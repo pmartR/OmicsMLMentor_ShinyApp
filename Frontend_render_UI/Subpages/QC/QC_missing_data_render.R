@@ -66,8 +66,14 @@ missingHandleSliderVals <- reactive({
 output$missing_data_hist_biomolecule <- renderPlotly({
   req(!is.null(omicsData$objQC$e_data))
   
-  id_col <- colnames(omicsData$objQC$e_data) %in% pmartR::get_edata_cname(omicsData$objQC)
-  df <- omicsData$objQC$e_data[!id_col]
+  omics_obj <- omicsData$objQC
+  
+  if (inherits(omicsData$objQC, "pepData")) {
+    omics_obj <- pepQCData$objQCPro
+  }
+  
+  id_col <- colnames(omics_obj$e_data) %in% pmartR::get_edata_cname(omics_obj)
+  df <- omics_obj$e_data[!id_col]
   
   apply_dir <- 1
   total <- ncol(df[-1])
@@ -133,12 +139,22 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
     geom_histogram() + theme_bw() + labs(y = paste0("Count of ", text_ylab))
   
+  if (inherits(omicsData$objQC, "pepData")) {
+    p <- p + ggtitle("Protein level preview")
+  }
+  
   isolate(plot_table_current$QC$missing_features <- p)
   
   p
   
 })
 
+output$qc_biomolecule_title <- renderText({
+  if (inherits(omicsData$objQC, "pepData")) 
+    "Protein-level Information" 
+  else 
+    "Detection by Biomolecule"
+})
 
 output$missing_data_hist_sample <- renderPlotly({
   req(!is.null(omicsData$objQC$e_data))
@@ -368,8 +384,6 @@ observeEvent(input$done_sample_miss, {
     
     omicsData$objQC <- temp_dat
     
-    
-    
     updateBoxCollapse(session, "missing_data_box", 
                       close = "missing_data_sample_box", 
                       open = "missing_by_biomolecule")
@@ -378,11 +392,77 @@ observeEvent(input$done_sample_miss, {
                       close = "missing_data_sample_plot", 
                       open = "missing_data_biomolecule_plot")
     
+    if (inherits(omicsData$objQC, "pepData")) {
+      shinyjs::show("protein_rollup_box")
+    } else {
+      shinyjs::show("qc_biomolecule_detect")
+      shinyjs::show("qc_biomolecule_detect_plot")
+    }
+    
   }
+})
+
+observeEvent(input$qc_apply_rollup, {
+  req(input$qc_apply_rollup > 0)
+  
+  shinyjs::show("qc_rollup_busy")
+  if (input$qc_which_rollup == "zrollup") {
+    single_pep <- TRUE
+    single_observation <- TRUE
+  } else {
+    single_pep <- FALSE
+    single_observation <- FALSE
+  }
+  
+  pepQCData$objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
+                                      method = input$qc_which_rollup,
+                                      qrollup_thresh = input$qc_qrollup_thresh / 100,
+                                      single_pep = single_pep,
+                                      single_observation = single_observation,
+                                      combine_fn = input$qc_which_combine_fn,
+                                      parallel = TRUE
+  )
+  shinyjs::hide("qc_rollup_busy")
+  shinyjs::show("qc_biomolecule_detect")
+  shinyjs::show("qc_biomolecule_detect_plot")
+})
+
+output$qc_rollup_res_UI <- renderUI({
+  if (!is.null(pepQCData$objQCPro)) {
+    p <- plotlyOutput(paste0("qc_rollup_res"))
+  } else {
+    p <- "Roll-up has not been applied."
+  }
+  return(p)
+})
+
+output$qc_rollup_res <- renderPlotly({
+  plot(pepQCData$objQCPro)
+})
+
+observeEvent(input$done_qc_rollup, {
+  updateBoxCollapse(session, "missing_data_box", 
+                    close = "protein_rollup",
+                    open = "missing_by_biomolecule")
+  updateBoxCollapse(session, "qc_missing_plots",
+                    close = "qc_rollup_res",
+                    open = "missing_data_biomolecule_plot")
 })
 
 observeEvent(input$done_biom_miss, {
   if(input$done_biom_miss > 0){
+    
+    if (inherits(omicsData$objQC, "pepData")) {
+      thresholds <- list(
+        keep = missingHandleSliderVals()$md_keep,
+        impute = missingHandleSliderVals()$md_impute,
+        convert = missingHandleSliderVals()$md_convert,
+        remove = missingHandleSliderVals()$md_remove
+      )
+      
+      pepQCData$transforms_df <- slopeR:::get_transform_df(pepQCData$objQCPro, thresholds)
+    }
+    
     updateBoxCollapse(session, "missing_data_box", 
                       close = "missing_by_biomolecule")
     
