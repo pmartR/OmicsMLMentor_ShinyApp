@@ -78,7 +78,7 @@ analysis_goals <- function() {
                      uiOutput("pick_model_UI"),
                      
                      uiOutput("pick_model_group_pick_UI")
-                     
+
                    )),
                    
                    
@@ -89,8 +89,7 @@ analysis_goals <- function() {
                        uiOutput("ag_prompt_UI"),
 
                        conditionalPanel("input.ag_prompts == 'supervised'",
-                          uiOutput("f_data_response_picker_UI"),
-                          uiOutput("pick_model_response_type_UI")
+                          uiOutput("f_data_response_picker_UI")
                        ),
                        
                        conditionalPanel(
@@ -99,9 +98,6 @@ analysis_goals <- function() {
                            "input.f_data_response_picker != null",
                            "input.f_data_response_picker != ''",
                            "input.f_data_response_picker.length > 0",
-                           "input.pick_model_response_type != null",
-                           "input.pick_model_response_type != ''",
-                           "input.pick_model_response_type.length > 0",
                            sep = " && "
                           ), {
                          div(
