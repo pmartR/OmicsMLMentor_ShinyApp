@@ -263,14 +263,47 @@ output$slider_options_ui <- renderUI({
     ))
   }
   
-  MultiSlider.shinyInput(
-    "missingness_handle_slider",
-    values = sliders,
-    min = 0,
-    max = 100,
-    labelStepSize = 10
+  div(
+    MultiSlider.shinyInput(
+      "missingness_handle_slider",
+      values = sliders,
+      min = 0,
+      max = 100,
+      labelStepSize = 10
+    ),
+    uiOutput("missingness_handle_legend"),
   )
   
+})
+
+output$missingness_handle_legend <- renderUI({
+  req(length(input$missing_options) > 1)
+  
+  div(
+    if ("impute" %in% input$missing_options) {
+      div(
+        style = "display: inline-block; margin-right: 20px;",
+        div(style = "width: 10px; height: 10px; display: inline-block; background-color: #238551;"),
+        "Estimate"
+      )
+    },
+    
+    if ("convert" %in% input$missing_options) {
+      div(
+        style = "display: inline-block; margin-right: 20px;",
+        div(style = "width: 10px; height: 10px; display: inline-block; background-color: #c87619;"),
+        "Convert"
+      )
+    },
+    
+    if ("remove" %in% input$missing_options) {
+      div(
+        style = "display: inline-block; margin-right: 20px;",
+        div(style = "width: 10px; height: 10px; display: inline-block; background-color: #cd4246;"),
+        "Remove"
+      )
+    },
+  )
 })
 
 output$missing_data_sample_picker_UI <- renderUI({
