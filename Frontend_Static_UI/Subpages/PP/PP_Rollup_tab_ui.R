@@ -83,6 +83,8 @@ rollup_tab <- function(tabname) {
                    
                    actionButton(paste0(tabname, "_apply_rollup"), "Roll-up peptides"),
                    
+                   br(),
+                   
                    hidden(div("Applying rollup, please wait...",
                               id = paste0(tabname, "_rollup_busy"),
                               class = "fadein-out",
