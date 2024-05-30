@@ -8,7 +8,7 @@ missingHandleSliderVals <- reactive({
     md_remove = NULL
   )
   
-  if ("keep" %in% input$missing_options) {
+  if (input$keep_missing == "Yes") {
     thresholds$md_keep <- c(0, 100)
     # keep
     return(thresholds)
@@ -90,7 +90,7 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   
   sliderVals <- missingHandleSliderVals %>% debounce(500)
   
-  if("keep" %in% input$missing_options){
+  if(input$keep_missing == "Yes"){
     
     rows <- Reduce("&", list(
       data[["Percentage missing"]] >= sliderVals()$md_keep[1],
@@ -365,7 +365,9 @@ output$Note_nonmissing <- renderText({
 
 observeEvent(input$keep_missing, {
   if(input$keep_missing == "Yes"){
-    updatePickerInput(session, "missing_options", selected = "keep")
+    shinyjs::hide("missing_options")
+  } else {
+    shinyjs::show("missing_options")
   }
 })
 

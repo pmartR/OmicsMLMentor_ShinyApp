@@ -129,20 +129,20 @@ missing_data <- function(){
                    br(),
                    br(),
                    
+                   radioGroupButtons("keep_missing", "Keep data as-is?",
+                                     choices = c("No", "Yes"), selected = "No"),
+                   
                    pickerInput(
                      "missing_options",
                      "Preview biomolecule detection handling:",
                      choices = c(
-                       "Keep data as-is" = "keep",
+                       # "Keep data as-is" = "keep",
                        "Estimate values in samples with no biomolecule detection" = "impute",
                        "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
                        "Remove biomolecules with incomplete detection" = "remove"
                      ),
                      multiple = T
                    ),
-                   
-                   radioGroupButtons("keep_missing", "Keep data as-is?",
-                                     choices = c("No", "Yes")),
                    
                    shiny::textOutput("Note_nonmissing"),
                    
