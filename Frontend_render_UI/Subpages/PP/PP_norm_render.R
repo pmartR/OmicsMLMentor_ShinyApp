@@ -2156,6 +2156,8 @@ assign_norm_output <- function(tab) {
     
     output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
       
+      req(!all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))
+      
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
         return(isolate(plot_table_current$PP$normalization$pre))
