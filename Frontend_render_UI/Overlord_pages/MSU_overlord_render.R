@@ -92,6 +92,33 @@ observeEvent(input$done_VS, ignoreInit = T, {
 
 })
 
+observeEvent(c(input$ag_prompts, input$ag_prompts_supervised, input$ag_prompts_unsupervised,
+               input$skip_ag, input$pick_model_group_pick), {
+  if (is.null(input$ag_prompts) && !isTruthy(input$skip_ag)) {
+    shinyjs::hide("ag_done")
+    return()
+  }
+  
+  if (isTruthy(input$skip_ag) && is.null(input$pick_model_group_pick)) {
+    shinyjs::hide("ag_done")
+    return()
+  }
+  
+  if (!is.null(input$ag_prompts) && input$ag_prompts == "supervised" && 
+      (is.null(input$f_data_response_picker) || is.null(input$ag_prompts_supervised))) {
+    shinyjs::hide("ag_done")
+    return()
+  }
+  
+  if (!is.null(input$ag_prompts) && input$ag_prompts == "unsupervised" && 
+      is.null(input$ag_prompts_unsupervised)) {
+    shinyjs::hide("ag_done")
+    return()
+  }
+  
+  shinyjs::show("ag_done")
+}, ignoreNULL = FALSE)
+
 observeEvent(input$ag_done, ignoreInit = T, {
   
   if(!is.null(input$ag_done) && input$ag_done > 0){
