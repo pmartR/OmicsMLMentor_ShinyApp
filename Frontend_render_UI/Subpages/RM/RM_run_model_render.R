@@ -666,6 +666,7 @@ observeEvent(input$run_sl, {
     
     list_args <- c(list_args, custom_args)
     
+    unregister()
     future::plan(future::sequential)
     omicsData$objRM <- tryCatch({
       do.call(slopeR::variable_importance, list_args)
@@ -673,7 +674,7 @@ observeEvent(input$run_sl, {
       if(str_detect(e$message, "No variable importance method implemented for method")){
         do.call(slopeR::fit, list_args)
       } else {
-        browser()
+        shinyalert("Something went wrong: ", paste0("System error: ", e$message))
         NULL
       }
     })

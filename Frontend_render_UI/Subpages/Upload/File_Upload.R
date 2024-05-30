@@ -54,6 +54,33 @@ fileinput_UI <- function(id, label = "e_data", is_RNA) {
   )
 }
 
+input_data_types <- reactive({
+  # e_data
+  all_input_data_types <- "e_data"
+  
+  # f_data
+  all_input_data_types <- c(
+    all_input_data_types,
+    if (!is.null(input$use_fdata) &&
+        input$use_fdata == "f_data") 
+      "f_data" 
+    else 
+      NULL
+  )
+  
+  # e_meta
+  all_input_data_types <- c(
+    all_input_data_types,
+    if (input$data_type %in% c("Label-free", "Isobaric") ||
+        isTruthy(input$have_emeta)) 
+      "e_meta" 
+    else 
+      NULL
+  )
+  
+  all_input_data_types
+})
+
 purrr::map(c("e_data", "f_data", "e_meta"), function(label){
   
   preview_tabset <- "preview_data"
@@ -63,240 +90,247 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
   } else{
     preview_tabset <- preview_tabset
   }
+  
+  ## If a file is uploaded, load it up
+  observeEvent(input[[paste0(label, "_file")]], ignoreInit = TRUE, {
+    
+    req(label %in% input_data_types())
+    
+    req(!is.null(input[[paste0(label, "_file")]]$name))
+    
+    tablabel <- switch(label,
+                       e_data = ifelse(input$data_type == "RNA-seq", 
+                                       "Expression data",
+                                       "Abundance data"),
+                       f_data = "Sample Information",
+                       e_meta = "Biomolecule information"
+    )
+    
+    ## Remove prior
+    removeTab(preview_tabset, tablabel, session = session)
+    
+    ## make sure if dt changes remove prior
+    if(tablabel == "Abundance data"){
+      removeTab(preview_tabset, "Expression data", session = session)
+    } else if(tablabel == "Expression data"){
+      removeTab(preview_tabset, "Abundance data", session = session)
+    }
+    
+    data_select_val <- input_data_types()
+    if(label %in% data_select_val){
       
-      ## If a file is uploaded, load it up
-      observeEvent(input[[paste0(label, "_file")]], ignoreInit = TRUE, {
-        
-        req(!is.null(input[[paste0(label, "_file")]]$name))
-        
-        tablabel <- switch(label,
-                           e_data = ifelse(input$data_type == "RNA-seq", 
-                                           "Expression data",
-                                           "Abundance data"),
-                           f_data = "Sample Information",
-                           e_meta = "Biomolecule information"
+      reactive_dataholder[[label]]$filename <- input[[paste0(label, "_file")]]$name
+      reactive_dataholder[[label]]$file <- default_factor(
+        read.csv(input[[paste0(label, "_file")]]$datapath))
+      
+      appendTab(preview_tabset, 
+                select = T,
+                tabPanel(tablabel,
+                         br(),
+                         DTOutput(paste0("DT_", label)),
+                         br()
+                ),
+                session = session
+      )
+    } else {
+      
+      if(label == "f_data") 
+        reactive_dataholder[[label]]$filename <- NULL
+      reactive_dataholder[[label]]$file <- NULL
+    }
+    
+  })
+  
+  ## If example files are used, load it up
+  
+  if(label == "f_data"){
+    observeEvent(c(
+      input$use_example_fdata, 
+      input$data_type,
+      input$data_select
+    ), ignoreInit = TRUE, {
+      
+      req(label %in% input_data_types())
+      
+      use_example_val <- input$use_example_fdata
+      data_type_val <- input$data_type
+      data_select_val <- input_data_types()
+      
+      req(use_example_val && !is.null(data_type_val))
+      
+      tablabel <- switch(label,
+                         e_data = ifelse(input$data_type == "RNA-seq", 
+                                         "Expression data",
+                                         "Abundance data"),
+                         f_data = "Sample Information",
+                         e_meta = "Biomolecule information"
+      )
+      
+      removeTab(preview_tabset, tablabel, session = session)
+      
+      if(input$use_fdata == "f_data"){
+        pmartRdata_prefix <- switch(data_type_val,
+                                    "Protein" = "pro_", 
+                                    "Label-free" = "pep_", 
+                                    "Isobaric" = "isobaric_", 
+                                    "Negative" = "lipid_neg_", 
+                                    "Positive" = "lipid_pos_", 
+                                    "NMR" = "nmr_identified_", 
+                                    "GC-MS" = "metab_", 
+                                    "RNA-seq" = "rnaseq_"
         )
         
-        ## Remove prior
-        removeTab(preview_tabset, tablabel, session = session)
         
-        ## make sure if dt changes remove prior
-        if(tablabel == "Abundance data"){
-          removeTab(preview_tabset, "Expression data", session = session)
-        } else if(tablabel == "Expression data"){
-          removeTab(preview_tabset, "Abundance data", session = session)
-        }
+        data_grab <- get(paste0(pmartRdata_prefix, sub("_", "", label)))
         
-        data_select_val <- c("e_data", input$data_select)
-        if(label %in% data_select_val){
-          
-          reactive_dataholder[[label]]$filename <- input[[paste0(label, "_file")]]$name
-          reactive_dataholder[[label]]$file <- default_factor(
-            read.csv(input[[paste0(label, "_file")]]$datapath))
-          
-          appendTab(preview_tabset, 
-                    select = T,
-                    tabPanel(tablabel,
-                             br(),
-                             DTOutput(paste0("DT_", label)),
-                             br()
-                    ),
-                    session = session
-          )
-        } else {
-          
-          if(label == "f_data") 
-            reactive_dataholder[[label]]$filename <- NULL
-          reactive_dataholder[[label]]$file <- NULL
-        }
+        reactive_dataholder[[label]]$filename <- "Example file"
+        reactive_dataholder[[label]]$file <- default_factor(data_grab)
         
-      })
-      
-      ## If example files are used, load it up
-      
-      if(label == "f_data"){
-        observeEvent(c(input$use_example_fdata, 
-                       input$data_type, input$data_select), ignoreInit = TRUE, {
-          
-          use_example_val <- input$use_example_fdata
-          data_type_val <- input$data_type
-          data_select_val <- c("e_data", input$data_select)
-          
-          req(use_example_val && !is.null(data_type_val) && 
-                !is.null(data_select_val))
-          
-          tablabel <- switch(label,
-                             e_data = ifelse(input$data_type == "RNA-seq", 
-                                             "Expression data",
-                                             "Abundance data"),
-                             f_data = "Sample Information",
-                             e_meta = "Biomolecule information"
-          )
-          
-          removeTab(preview_tabset, tablabel, session = session)
-          
-          if(input$use_fdata == "f_data"){
-            pmartRdata_prefix <- switch(data_type_val,
-                                        "Protein" = "pro_", 
-                                        "Label-free" = "pep_", 
-                                        "Isobaric" = "isobaric_", 
-                                        "Negative" = "lipid_neg_", 
-                                        "Positive" = "lipid_pos_", 
-                                        "NMR" = "nmr_identified_", 
-                                        "GC-MS" = "metab_", 
-                                        "RNA-seq" = "rnaseq_"
-            )
-            
-            
-            data_grab <- get(paste0(pmartRdata_prefix, sub("_", "", label)))
-            
-            reactive_dataholder[[label]]$filename <- "Example file"
-            reactive_dataholder[[label]]$file <- default_factor(data_grab)
-            
-            appendTab(preview_tabset, 
-                      select = T,
-                      tabPanel(tablabel,
-                               br(),
-                               DTOutput(paste0("DT_", label)),
-                               br()
-                      ),
-                      session = session
-            )
-          } else {
-            reactive_dataholder[[label]]$filename <- NULL
-            reactive_dataholder[[label]]$file <- NULL
-          }
-        })
-        
-        observeEvent(c(input$use_example_fdata), {
-          use_example_val <- input$use_example_fdata || AWS
-          toggleState(id = paste0(label, "_clear_file"), 
-                      condition = !use_example_val)
-        })
-        
-        
+        appendTab(preview_tabset, 
+                  select = T,
+                  tabPanel(tablabel,
+                           br(),
+                           DTOutput(paste0("DT_", label)),
+                           br()
+                  ),
+                  session = session
+        )
       } else {
-        
-        observeEvent(c(input$use_example, input$data_type, 
-                       input$data_select), ignoreInit = TRUE, {
-          
-          use_example_val <- input$use_example
-          data_type_val <- input$data_type
-          data_select_val <- c("e_data", input$data_select)
-          
-          req(use_example_val && !is.null(data_type_val) && 
-                !is.null(data_select_val))
-          
-          tablabel <- switch(label,
-                             e_data = ifelse(input$data_type == "RNA-seq", 
-                                             "Expression data",
-                                             "Abundance data"),
-                             f_data = "Sample Information",
-                             e_meta = "Biomolecule information"
-          )
-          
-          removeTab(preview_tabset, tablabel, session = session)
-          
-          if(label %in% data_select_val){
-            pmartRdata_prefix <- switch(data_type_val,
-                                        "Protein" = "pro_", 
-                                        "Label-free" = "pep_", 
-                                        "Isobaric" = "isobaric_", 
-                                        "Negative" = "lipid_neg_", 
-                                        "Positive" = "lipid_pos_", 
-                                        "NMR" = "nmr_identified_", 
-                                        "GC-MS" = "metab_", 
-                                        "RNA-seq" = "rnaseq_"
-            )
-            
-            
-            data_grab <- get(paste0(pmartRdata_prefix, sub("_", "", label)))
-            
-            reactive_dataholder[[label]]$filename <- "Example file"
-            reactive_dataholder[[label]]$file <- default_factor(data_grab)
-            
-            appendTab(preview_tabset, 
-                      select = T,
-                      tabPanel(tablabel,
-                               br(),
-                               DTOutput(paste0("DT_", label)),
-                               br()
-                      ),
-                      session = session
-            )
-          } else {
-            reactive_dataholder[[label]]$filename <- NULL
-            reactive_dataholder[[label]]$file <- NULL
-          }
-        })
-        
-        
-        observeEvent(c(input$use_example), {
-          use_example_val <- input$use_example || AWS
-          toggleState(id = paste0(label, "_clear_file"), 
-                      condition = !use_example_val)
-        })
-      }
-      
-      ## If AWS, load it up
-      observeEvent(c(AWS, input$data_type, input$data_select), 
-                   ignoreInit = TRUE, {
-        
-        req(AWS)
-        
-        tablabel <- switch(label,
-                           e_data = ifelse(input$data_type == "RNA-seq",
-                                           "Expression data",
-                                           "Abundance data"),
-                           f_data = "Sample Information",
-                           e_meta = "Biomolecule information"
-        )
-        
-        removeTab(preview_tabset, tablabel, session = session)
-        
-        use_example_val <- use_example()
-        data_select_val <- c("e_data", input$data_select)
-        
-        if(label %in% data_select_val){
-          
-          reactive_dataholder[[label]]$filename <- "Loaded from S3 bucket"
-          reactive_dataholder[[label]]$file <- default_factor(AWSobj[[label]])
-          
-          appendTab(preview_tabset,
-                    select = T,
-                    tabPanel(tablabel,
-                             br(),
-                             DTOutput(paste0("DT_", label)),
-                             br()
-                    ),
-                    session = session
-          )
-        } else {
-          reactive_dataholder[[label]]$filename <- NULL
-          reactive_dataholder[[label]]$file <- NULL
-        }
-      })
-      
-      ## On clear file, reset holder
-      observeEvent(input[[paste0(label, "_clear_file")]], {
-        
-        # if(label == "f_data") 
         reactive_dataholder[[label]]$filename <- NULL
         reactive_dataholder[[label]]$file <- NULL
-        reset("file")
-      })
-      
-      ## Render from uploaded files
-      output[[paste0("DT_", label)]] <- renderDT({
-        
-        reactive_dataholder[[label]]$file
-      },
-      selection = 'none',
-      options = list(dom = 'tpi',
-                     pageLength = 10,
-                     scrollX = T
+      }
+    })
+    
+    observeEvent(c(input$use_example_fdata), {
+      use_example_val <- input$use_example_fdata || AWS
+      toggleState(id = paste0(label, "_clear_file"), 
+                  condition = !use_example_val)
+    })
+    
+    
+  } else {
+    
+    observeEvent(c(input$use_example, input$data_type, 
+                   input$data_select), ignoreInit = TRUE, {
                      
-      ))
-      
+                     req(label %in% input_data_types())
+                     
+                     use_example_val <- input$use_example
+                     data_type_val <- input$data_type
+                     data_select_val <- input_data_types()
+                     
+                     req(use_example_val && !is.null(data_type_val))
+                     
+                     tablabel <- switch(label,
+                                        e_data = ifelse(input$data_type == "RNA-seq", 
+                                                        "Expression data",
+                                                        "Abundance data"),
+                                        f_data = "Sample Information",
+                                        e_meta = "Biomolecule information"
+                     )
+                     
+                     removeTab(preview_tabset, tablabel, session = session)
+                     
+                     if(label %in% data_select_val){
+                       pmartRdata_prefix <- switch(data_type_val,
+                                                   "Protein" = "pro_", 
+                                                   "Label-free" = "pep_", 
+                                                   "Isobaric" = "isobaric_", 
+                                                   "Negative" = "lipid_neg_", 
+                                                   "Positive" = "lipid_pos_", 
+                                                   "NMR" = "nmr_identified_", 
+                                                   "GC-MS" = "metab_", 
+                                                   "RNA-seq" = "rnaseq_"
+                       )
+                       
+                       
+                       data_grab <- get(paste0(pmartRdata_prefix, sub("_", "", label)))
+                       
+                       reactive_dataholder[[label]]$filename <- "Example file"
+                       reactive_dataholder[[label]]$file <- default_factor(data_grab)
+                       
+                       appendTab(preview_tabset, 
+                                 select = T,
+                                 tabPanel(tablabel,
+                                          br(),
+                                          DTOutput(paste0("DT_", label)),
+                                          br()
+                                 ),
+                                 session = session
+                       )
+                     } else {
+                       reactive_dataholder[[label]]$filename <- NULL
+                       reactive_dataholder[[label]]$file <- NULL
+                     }
+                   })
+    
+    
+    observeEvent(c(input$use_example), {
+      use_example_val <- input$use_example || AWS
+      toggleState(id = paste0(label, "_clear_file"), 
+                  condition = !use_example_val)
+    })
+  }
+  
+  ## If AWS, load it up
+  observeEvent(c(AWS, input$data_type, input$data_select), 
+               ignoreInit = TRUE, {
+                 
+                 req(AWS)
+                 
+                 tablabel <- switch(label,
+                                    e_data = ifelse(input$data_type == "RNA-seq",
+                                                    "Expression data",
+                                                    "Abundance data"),
+                                    f_data = "Sample Information",
+                                    e_meta = "Biomolecule information"
+                 )
+                 
+                 removeTab(preview_tabset, tablabel, session = session)
+                 
+                 use_example_val <- use_example()
+                 data_select_val <- input_data_types()
+                 
+                 if(label %in% data_select_val){
+                   
+                   reactive_dataholder[[label]]$filename <- "Loaded from S3 bucket"
+                   reactive_dataholder[[label]]$file <- default_factor(AWSobj[[label]])
+                   
+                   appendTab(preview_tabset,
+                             select = T,
+                             tabPanel(tablabel,
+                                      br(),
+                                      DTOutput(paste0("DT_", label)),
+                                      br()
+                             ),
+                             session = session
+                   )
+                 } else {
+                   reactive_dataholder[[label]]$filename <- NULL
+                   reactive_dataholder[[label]]$file <- NULL
+                 }
+               })
+  
+  ## On clear file, reset holder
+  observeEvent(input[[paste0(label, "_clear_file")]], {
+    
+    # if(label == "f_data") 
+    reactive_dataholder[[label]]$filename <- NULL
+    reactive_dataholder[[label]]$file <- NULL
+    reset("file")
+  })
+  
+  ## Render from uploaded files
+  output[[paste0("DT_", label)]] <- renderDT({
+    
+    reactive_dataholder[[label]]$file
+  },
+  selection = 'none',
+  options = list(dom = 'tpi',
+                 pageLength = 10,
+                 scrollX = T
+                 
+  ))
+  
 })
 

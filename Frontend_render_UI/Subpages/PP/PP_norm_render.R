@@ -274,7 +274,7 @@ combine_omicsdata <- function(obj_1, obj_2){
 observeEvent(omicsData$objPP, {
   req(!is.null(isolate(omicsData$objPP)))
   
-  nm <- str_to_title(class(isolate(omicsData$objPP))[[1]])
+  isolate(nm <- get_omicsData_type(omicsData$objPP))
   
   output$norm_tab <- renderUI({
     norm_tab(nm)
