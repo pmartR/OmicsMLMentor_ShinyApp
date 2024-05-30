@@ -63,7 +63,7 @@ output$vs_cols_factor_2 <- renderUI({
   selected <- isolate(if(is.null(input$col_2_int)) NULL else input$col_2_int)
   
   pickerInput("col_2_int",
-              "Specify first column for interaction effect:",
+              "Specify second column for interaction effect:",
               multiple = T,
               choices = cats_f_data,
               selected = selected,
