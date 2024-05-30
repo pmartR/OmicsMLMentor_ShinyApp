@@ -46,7 +46,10 @@ missing_data <- function(){
                    div(
                      id = "protein_rollup_box",
                      
-                     "Since some operations run on the protein level, please select a rollup method to use later",
+                     "Since some operations run on the protein level, please select a rollup method to use later:",
+                     
+                     br(),
+                     br(),
                      
                      radioButtons(
                        paste0("qc_which_rollup"),
@@ -91,7 +94,9 @@ missing_data <- function(){
                      
                      actionButton(paste0("qc_apply_rollup"), "Get protein-level information"),
                      
-                     hidden(div("Getting protein-level information, please wait...",
+                     hidden(div(
+                       br(),
+                       "Getting protein-level information, please wait...",
                                 id = paste0("qc_rollup_busy"),
                                 class = "fadein-out",
                                 style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"
@@ -173,7 +178,9 @@ missing_data <- function(){
                      "Total biomolecules detected by sample - Plot",
                      value = "missing_data_sample_plot",
                      collapsed = F,
-                     plotlyOutput("missing_data_hist_sample")
+                     plotlyOutput("missing_data_hist_sample"),
+                     prettySwitch("missing_data_hist_sample_names", "Show sample names", value = TRUE, inline = TRUE, fill = TRUE, status = "primary"),
+                     prettySwitch("missing_data_hist_sample_prop", "Show proportion labels", value = TRUE, inline = TRUE, fill = TRUE, status = "primary")
                    ),
                     
                    collapseBox(
