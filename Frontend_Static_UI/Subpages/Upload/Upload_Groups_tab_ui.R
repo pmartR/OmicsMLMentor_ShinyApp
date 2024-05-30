@@ -37,7 +37,7 @@ groups_tab <- function() {
                    
                    fluidRow(
                      column(10, ""),
-                     column(2, actionButton("fdata_options_done", "Done", style="float:right"))
+                     column(2, disabled(actionButton("fdata_options_done", "Done", style="float:right")))
                    )
                  ),
                  

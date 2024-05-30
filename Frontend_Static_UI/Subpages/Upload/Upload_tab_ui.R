@@ -32,13 +32,14 @@ upload_tab <- function() {
 
             uiOutput("data_select_UI"),
 
-            checkboxInput("use_example", "Use example data?"),
+            hidden(checkboxInput("use_example", "Use example data?")),
+            
 
             # div(style="display:inline-block",actionButton("data_type_done", "Done", style="float:right"))
             
             fluidRow(
               column(10, ""),
-              column(2, actionButton("data_type_done", "Done", style="float:right"))
+              disabled(column(2, actionButton("data_type_done", "Done", style="float:right")))
             )
 
 
