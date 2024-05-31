@@ -93,13 +93,13 @@ observeEvent(input$done_VS, ignoreInit = T, {
 })
 
 observeEvent(c(input$ag_prompts, input$ag_prompts_supervised, input$ag_prompts_unsupervised,
-               input$skip_ag, input$pick_model_group_pick), {
+               input$skip_ag, input$pick_model, input$pick_model_group_pick), {
   if (is.null(input$ag_prompts) && !isTruthy(input$skip_ag)) {
     shinyjs::hide("ag_done")
     return()
   }
   
-  if (isTruthy(input$skip_ag) && is.null(input$pick_model_group_pick)) {
+  if (isTruthy(input$skip_ag) && !is.na(supervised()) && supervised() && is.null(input$pick_model_group_pick)) {
     shinyjs::hide("ag_done")
     return()
   }

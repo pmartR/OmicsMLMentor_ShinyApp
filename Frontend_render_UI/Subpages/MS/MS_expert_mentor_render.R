@@ -119,8 +119,7 @@ observe({
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
-  supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
-    (!input$skip_ag && input$ag_prompts == "supervised")
+  supervised <- supervised()
   
   if(is.null(get_group_DF(omicsData$objMSU))){
     temp_omic$f_data <- data.frame(

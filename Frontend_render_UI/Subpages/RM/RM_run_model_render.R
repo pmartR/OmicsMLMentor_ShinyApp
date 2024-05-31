@@ -1,8 +1,6 @@
 output[["RM_tab_UI"]] <- renderUI({
 
-  req(!is.null(input$ag_prompts))
-  
-  if(input$ag_prompts == "supervised"){
+  if(supervised()){
     supervised_tab()
   } else {
     unsupervised_tab()
@@ -1093,7 +1091,7 @@ output$confidence_scatter_reduced <- renderPlotly({
 # 
 output$unsup_res_aes_UI <- renderUI({
 
-  req(!is.null(input$pick_model_EM) && input$ag_prompts != "supervised")
+  req(!is.null(input$pick_model_EM) && !supervised())
 
   method <- input$pick_model_EM ## While summary getting fixed
 
@@ -1176,7 +1174,7 @@ output$unsup_slider_UI <- renderUI({
 output$structure_plot <- renderPlotly({
   
   req(!is.null(input$pick_model_EM) && 
-        input$ag_prompts != "supervised")
+        !supervised())
   validate(
     need(!is.null(omicsData$objRM), 
          "No model results found.  Please run the model to see results plots."))
