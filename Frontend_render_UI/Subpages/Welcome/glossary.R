@@ -89,6 +89,7 @@ map(names(models_long_name), function(x){
       label = label,
       
       div(
+        style = "height: 100%",
         flipBox(
           id = paste0("expert_mentor_", abbr),
           width = 12,
@@ -100,11 +101,16 @@ map(names(models_long_name), function(x){
                 img(src = img_get(abbr), width = "95%", height = "250px")
               ))),
           back = div(
-            
+            style = "height: 100%",
             fluidRow(
+              style = "height: 100%",
               column(
                 12,
-                text_get(abbr)
+                style = "height: 100%",
+                div(
+                  style = "height: 100%; overflow-y: auto",
+                  text_get(abbr)
+                )
               )))
         )
       )
