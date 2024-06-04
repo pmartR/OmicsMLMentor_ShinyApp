@@ -1727,7 +1727,8 @@ assign_norm_output <- function(tab) {
       }
       
       # Where proteomic, load spans options
-      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata")) {
+      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata") &&
+          !is.null(omicsData$objPP$f_data)) {
         
         out <- list(
           cl_inputs,
@@ -1753,7 +1754,7 @@ assign_norm_output <- function(tab) {
       } else {
         ### This should never happen given the req for loading this UI, but just in case
         return(
-          strong("SPANS is only available for proteomic data types")
+          strong("SPANS is only available for proteomic data types and requires Sample Information file.")
         )
       }
     }),

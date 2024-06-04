@@ -63,8 +63,9 @@ KeepColsModule <- function() {
       ## Column tracking inputs
       output$picker_inputs <- renderUI({
 
-        if (is.null(file_reactive_kc$f_data_file))
-          return("No Sample Information specified. Click Done to continue.")
+        if (is.null(file_reactive_kc$f_data_file) && 
+            is.null(file_reactive_kc$e_meta_file))
+          return("No Sample Information or Biomolecule information specified. Click Done to continue.")
         
         req(!is.null(file_reactive_kc$f_data_file) ||
               !is.null(file_reactive_kc$e_meta_file))
