@@ -144,9 +144,10 @@ output$missing_data_hist_biomolecule <- renderPlotly({
                           "Estimate" = "#238551", 
                           "Remove" ="#cd4246"))
   
-  if (inherits(omicsData$objQC, "pepData")) {
-    p <- p + ggtitle("Protein level preview")
-  }
+
+  # if (inherits(omicsData$objQC, "pepData")) {
+  #   p <- p + ggtitle("Protein level preview")
+  # }
   
   isolate(plot_table_current$table$QC__missing_features <- p)
   
@@ -184,11 +185,11 @@ output$missing_data_hist_sample <- renderPlotly({
   p <- plot(missingval_result(temp_dat), temp_dat, 
        nonmissing = T, proportion = T, display_count = input$missing_data_hist_sample_prop)
   
-  if (!input$missing_data_hist_sample_names) {
-    p <- p + theme(axis.title.x=element_blank(),
-                   axis.text.x=element_blank(),
-                   axis.ticks.x=element_blank())
-  }
+  # if (!input$missing_data_hist_sample_names) {
+  #   p <- p + theme(axis.title.x=element_blank(),
+  #                  axis.text.x=element_blank(),
+  #                  axis.ticks.x=element_blank())
+  # }
   
   isolate(plot_table_current$table$QC__missing_samples <- p)
   isolate(table_table_current$table$QC__missing_samples <- missingval_result(temp_dat)[[1]])
