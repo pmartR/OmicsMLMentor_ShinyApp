@@ -74,13 +74,17 @@ KeepColsModule <- function() {
         e_meta <- file_reactive_kc$e_meta_file
         
         if(!is.null(f_data) && file_reactive_kc$user_level != "expert"){
-          track_f_data <- colnames(f_data[apply(f_data, 2, function(x) 
-            var(as.numeric(as.factor(x)), na.rm = T)) > 0])
+          nonzero <- apply(f_data, 2, function(x) 
+            var(as.numeric(as.factor(x)), na.rm = T)) > 0
+          nonzero[is.na(nonzero)] <- FALSE
+          track_f_data <- colnames(f_data[nonzero])
         } else track_f_data <- colnames(file_reactive_kc$f_data_file)
         
         if(!is.null(e_meta) && file_reactive_kc$user_level != "expert"){
-          track_e_meta <- colnames(e_meta[apply(e_meta, 2, function(x) 
-            var(as.numeric(as.factor(x)), na.rm = T)) > 0])
+          nonzero <- apply(e_meta, 2, function(x) 
+            var(as.numeric(as.factor(x)), na.rm = T)) > 0
+          nonzero[is.na(nonzero)] <- FALSE
+          track_e_meta <- colnames(e_meta[nonzero])
         } else track_e_meta <- colnames(file_reactive_kc$e_meta_file)
 
         pickers <- map2(
