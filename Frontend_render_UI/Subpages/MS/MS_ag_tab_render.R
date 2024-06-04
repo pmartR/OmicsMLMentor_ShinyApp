@@ -72,7 +72,7 @@ output$f_data_response_picker_UI <- renderUI({
   })
   div(
     strong("Which sample column(s) would you like to predict?"),
-    # br(),
+    br(),
     pickerInput(
       "f_data_response_picker",
       "",

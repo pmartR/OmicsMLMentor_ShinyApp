@@ -1489,12 +1489,17 @@ output$slider_options_filter_ui <- renderUI({
     ))
   }
   
+  div(
+    column(11,
   MultiSlider.shinyInput(
     "missingness_handle_filter_slider",
     values = sliders,
     min = 0,
     max = 100,
-    labelStepSize = 10
+    labelStepSize = 25
+  )
+  ),
+  column(1, "  ")
   )
   
 })

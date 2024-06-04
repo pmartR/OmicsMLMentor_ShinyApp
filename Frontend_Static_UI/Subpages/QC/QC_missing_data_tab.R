@@ -46,7 +46,10 @@ missing_data <- function(){
                    div(
                      id = "protein_rollup_box",
                      
-                     "Since some operations run on the protein level, please select a rollup method to use later",
+                     "Since some operations run on the protein level, please select a rollup method to use later:",
+                     
+                     br(),
+                     br(),
                      
                      radioButtons(
                        paste0("qc_which_rollup"),
@@ -91,7 +94,9 @@ missing_data <- function(){
                      
                      actionButton(paste0("qc_apply_rollup"), "Get protein-level information"),
                      
-                     hidden(div("Getting protein-level information, please wait...",
+                     hidden(div(
+                       br(),
+                       "Getting protein-level information, please wait...",
                                 id = paste0("qc_rollup_busy"),
                                 class = "fadein-out",
                                 style = "color:deepskyblue;font-weight:bold;margin-bottom:5px"

@@ -16,9 +16,10 @@ rollup_tab <- function(tabname) {
                    value = "rollup_opts",
                    collapsed = F,
                    
+                   br(), br(),
                    tags$b("Rollup Method: "),
                    textOutput(paste0(tabname, "_which_rollup")),
-                   
+                   br(), br(),
                    tags$b("Center By: "),
                    textOutput(paste0(tabname, "_which_combine_fn")),
                    
