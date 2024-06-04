@@ -312,7 +312,7 @@ get_params <- function(subset_fn, tab) {
 }
 
 #' # Evaluate norm bias for global normalization
-inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
+inspect_norm <- function(omicsData, subset_fn, norm_fn, params, backtransform) {
   group_df <- attr(omicsData, "group_DF")
   reorder <- match(
     colnames(omicsData$e_data)[
@@ -332,7 +332,8 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
                                        subset_fn,
                                        norm_fn,
                                        params = params,
-                                       apply_norm = FALSE
+                                       apply_norm = FALSE,
+                                       backtransform = backtransform
     )
     
     if (is.null(norm_object)) {
@@ -821,7 +822,8 @@ load_norm_observers <- function(tab) {
           omicsData = temp_dat,
           subset_fn = NULL,
           norm_fn = "Zero-to-one scaling",
-          params = NULL
+          params = NULL,
+          backtransform = FALSE
         )
         
       } else {
@@ -831,7 +833,8 @@ load_norm_observers <- function(tab) {
           omicsData = temp_dat,
           subset_fn = input[[paste0(tab, "_subset_fn")]],
           norm_fn = input[[paste0(tab, "_norm_fn")]],
-          params = params
+          params = params,
+          backtransform = as.logical(input[[paste0(tab, "_backtransform")]])
         )
       }
 
@@ -996,12 +999,12 @@ load_norm_observers <- function(tab) {
           noconv <- subset_noconv(as.slData(omicsData$objPP))
           conv <- subset_conv(as.slData(omicsData$objPP))
           
-          
           omicsData$objNorm <- check_norm_possible(noconv,
                                              subset_fn = input[[paste0(tab, "_subset_fn")]],
                                              norm_fn = input[[paste0(tab, "_norm_fn")]],
                                              params = params,
-                                             apply_norm = TRUE
+                                             apply_norm = TRUE,
+                                             backtransform = as.logical(input[[paste0(tab, "_backtransform")]])
           )
           
           if(!is.null(conv) && !is.null(noconv) && !identical(noconv, conv)){
@@ -1727,7 +1730,8 @@ assign_norm_output <- function(tab) {
       }
       
       # Where proteomic, load spans options
-      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata")) {
+      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata") &&
+          !is.null(omicsData$objPP$f_data)) {
         
         out <- list(
           cl_inputs,
@@ -1753,7 +1757,7 @@ assign_norm_output <- function(tab) {
       } else {
         ### This should never happen given the req for loading this UI, but just in case
         return(
-          strong("SPANS is only available for proteomic data types")
+          strong("SPANS is only available for proteomic data types and requires Sample Information file.")
         )
       }
     }),

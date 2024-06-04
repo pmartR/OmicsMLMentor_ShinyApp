@@ -1183,7 +1183,10 @@ output$structure_plot <- renderPlotly({
 
   method <- input$pick_model_EM ## While summary getting fixed
 
-  color_by <- if(input$color_by_unsup != "Parameter clusters") sym(input$color_by_unsup) else NULL
+  color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
+                sym(input$color_by_unsup)
+              else
+                NULL
 
   runner <- as.slData(omicsData$objPP)
 
