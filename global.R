@@ -41,6 +41,7 @@ suppressPackageStartupMessages({
   library(shinyjqui)
   library(rintrojs)
   library(shinybusy)
+  library(shiny.blueprint)
   
   ## Model stuff
   library(mixOmics)

@@ -34,8 +34,8 @@ output$QC_single_mol_plot <- renderPlotly({
   
    p <- plot(filt, min_num = 2)
    
-   isolate(plot_table_current$QC$single_obs <- p)
-   isolate(table_table_current$QC$single_obs <- filt)
+   isolate(plot_table_current$table$QC__single_obs <- p)
+   isolate(table_table_current$table$QC__single_obs <- filt)
    
    p
    

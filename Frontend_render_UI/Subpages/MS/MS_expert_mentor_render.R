@@ -218,7 +218,14 @@ observe({
   df[7] <- signif(df[7], 3)
   df[8] <- signif(df[8], 3)
   
-  missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  if (is.null(omicsData$objModel$f_data)) {
+    missingness <- list(
+      num_NA = sum(is.na(omicsData$objQC$e_data)),
+      num_non_NA = sum(!is.na(omicsData$objQC$e_data))
+    )
+  } else {
+    missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  }
   total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
   
   group_text <- ifelse(!is.null(get_group_table(omicsData$objModel)), 
@@ -281,7 +288,7 @@ observe({
   # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
   
   
-  table_table_current$MSU$expert_mentor_summary <- df
+  table_table_current$table$MSU__expert_mentor_summary <- df
   
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]

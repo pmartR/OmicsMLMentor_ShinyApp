@@ -40,29 +40,33 @@ observeEvent(input$check_group_cols, {
       res <- object_fn(
         e_data = edata, e_meta = emeta, f_data = fdata,
         edata_cname = edata_cname, emeta_cname = emeta_cname, fdata_cname = fdata_cname,
-        data_scale = data_scale, is_normalized = is_normalized,
-        check.names = F
+        data_scale = data_scale, is_normalized = is_normalized
       )
       
       if(input$data_type != "RNA-seq") res <- res %>% edata_replace(na_replace, NA)
       res
     },
     error = function(e) {
-      msg <- paste0("Something went wrong processing your omicsData object \n System error:  ", e)
+      msg <<- paste0("Something went wrong processing your omicsData object \n System error:  ", e)
       # revals$warnings_upload$badupload <- sprintf("<p style = color:red>%s</p>", msg)
       NULL
     }
   )
+  
+  if (is.null(od)) {
+    shinyalert("Something went wrong:", msg)
+    return(NULL)
+  }
   
   if(is.null(reactive_dataholder[["f_data"]]$file)){
     od$f_data <- NULL
   }
 
   isolate({
-    table_table_current$Upload$e_data <- od$e_data
-    table_table_current$Upload$f_data <- od$f_data
-    if(!is.null(od$e_meta)) table_table_current$Upload$e_meta <- od$e_meta
-    table_table_current$Upload$summary <- summary(od)
+    table_table_current$table$Upload__e_data <- od$e_data
+    if(!is.null(od$f_data)) table_table_current$table$Upload__f_data <- od$f_data
+    if(!is.null(od$e_meta)) table_table_current$table$Upload__e_meta <- od$e_meta
+    table_table_current$table$Upload__summary <- summary(od)
   })
   
   omicsData$obj <-  od

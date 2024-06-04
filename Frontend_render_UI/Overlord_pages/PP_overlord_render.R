@@ -433,7 +433,7 @@ observeEvent(input$complete_norm, ignoreInit = T, {
     disable("review_PP")
   }
   
-  tabname <- isolate(str_to_title(class(omicsData$objMSU)[[1]]))
+  tabname <- isolate(get_omicsData_type(omicsData$objMSU))
   
   if(!is.null(omicsData$objNorm) && 
      input[[paste0(tabname, "_normalize_option")]] != "No Normalization"){
