@@ -39,6 +39,7 @@ collapseBox <- function(titletext, value, ..., collapsed = TRUE,
                         icon = NULL, icon_id = NULL, icon_style = NULL, 
                         icon_hidden = TRUE, icon_tooltip_text = NULL) {
   div(
+    id = value,
     class = "collapse-box",
     box(
       title = {

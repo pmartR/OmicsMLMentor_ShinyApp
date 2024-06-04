@@ -646,6 +646,18 @@
       ],
       "Hash": "ac6cdb8552c61bd36b0e54d07cf2aab7"
     },
+    "checkmate": {
+      "Package": "checkmate",
+      "Version": "2.3.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "backports",
+        "utils"
+      ],
+      "Hash": "c01cab1cb0f9125211a6fc99d540e315"
+    },
     "class": {
       "Package": "class",
       "Version": "7.3-22",
@@ -1989,6 +2001,16 @@
       ],
       "Hash": "c255dd80a1771f41321db15041feed11"
     },
+    "logger": {
+      "Package": "logger",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "utils"
+      ],
+      "Hash": "c145edf05cc128e6ffcfa5d872c46329"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.9.3",
@@ -2465,6 +2487,25 @@
         "viridisLite"
       ],
       "Hash": "a1ac5c03ad5ad12b9d1597e00e23c3dd"
+    },
+    "plsmod": {
+      "Package": "plsmod",
+      "Version": "1.0.0",
+      "Source": "Bioconductor",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "dplyr",
+        "generics",
+        "magrittr",
+        "mixOmics",
+        "parsnip",
+        "purrr",
+        "rlang",
+        "tibble",
+        "tidyr"
+      ],
+      "Hash": "1ed0652356d6c5de752d09c92e0debec"
     },
     "plyr": {
       "Package": "plyr",
@@ -3172,6 +3213,38 @@
         "xtable"
       ],
       "Hash": "54b26646816af9960a4c64d8ceec75d6"
+    },
+    "shiny.blueprint": {
+      "Package": "shiny.blueprint",
+      "Version": "0.3.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "checkmate",
+        "htmltools",
+        "shiny",
+        "shiny.react",
+        "utils"
+      ],
+      "Hash": "ab477e17fac347aba5b8baf439c46baf"
+    },
+    "shiny.react": {
+      "Package": "shiny.react",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "glue",
+        "htmltools",
+        "jsonlite",
+        "logger",
+        "methods",
+        "purrr",
+        "rlang",
+        "shiny",
+        "stringi"
+      ],
+      "Hash": "fa57edbccd143b66d9214208a3273bc6"
     },
     "shinyBS": {
       "Package": "shinyBS",

@@ -734,7 +734,6 @@ output$download_plot_table_PP <- renderDT(height = "450px",{
 
 output$download_table_table_PP <- renderDT(height = "450px",{
   
-  
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_PP")
     pg <- "PP"
     table_table <- tibble(

@@ -17,6 +17,12 @@ omicsData <- reactiveValues(obj = NULL,
                             objRM = NULL
                             )
 
+## Peptide object specific variables
+pepQCData <- reactiveValues(
+  objQCPro = NULL,
+  transforms_df = NULL
+)
+
 popup <- reactiveValues()
 
 observeEvent(omicsData$obj, {
