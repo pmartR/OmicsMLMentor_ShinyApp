@@ -309,8 +309,8 @@ output$Variable_importance_plot <- renderPlotly({
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
     )
   
-  isolate(plot_table_current$RM$variable_importance$full <- p)
-  isolate(table_table_current$RM$variable_importance$full <- plotting_df)
+  isolate(plot_table_current$table$RM__variable_importance__full <- p)
+  isolate(table_table_current$table$RM__variable_importance__full <- plotting_df)
   
   p
   
@@ -349,8 +349,8 @@ output$Variable_importance_plot_reduced <- renderPlotly({
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
     )
   
-  isolate(plot_table_current$RM$variable_importance$reduced <- p)
-  isolate(table_table_current$RM$variable_importance$reduced <- plotting_df)
+  isolate(plot_table_current$table$RM__variable_importance__reduced <- p)
+  isolate(table_table_current$table$RM__variable_importance__reduced <- plotting_df)
   
   p
   
@@ -909,8 +909,8 @@ output$roc_curve <- renderPlotly({
 
   p <- plot(omicsData$objRM, "roc_curve", split = input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$full$roc_curve <- p)
-  isolate(table_table_current$RM$model_eval$full$roc_curve <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__full__roc_curve <- p)
+  isolate(table_table_current$table$RM__model_eval__full__roc_curve <- p$data)
   
   p
 })
@@ -921,8 +921,8 @@ validate(need(input$visualize_perf_which_split, "Specify which data split to eva
   
   p <- plot(omicsData$objRM_reduced, "roc_curve", split = input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$reduced$roc_curve <- p)
-  isolate(table_table_current$RM$model_eval$reduced$roc_curve <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__reduced__roc_curve <- p)
+  isolate(table_table_current$table$RM__model_eval__reduced__roc_curve <- p$data)
   
   p
   
@@ -939,8 +939,8 @@ output$confidence_bar <- renderPlotly({
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
   
-  isolate(plot_table_current$RM$model_eval$full$confidence_bar <- p)
-  isolate(table_table_current$RM$model_eval$full$confidence_bar <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__full__confidence_bar <- p)
+  isolate(table_table_current$table$RM__model_eval__full__confidence_bar <- p$data)
   
   p
 
@@ -954,8 +954,8 @@ output$confidence_bar_reduced <- renderPlotly({
   p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split=input$visualize_perf_which_split) +
     theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   
-  isolate(plot_table_current$RM$model_eval$reduced$confidence_bar <- p)
-  isolate(table_table_current$RM$model_eval$reduced$confidence_bar <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__reduced__confidence_bar <- p)
+  isolate(table_table_current$table$RM__model_eval__reduced__confidence_bar <- p$data)
   
   p
   
@@ -968,8 +968,8 @@ output$prediction_bar <- renderPlotly({
 
   p <- plot( omicsData$objRM, plotType = "prediction_bar", split=input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$full$prediction_bar <- p)
-  isolate(table_table_current$RM$model_eval$full$prediction_bar <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__full__prediction_bar <- p)
+  isolate(table_table_current$table$RM__model_eval__full__prediction_bar <- p$data)
   
   p
 
@@ -982,8 +982,8 @@ output$prediction_bar_reduced <- renderPlotly({
   
   p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split=input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$reduced$prediction_bar <- p)
-  isolate(table_table_current$RM$model_eval$reduced$prediction_bar <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__reduced__prediction_bar <- p)
+  isolate(table_table_current$table$RM__model_eval__reduced__prediction_bar <- p$data)
   
   p
   
@@ -996,8 +996,8 @@ output$confusion_heatmap <- renderPlotly({
 
   p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$full$confusion_heatmap <- p)
-  isolate(table_table_current$RM$model_eval$full$confusion_heatmap <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__full__confusion_heatmap <- p)
+  isolate(table_table_current$table$RM__model_eval__full__confusion_heatmap <- p$data)
   
   
   p
@@ -1010,8 +1010,8 @@ output$confusion_heatmap_reduced <- renderPlotly({
   
   p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$reduced$confusion_heatmap <- p)
-  isolate(table_table_current$RM$model_eval$reduced$confusion_heatmap <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__reduced__confusion_heatmap <- p)
+  isolate(table_table_current$table$RM__model_eval__reduced__confusion_heatmap <- p$data)
   
   p
   
@@ -1026,8 +1026,8 @@ output$confidence_scatter <- renderPlotly({
         plotType = "confidence_scatter",
         pos_class = input$true_pos_picker, split=input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$full$confidence_scatter <- p)
-  isolate(table_table_current$RM$model_eval$full$confidence_scatter <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__full__confidence_scatter <- p)
+  isolate(table_table_current$table$RM__model_eval__full__confidence_scatter <- p$data)
   
   p
 
@@ -1041,8 +1041,8 @@ output$confidence_scatter_reduced <- renderPlotly({
   p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
              pos_class = input$true_pos_picker_reduced, split=input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$reduced$confidence_scatter <- p)
-  isolate(table_table_current$RM$model_eval$reduced$confidence_scatter <- p$data)
+  isolate(plot_table_current$table$RM__model_eval__reduced__confidence_scatter <- p)
+  isolate(table_table_current$table$RM__model_eval__reduced__confidence_scatter <- p$data)
   
   p
   
@@ -1289,8 +1289,8 @@ output$structure_plot <- renderPlotly({
     yvar =  if (!is.null(input$unsup_pca_yaxis_pc)) paste0("PC", input$unsup_pca_yaxis_pc) else "PC2"
     
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw()
     } else {
       ## Where is R2?
       p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]])) + geom_point(size = 3) + theme_bw()
@@ -1319,8 +1319,8 @@ output$structure_plot <- renderPlotly({
     }
 
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw()
     } else {
       ## Where is R2?
       p <- ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
@@ -1329,8 +1329,9 @@ output$structure_plot <- renderPlotly({
 
   }
   
-  isolate(plot_table_current$RM$model_eval[[method]] <- p)
-  isolate(table_table_current$RM$model_eval <- p$data)
+  isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
+  isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
+  isolate(table_table_current$table$RM__model_eval <- p$data)
 
   p
 })

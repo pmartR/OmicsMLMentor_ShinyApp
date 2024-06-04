@@ -654,7 +654,7 @@ load_norm_observers <- function(tab) {
           )
         }
         
-        isolate(table_table_current$PP$SPANS <- SPANS_res[[tab]])
+        isolate(table_table_current$table$PP__SPANS <- SPANS_res[[tab]])
         
       })
 
@@ -880,7 +880,7 @@ load_norm_observers <- function(tab) {
 
         output[[paste0(tab, "_normalize_eval_location")]] <- renderPlotly({
           p <- eval$loc_boxplot
-          isolate(plot_table_current$PP$bias$location <- p)
+          isolate(plot_table_current$table$PP__bias__location <- p)
           p
         })
 
@@ -919,7 +919,7 @@ load_norm_observers <- function(tab) {
 
         output[[paste0(tab, "_normalize_eval_scale")]] <- renderPlotly({
           p <- eval$scale_boxplot
-          isolate(plot_table_current$PP$bias$scale <- p)
+          isolate(plot_table_current$table$PP__bias__scale <- p)
           p
         })
 
@@ -1048,7 +1048,7 @@ load_norm_observers <- function(tab) {
         }
       }
       
-      isolate(table_table_current$PP$normalization <- omicsData$objNorm$e_data)
+      isolate(table_table_current$table$PP__normalization <- omicsData$objNorm$e_data)
     })
 
     ## Reactions to other inputs ##
@@ -2126,7 +2126,7 @@ assign_norm_output <- function(tab) {
       p <- plot(SPANS_res[[tab]], interactive = T)
       p$x$source <- "SPANS"
       
-      isolate(plot_table_current$PP$SPANS <- p)
+      isolate(plot_table_current$table$PP__SPANS <- p)
       
       p
     }),
@@ -2158,7 +2158,7 @@ assign_norm_output <- function(tab) {
       
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
-        return(isolate(plot_table_current$PP$normalization$pre))
+        return(isolate(plot_table_current$table$PP__normalization__pre))
       }
       
       if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
@@ -2191,7 +2191,7 @@ assign_norm_output <- function(tab) {
         )
       }
       
-      isolate(plot_table_current$PP$normalization$pre <- p)
+      isolate(plot_table_current$table$PP__normalization__pre <- p)
       
       p <- p %>% ggplotly()
       
@@ -2239,7 +2239,7 @@ assign_norm_output <- function(tab) {
         )
       }
       
-      isolate(plot_table_current$PP$normalization$post <- p)
+      isolate(plot_table_current$table$PP__normalization__post <- p)
       
       p <- p %>% ggplotly()
       

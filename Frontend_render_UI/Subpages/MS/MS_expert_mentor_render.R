@@ -281,7 +281,7 @@ observe({
   # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
   
   
-  table_table_current$MSU$expert_mentor_summary <- df
+  table_table_current$table$MSU__expert_mentor_summary <- df
   
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
