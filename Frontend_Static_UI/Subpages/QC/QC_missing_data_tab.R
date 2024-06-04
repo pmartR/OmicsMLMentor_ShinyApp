@@ -178,7 +178,9 @@ missing_data <- function(){
                      "Total biomolecules detected by sample - Plot",
                      value = "missing_data_sample_plot",
                      collapsed = F,
-                     plotlyOutput("missing_data_hist_sample")
+                     plotlyOutput("missing_data_hist_sample"),
+                     prettySwitch("missing_data_hist_sample_names", "Show sample names", value = TRUE, inline = TRUE, fill = TRUE, status = "primary"),
+                     prettySwitch("missing_data_hist_sample_prop", "Show proportion labels", value = TRUE, inline = TRUE, fill = TRUE, status = "primary")
                    ),
                     
                    collapseBox(
