@@ -1140,14 +1140,16 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   name <- get_omicsData_type(omicsData$objPP)
   
   # gather indices in f_data of removed samples from all sample filters
-  removed_indices <- NULL
-  
-  removed_samples <- unlist(filter_effects$removed_samples)
-  removed_rows <- which(omicsData$objPP$f_data[, get_fdata_cname(omicsData$objPP)] %in% removed_samples)
-  removed_indices <- union(removed_indices, removed_rows)
-  
-  # dont blow up the data
-  if (length(removed_indices) >= nrow(omicsData$objPP$f_data)) error("Combined across all datasets, your sample filters removed all samples.")
+  if (!is.null(omicsData$objPP$f_data)) {
+    removed_indices <- NULL
+    
+    removed_samples <- unlist(filter_effects$removed_samples)
+    removed_rows <- which(omicsData$objPP$f_data[, get_fdata_cname(omicsData$objPP)] %in% removed_samples)
+    removed_indices <- union(removed_indices, removed_rows)
+    
+    # dont blow up the data
+    if (length(removed_indices) >= nrow(omicsData$objPP$f_data)) error("Combined across all datasets, your sample filters removed all samples.")
+  }
   
   # apply all filters in a loop
   tryCatch(
@@ -1241,7 +1243,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       ## i.e if the sample in row 1 of Protein data is filtered, the sample in row 1 of Lipid is also filtered
       
       # construct a custom filter based on union of all filtered rows and apply it
-      if (length(removed_indices) > 0) {
+      if (!is.null(omicsData$objPP$f_data) && length(removed_indices) > 0) {
         to_rmv <- omicsData$objPP$f_data[removed_indices, get_fdata_cname(omicsData$objPP)]
         
         tmp_customfilt <- custom_filter(tmp, f_data_remove = to_rmv)
