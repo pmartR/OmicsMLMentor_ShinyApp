@@ -1,6 +1,6 @@
 
 apply_disabled <- function(...) {
-  if (input$rm_prompts_hp != "custom")
+  if (input$rm_prompts_hp == "default")
     disabled(...)
   else
     ...
