@@ -47,11 +47,16 @@ observeEvent(input$check_group_cols, {
       res
     },
     error = function(e) {
-      msg <- paste0("Something went wrong processing your omicsData object \n System error:  ", e)
+      msg <<- paste0("Something went wrong processing your omicsData object \n System error:  ", e)
       # revals$warnings_upload$badupload <- sprintf("<p style = color:red>%s</p>", msg)
       NULL
     }
   )
+  
+  if (is.null(od)) {
+    shinyalert("Something went wrong:", msg)
+    return(NULL)
+  }
   
   if(is.null(reactive_dataholder[["f_data"]]$file)){
     od$f_data <- NULL

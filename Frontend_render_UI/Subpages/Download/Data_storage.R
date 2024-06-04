@@ -117,6 +117,7 @@ table_table_current <- reactiveValues(
     RM__variable_importance__full = NULL,
     RM__variable_importance__reduced = NULL
   ),
+
   names = list(
     Upload__e_data = "Abundance Data",
     Upload__e_meta = "Biomolecule Information",
@@ -733,7 +734,6 @@ output$download_plot_table_PP <- renderDT(height = "450px",{
 )
 
 output$download_table_table_PP <- renderDT(height = "450px",{
-  
   
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_PP")
     pg <- "PP"
