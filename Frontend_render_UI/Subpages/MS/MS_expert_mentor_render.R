@@ -100,15 +100,19 @@ tbl <- function(data, index, namecol)  {
 
 ## Make dashboard -- lots of elements to consider, so we use observe here
 observe({
-  req(!any(map_lgl(
-    list(
-      input$skip_ag,
-      omicsData$objMSU,
-      omicsData$objModel,
-      input$feature_selection
-    ),
-    is.null
-  )), response_types_ag())
+  req(
+    !any(map_lgl(
+      list(
+        input$skip_ag,
+        omicsData$objMSU,
+        omicsData$objModel,
+        input$feature_selection
+      ),
+      is.null
+    )), 
+    response_types_ag(),
+    input$top_page == "Model Set-Up"
+  )
   temp_omic <- omicsData$objModel
   
   if(get_data_scale(temp_omic) == "abundance"){

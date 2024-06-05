@@ -105,21 +105,13 @@ supervised_tab <- function() {
               uiOutput("visualize_perf_split_ui"),
               style= "float:right;z-index:1100;"
             ),
-              
-          column(
-            6,
-              uiOutput("visualize_perf_split_ui")
-            
-          ),
-          style= "float:right;z-index:1100;"),
           
-          uiOutput("performance_tabset_UI"),
+            uiOutput("performance_tabset_UI")
+          ),
           
           uiOutput("VI_tabset_UI_collapse")
-        
-        )# main column
         )
-      )
+      )# main column
     ) # fluidRow
   ) # tabPanel
   
@@ -535,7 +527,7 @@ unsupervised_tab <- function() {
 }
 
 observeEvent(input$run_sl, {
-
+  
   ## Check normalization application
   shinyjs::show("RM_busy")
   
