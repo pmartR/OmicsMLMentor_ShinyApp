@@ -178,7 +178,7 @@ output$Variable_importance_ui <- renderUI({
   
   vi_info <- attr(omicsData$objRM, "vi_info")
   
-  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .80)
+  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .95)
   
   collapseBox(
     collapsed = F,
@@ -192,13 +192,11 @@ output$Variable_importance_ui <- renderUI({
       choiceNames = list(
         "top ___ features",
         "top ___% of features",
-        "features in ___ quantile",
         "features with importance value above ___"
       ),
       choiceValues = c(
         "count",
         "percent",
-        "quantile",
         "value"
       )
     ),
@@ -217,15 +215,6 @@ output$Variable_importance_ui <- renderUI({
         "vi_thresh_pct",
         "Percent",
         min = 0, max = 100, value = 5
-      )
-    ),
-    conditionalPanel(
-      "input.vi_choose == \"quantile\"",
-      numericInput(
-        "vi_thresh_q",
-        "Quantile",
-        min = 0, max = 1, value = 0.8,
-        step = 0.01
       )
     ),
     conditionalPanel(
@@ -265,35 +254,34 @@ output$preview_n_features <- renderText({
   kept_features <- nrow(vi_info[vi_info$var_import >= vi_cutoff,])
   removed_features <- nrow(vi_info[vi_info$var_import < vi_cutoff,])
   
+  if (kept_features == 0 || removed_features == 0 || is.na(input$vi_thresh)) {
+    shinyjs::disable("feature_select_posthoc")
+  } else {
+    shinyjs::enable("feature_select_posthoc")
+  }
+  
   paste0("At current cut-off, ", kept_features, " features will be kept and ", 
          removed_features, " features will be excluded from the reduced model.")
   
 })
 
-observeEvent(input$vi_thresh_count, {
-  req(input$vi_thresh_count)
-  req(omicsData$objRM)
+observeEvent(c(input$vi_choose, input$vi_thresh_count), {
+  req(input$vi_choose == "count")
+  req(!is.null(input$vi_thresh_count))
+  req(!is.null(omicsData$objRM))
   vi_info <- attr(omicsData$objRM, "vi_info")
-  req(vi_info)
+  req(!is.null(vi_info))
   updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor(input$vi_thresh_count)] - 0.0001)
-})
+}, ignoreInit = FALSE)
 
-observeEvent(input$vi_thresh_pct, {
-  req(input$vi_thresh_pct)
-  req(omicsData$objRM)
+observeEvent(c(input$vi_choose, input$vi_thresh_pct), {
+  req(input$vi_choose == "percent")
+  req(!is.null(input$vi_thresh_pct))
+  req(!is.null(omicsData$objRM))
   vi_info <- attr(omicsData$objRM, "vi_info")
-  req(vi_info)
+  req(!is.null(vi_info))
   updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor((input$vi_thresh_pct) / 100 * length(vi_info$var_import))] - 0.0001)
-})
-
-observeEvent(input$vi_thresh_q, {
-  req(input$vi_thresh_q)
-  req(input$vi_thresh_q >= 0 && input$vi_thresh_q <= 1)
-  req(omicsData$objRM)
-  vi_info <- attr(omicsData$objRM, "vi_info")
-  req(vi_info)
-  updateNumericInput(session, "vi_thresh", value = unname(quantile(vi_info$var_import[vi_info$var_import != 0], input$vi_thresh_q)))
-})
+}, ignoreInit = FALSE)
 
 output$VI_tabset_UI <- renderUI({
   
