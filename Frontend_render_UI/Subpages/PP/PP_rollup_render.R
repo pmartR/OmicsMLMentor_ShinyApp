@@ -56,6 +56,11 @@ load_rollup_observers <- function(tab) {
         transforms_df <- pepQCData$transforms_df[
           -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
         ]
+        
+        if (dim(transforms_df)[1] == 0) {
+          transforms_df <- pepQCData$transforms_df
+        }
+        
         omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
         
         
