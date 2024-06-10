@@ -2,6 +2,34 @@ options(shiny.maxRequestSize = 250 * 1024^2, ch.dir = TRUE, DT.TOJSON_ARGS = lis
 
 shinyServer(function(session, input, output) {
   
+  observeEvent(input$`__startup__`, {
+    shinyjs::runjs(updateCollapse_script)
+  }, priority = 10, ignoreNULL = FALSE, once = TRUE)
+  
+  onStop(function() {
+    # save the session object
+    if (Sys.getenv("SHINY_TEST_MODE") == "1") {
+      message("Session is ending. Saving the session object.")
+      server_env <- parent.env(environment())
+  
+      ## get all objects which are reactivevalues objects and
+      ## which are not identical to input
+      rvs <- map_lgl(as.list(server_env), ~inherits(.x, "reactivevalues") & !identical(.x, input))
+  
+      rv_names = names(rvs[rvs])
+  
+      POSTMORTEM_OBJECTS <<- list()
+      
+      isolate({
+        for (name in rv_names) {
+          POSTMORTEM_OBJECTS[[name]] <<- reactiveValuesToList(server_env[[name]])
+        }
+        
+        POSTMORTEM_OBJECTS[["input"]] <<- reactiveValuesToList(input)
+      })
+    }
+  })
+  
   file_loads <- c(
     list.files("./Modules/", recursive = T, full.names = T),
     list.files("./Frontend_render_UI/", recursive = T, full.names = T)
@@ -64,6 +92,28 @@ shinyServer(function(session, input, output) {
   }
 
   launch_tutorial()
- 
   
+  # local file, not tracked by git.  Create one if you would like to perform postmortem debugging
+  # if (Sys.getenv("SHINY_TEST_MODE") == "1") {
+  #   observeEvent(input, {
+  #     input_postmortem <<- input
+  #   })
+  #   
+  #   observeEvent(c(objects$omicsData, objects$omicsData_2),{
+  #     omicsData_postmortem <<- objects$omicsData
+  #     omicsData_2_postmortem <<- objects$omicsData_2
+  #   })
+  #   
+  #   # postmortem debugging for plots
+  #   observeEvent(plots$allplots,{
+  #     if(length(plots$allplots) > 0){
+  #       plots_postmortem <<- reactiveValuesToList(plots)
+  #     }
+  #   })
+  #   
+  #   # postmortem reactive value debugging
+  #   observeEvent(reactiveValuesToList(objects),{
+  #     objects_postmortem <<- reactiveValuesToList(objects)
+  #   })
+  # }
 })

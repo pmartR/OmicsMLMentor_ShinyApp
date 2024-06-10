@@ -69,6 +69,8 @@ MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
 AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
 # AWS <- T
 
+VALID_HEADER_PARAMS = c("map-data")
+
 # Load files
 file_loads <- c(
   list.files("./Helpers", recursive = T, full.names = T),

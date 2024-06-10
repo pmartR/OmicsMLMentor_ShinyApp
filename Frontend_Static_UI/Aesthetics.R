@@ -8,8 +8,8 @@ blueexcl = icon("exclamation-sign", lib="glyphicon", style = "color:deepskyblue;
 updateCollapse_script = paste0(
   "updateBoxCollapse = function(e) {let p = e; while (!p.classList.contains",
   "('collapse-box-group')) { if (p == document) return; p = p.parentNode};",
-  " Shiny.setInputValue('collapseTitleClick',{p:p.id, id: ",
-  "e.getAttribute('data-panel'), t: Date.now()});};"
+  "Shiny.setInputValue('collapseTitleClick',{p:p.id, id: ",
+  "e.getAttribute('data-panel'), t: Date.now()});console.log('ayyyy')};"
 )
 addTooltip_handler_script = paste0(
   "Shiny.addCustomMessageHandler('addPrompter', function(message) ",
