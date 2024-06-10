@@ -52,7 +52,7 @@ tbl <- function(data, index, namecol)  {
             style= "height: 75px;",
             class = "text-muted",
             style= "height: 75px;",
-            if(i == 1) colnames(data2)[j] else NULL
+            if(i == 1) HTML(colnames(data2)[j]) else NULL
           ),
           
           if(!is.na(as.logical(data2[i,j]))){
@@ -213,7 +213,8 @@ observe({
   df <- df[df$supervised,] ## supervised/unsupervised
   df <- df[df$n_levels,] ## Correct number of levels for analysis
   df[2] <- unlist(suggests)
-  df <- df[-7]
+  df <- df[-5]
+  df <- df[-5]
   
   df[7] <- signif(df[7], 3)
   df[8] <- signif(df[8], 3)
@@ -229,8 +230,8 @@ observe({
     "Score",
     paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"),
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
-    paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
-    paste0("Runs with a minimum group size of ", group_text, "?"),
+    #paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
+    #paste0("Runs with a minimum group size of ", group_text, "?"),
     paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
@@ -283,6 +284,180 @@ observe({
   
   table_table_current$MSU$expert_mentor_summary <- df
   
+  colnames(df) <- c(
+    "Method",
+    "Score",
+    paste0(
+      "Total Samples ", 
+      div(
+        id = "em_info_total_samples",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_samples')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'total_samples')"
+        )
+      )
+    ), # "Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"
+    paste0(
+      "Total Classifications ", 
+      div(
+        id = "em_info_total_classifications",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_classifications')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'total_classifications')"
+        )
+      )
+    ), # "Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"
+    # paste0(
+    #   "Total Predictors ", 
+    #   div(
+    #     id = "em_info_total_predictors",
+    #     class = "hint--bottom",
+    #     icon(
+    #       name = "circle-info",
+    #       class = "em-col-info-btn",
+    #       onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_predictors')",
+    #       onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'total_predictors')"
+    #     )
+    #   )
+    # ), # "Runs with ", nrow(omicsData$objModel$e_data), " predictors?"
+    # paste0(
+    #   "Min Group Size ", 
+    #   div(
+    #     id = "em_info_min_group_size",
+    #     class = "hint--bottom",
+    #     icon(
+    #       name = "circle-info",
+    #       class = "em-col-info-btn",
+    #       onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'min_group_size')",
+    #       onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'min_group_size')"
+    #     )
+    #   )
+    # ), # "Runs with a minimum group size of ", group_text, "?"
+    paste0(
+      "Sample/Predictor Ratio Performance ", 
+      div(
+        id = "em_info_sample_predictor_ratio",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'sample_predictor_ratio')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'sample_predictor_ratio')"
+        )
+      )
+    ), # "Performance with a sample/predictor ratio of ", ncol(omicsData$objModel$e_data) - 1, ":", nrow(omicsData$objModel$e_data), "?"
+    paste0(
+      "Proportion Missing Performance ", 
+      div(
+        id = "em_info_prop_missing",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'prop_missing')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'prop_missing')"
+        )
+      )
+    ), # "Performance with ", sum(missingness$num_non_NA), "/", total, " (", signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints observed?"
+    paste0(
+      "Explainability ", 
+      div(
+        id = "em_info_explainability",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'explainability')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'explainability')"
+        )
+      )
+    ), # "Relative interpretability of results? "
+    paste0(
+      "Keeps Best Predictors ", 
+      div(
+        id = "em_info_best_predictors",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'best_predictors')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'best_predictors')"
+        )
+      )
+    ), # "Method keeps relatively best predictors to use? "
+    paste0(
+      "Generates Equation ", 
+      div(
+        id = "em_info_equation",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'equation')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'equation')"
+        )
+      )
+    ), # "Results contain an equation for the prediction? "
+    paste0(
+      "Avoids Overfitting", 
+      div(
+        id = "em_info_avoids_overfitting",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'avoids_overfitting')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'avoids_overfitting')"
+        )
+      )
+    ), # "Model innately avoids overfitting? "
+    paste0(
+      "Handles High Correlation ", 
+      div(
+        id = "em_info_high_correlation",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'high_correlation')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'high_correlation')"
+        )
+      )
+    ), # "Model handles highly correlated features?"
+    paste0(
+      "High Dimensional ", 
+      div(
+        id = "em_info_high_dimensional",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'high_dimensional')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'high_dimensional')"
+        )
+      )
+    ), # "High dimensional? "
+    paste0(
+      "Handles Outliers ", 
+      div(
+        id = "em_info_handles_outliers",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'handles_outliers')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'handles_outliers')"
+        )
+      )
+    ) # "Model handles outliers robustly? "
+  )
+  
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
@@ -304,6 +479,145 @@ observe({
   
 })
 
+# Load bib file
+bibs <- RefManageR::ReadBib("www/references.bib")
+
+get_citations_html <- function(level, column) {
+  # Get dataframe with all info
+  df <- as.data.frame(do.call(rbind, sapply(slopeR::algo_rules, \(x) x[[level]])))
+  
+  # Subset to specific level and column and extract citation portion of the list
+  df2 <- sapply(df[[column]][which(sapply(df[[column]], length) == 3)], \(x) x[[3]])
+  
+  # Get citations for models which have them
+  citations <- sapply(df2[which(sapply(df2, length) > 0)], paste)
+  
+  # Get full names
+  names(citations) <- sapply(names(citations), \(x) slopeR::algo_rules[[x]]$full_name)
+  
+  # Get full citations
+  citations <- sapply(citations, \(x) sapply(x, \(y) utils:::format.bibentry(bibs[[y]])))
+  
+  # Apply formatting
+  citations <- sapply(citations, \(x) gsub("\n", " ", x))
+  citations <- sapply(citations, \(x) gsub("<", "&lt;", x))
+  citations <- sapply(citations, \(x) gsub(">", "&gt;", x))
+  citations <- sapply(citations, \(x) gsub("\\textbar", "|", x))
+  citations <- sapply(citations, \(x) paste(unname(x), collapse = "<br><br>"))
+  
+  if (length(citations) == 0) {
+    return("No citations available.")
+  }
+  
+  # Get a single HTML source
+  html <- paste(sapply(1:length(citations), \(x) paste0("<br><b>", names(citations)[x], ":</b><br>", citations[[x]])), collapse = "<br>")
+  
+  return(HTML(html))
+}
+
+# NOTE: Best to render this out at some point once citations and everything are finalized
+citations <- list(
+  "total_samples" = get_citations_html("hard", "n_samps"),
+  "total_classifications" = get_citations_html("hard", "n_levels"),
+  "sample_predictor_ratio" = get_citations_html("soft", "n_predictors_per_sample"),
+  "prop_missing" = get_citations_html("soft", "prop_missing"),
+  "best_predictors" = get_citations_html("soft", "feature_selection"),
+  "explainability" = get_citations_html("soft", "explainability"),
+  "equation" = get_citations_html("soft", "equation"),
+  "avoids_overfitting" = get_citations_html("soft", "prone_to_overfit"),
+  "high_correlation" = get_citations_html("soft", "correlation"),
+  "high_dimensional" = get_citations_html("soft", "high_dimensional"),
+  "handles_outliers" = get_citations_html("soft", "outlier_sensitivity")
+)
+
+get_em_column_info <- function() {
+  missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
+  
+  group_text <- ifelse(!is.null(get_group_table(omicsData$objModel)), 
+                       min(get_group_table(omicsData$objModel)), 1)
+  
+  temp_omic <- omicsData$objModel
+  
+  if(get_data_scale(temp_omic) == "abundance"){
+    temp_omic <- edata_transform(temp_omic, "log2")
+  }
+  
+  id_col <- which(colnames(temp_omic$e_data) == 
+                    get_edata_cname(temp_omic))
+  
+  correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+  
+  titles <- list(
+    "total_samples" = paste0("Total Samples: ", ncol(omicsData$objModel$e_data) - 1),
+    "total_classifications" = paste0("Total Classifications: ", length(get_group_table(omicsData$objModel))),
+    "sample_predictor_ratio" = paste0("Sample/Predictor Ratio: ", ncol(omicsData$objModel$e_data) - 1, ":", 
+           nrow(omicsData$objModel$e_data)),
+    "prop_missing" = paste0("Proportion Missing: ", sum(missingness$num_non_NA), "/", total, " (",
+           signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints\n observed)"),
+    "best_predictors" = "Keeps Best Predictors",
+    "equation" = "Generates Equation",
+    "avoids_overfitting" = "Avoids Overfitting",
+    "high_correlation" = paste("Handles High Correlation (Current data", ifelse(correlation, "is", "is not"), "highly correlated)"),
+    "high_dimensional" = "High Dimensional",
+    "handles_outliers" = "Handles Outliers"
+  )
+  
+  summary <- list(
+    "total_samples" = "This score is a pass/fail metric, where a pass indicates that the number of samples in the data meet or exceed the minimum number of samples required for the respective model.",
+    "total_classifications" = "This score is a pass/fail metric, where a pass indicates that the number of classifications in the data meet or exceed the minimum number of classifications required for the respective model.",
+    "sample_predictor_ratio" = "This score indicates the performance of a given model with the ratio of samples to predictors in the data. A higher number indicates better performance.",
+    "prop_missing" = "This score indicates the performance of a given model with the proportion of missing data to present data. A higher number indicates better performance.",
+    "best_predictors" = "This value indicates whether or not a given model performs feature selection.",
+    "equation" = "This value indicates whether or not a given model generates a closed-form equation after it is run.",
+    "avoids_overfitting" = "This score indicates how robust a given model is to avoiding overfitting.",
+    "high_correlation" = "This score indicates how robust a given model is to data with high correlation.",
+    "high_dimensional" = "This score indicates how well a given model handles data with a large number of dimensions (i.e. predictors).",
+    "handles_outliers" = "This score indicates how robust a given model is to data that contains outliers."
+  )
+  
+  contents <- list(
+    
+  )
+  
+  return(list(titles = titles, summary = summary, contents = contents, citations = citations))
+}
+
+observeEvent(input$em_column_hover, {
+  req(!is.null(input$em_column_hover))
+  
+  addPrompter(
+    session, 
+    paste0("em_info_", input$em_column_hover),
+    title = paste0(
+        get_em_column_info()[["titles"]][[input$em_column_hover]],
+        "\n\n",
+        paste(
+          strwrap(get_em_column_info()[["summary"]][[input$em_column_hover]], width = 64),
+          collapse = "\n"
+        ),
+        "\n\n",
+        "Click for more info..."
+      ),
+    size = "large"
+  )
+})
+
+observeEvent(input$em_column_info, {
+  req(!is.null(input$em_column_info))
+  
+  showModal(
+    modalDialog(
+      title = get_em_column_info()[["titles"]][[input$em_column_info]],
+      get_em_column_info()[["summary"]][[input$em_column_info]],
+      br(),
+      get_em_column_info()[["contents"]][[input$em_column_info]],
+      hr(),
+      h4("Citations:"),
+      get_em_column_info()[["citations"]][[input$em_column_info]]
+    )
+  )
+})
 
 output$EM_dashboard <- renderUI({
   
@@ -322,6 +636,7 @@ output$EM_dashboard <- renderUI({
       column(12,
       tags$div(
         class = "container mt-5",
+        style = "width: 100%",
         tags$div(
           class = "d-lg-flex align-items-lg-center py-4",
           tags$div(

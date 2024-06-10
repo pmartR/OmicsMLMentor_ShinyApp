@@ -619,3 +619,20 @@ div.box-body .shiny-input-container:not(.shiny-input-container-inline) {
 .ui-tooltip {
   display: none !important;
 }
+
+.em-col-info-btn {
+  color: aqua;
+}
+
+.em-col-info-btn:hover {
+  color: deepskyblue;
+  cursor: pointer;
+}
+
+.em-col-info-btn:active {
+  color: darkblue;
+}
+
+[class*=hint--][aria-label]:after {
+   white-space: pre;
+}
