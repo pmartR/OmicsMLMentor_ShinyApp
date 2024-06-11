@@ -296,7 +296,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_samples')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'total_samples')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'total_samples', 'nonce': Math.random() })"
         )
       )
     ), # "Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"
@@ -309,7 +309,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_classifications')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'total_classifications')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'total_classifications', 'nonce': Math.random() })"
         )
       )
     ), # "Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"
@@ -322,7 +322,7 @@ observe({
     #       name = "circle-info",
     #       class = "em-col-info-btn",
     #       onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_predictors')",
-    #       onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'total_predictors')"
+    #       onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'total_predictors', 'nonce': Math.random() })"
     #     )
     #   )
     # ), # "Runs with ", nrow(omicsData$objModel$e_data), " predictors?"
@@ -335,7 +335,7 @@ observe({
     #       name = "circle-info",
     #       class = "em-col-info-btn",
     #       onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'min_group_size')",
-    #       onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'min_group_size')"
+    #       onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'min_group_size', 'nonce': Math.random() })"
     #     )
     #   )
     # ), # "Runs with a minimum group size of ", group_text, "?"
@@ -348,7 +348,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'sample_predictor_ratio')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'sample_predictor_ratio')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'sample_predictor_ratio', 'nonce': Math.random() })"
         )
       )
     ), # "Performance with a sample/predictor ratio of ", ncol(omicsData$objModel$e_data) - 1, ":", nrow(omicsData$objModel$e_data), "?"
@@ -361,7 +361,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'prop_missing')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'prop_missing')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'prop_missing', 'nonce': Math.random() })"
         )
       )
     ), # "Performance with ", sum(missingness$num_non_NA), "/", total, " (", signif(sum(missingness$num_non_NA)/total*100, 3), "%) of possible datapoints observed?"
@@ -374,7 +374,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'explainability')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'explainability')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'explainability', 'nonce': Math.random() })"
         )
       )
     ), # "Relative interpretability of results? "
@@ -387,7 +387,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'best_predictors')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'best_predictors')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'best_predictors', 'nonce': Math.random() })"
         )
       )
     ), # "Method keeps relatively best predictors to use? "
@@ -400,7 +400,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'equation')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'equation')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'equation', 'nonce': Math.random() })"
         )
       )
     ), # "Results contain an equation for the prediction? "
@@ -413,7 +413,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'avoids_overfitting')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'avoids_overfitting')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'avoids_overfitting', 'nonce': Math.random() })"
         )
       )
     ), # "Model innately avoids overfitting? "
@@ -426,7 +426,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'high_correlation')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'high_correlation')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'high_correlation', 'nonce': Math.random() })"
         )
       )
     ), # "Model handles highly correlated features?"
@@ -438,8 +438,8 @@ observe({
         icon(
           name = "circle-info",
           class = "em-col-info-btn",
-          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'high_dimensional')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'high_dimensional')"
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value  = 'high_dimensional')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'high_dimensional', 'nonce': Math.random() }')"
         )
       )
     ), # "High dimensional? "
@@ -452,7 +452,7 @@ observe({
           name = "circle-info",
           class = "em-col-info-btn",
           onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'handles_outliers')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = 'handles_outliers')"
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'handles_outliers', 'nonce': Math.random() })"
         )
       )
     ) # "Model handles outliers robustly? "
@@ -608,13 +608,13 @@ observeEvent(input$em_column_info, {
   
   showModal(
     modalDialog(
-      title = get_em_column_info()[["titles"]][[input$em_column_info]],
-      get_em_column_info()[["summary"]][[input$em_column_info]],
+      title = get_em_column_info()[["titles"]][[input$em_column_info$name]],
+      get_em_column_info()[["summary"]][[input$em_column_info$name]],
       br(),
-      get_em_column_info()[["contents"]][[input$em_column_info]],
+      get_em_column_info()[["contents"]][[input$em_column_info$name]],
       hr(),
       h4("Citations:"),
-      get_em_column_info()[["citations"]][[input$em_column_info]]
+      get_em_column_info()[["citations"]][[input$em_column_info$name]]
     )
   )
 })
