@@ -5,7 +5,7 @@ shinyServer(function(session, input, output) {
   file_loads <- c(
     list.files("./Modules/", recursive = T, full.names = T),
     list.files("./Frontend_render_UI/", recursive = T, full.names = T)
-  )
+  ) 
   
   file_loads <- file_loads[file_loads != "./Modules//Module_RV_all.R"]
   source("./Modules//Module_RV_all.R", local = T) ## must be first
