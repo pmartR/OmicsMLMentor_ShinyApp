@@ -2,7 +2,9 @@
 
 #' Response types for each column selected as the response, as specified by the user
 response_types_ag <- reactive({
-  req(response_cols_ag())
+  if (is.null(response_cols_ag())) {
+    return(NULL)
+  }
   
   ## Run with correct response variable type
   rt <- NULL
