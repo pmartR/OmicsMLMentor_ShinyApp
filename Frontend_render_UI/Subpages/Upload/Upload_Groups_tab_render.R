@@ -149,6 +149,14 @@ observeEvent(input$fdata_upload_done, {
   updateBoxCollapse(session, "groups_collapse_left", close = "upload_fdata_UI_box")
 })
 
+observeEvent(c(input$use_fdata, input$use_example_fdata, input$how_make_fdata), {
+  if (!is.null(input$use_fdata) && (isTruthy(input$use_example_fdata) || !is.null(input$how_make_fdata))) {
+    shinyjs::enable("fdata_options_done")
+  } else {
+    shinyjs::disable("fdata_options_done")
+  }
+}, ignoreNULL = FALSE)
+
 observeEvent(input$fdata_options_done, {
   updateBoxCollapse(session, "groups_collapse_left", close = "fdata_options")
 })

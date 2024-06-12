@@ -61,7 +61,7 @@ analysis_goals <- function() {
                collapseBoxGroup(
                  id = "ag_collapse_center",
                  collapseBox(
-                   "Specifiy Model Goals",
+                   "Specify Model Goals",
                    value = "ag_choices",
                    collapsed = F,
                    
@@ -129,7 +129,9 @@ analysis_goals <- function() {
                    
                  )),
                
-               actionButton("ag_done", "Confirm Selections")
+               hidden(actionButton("ag_done", "Confirm Selections")),
+               br(),
+               br()
                
                )
            )

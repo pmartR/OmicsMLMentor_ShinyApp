@@ -257,6 +257,16 @@ observeEvent(c(input$QC_rmdfilt_sample_select#, input$QC_rmdfilt_sample_remove
   
 })
 
+observeEvent(input$QC_rmdfilt_sample_remove, {
+  if (length(omicsData$objQC$f_data[[get_fdata_cname(omicsData$objQC)]]) - length(input$QC_rmdfilt_sample_remove) < 6) {
+    output$warn_rmdfilt_samples_remove <- renderText("Too many samples were removed. Please ensure at least 6 samples are present.")
+    disable("outliers_done")
+  } else {
+    output$warn_rmdfilt_samples_remove <- renderText("")
+    enable("outliers_done")
+  }
+})
+
 observeEvent(input$all_outs_inspect_out, {
   
   rmd <- QC_rmd$res
