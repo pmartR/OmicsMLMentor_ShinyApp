@@ -379,6 +379,11 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
       stop_iter = input$stop_iter,
       sample_size = input$sample_prop
     )
+  }  else if (method == "pls") {
+    custom_args <- list(
+      num_comp = input$pls_num_comp,
+      predictor_prop = input$pls_predictor_prop
+    )
   }
   
   (max_nfold - 2)/6
@@ -392,6 +397,7 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
   
   list_args <- c(list_args, custom_args)
   
+  unregister()
   suppressWarnings({
     cv_eval$result <- do.call(slopeR::eval_cv_grid, list_args)
   })

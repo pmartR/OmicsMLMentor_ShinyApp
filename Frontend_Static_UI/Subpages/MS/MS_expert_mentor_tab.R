@@ -98,12 +98,12 @@ EM_tab <- function() {
                                 
                                 checkboxInput(
                                   inputId = "high_dimensional_data",
-                                  "high_dimensional_data",
+                                  "Handles many features",
                                   value = T
                                   ),
                                 
                                 conditionalPanel(
-                                  "input.user_level != 'expert'",
+                                  "input.user_level != 'familiar'",
                                   
                                   div(
                                     checkboxInput(

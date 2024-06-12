@@ -119,8 +119,7 @@ observe({
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
-  supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
-    (!input$skip_ag && input$ag_prompts == "supervised")
+  supervised <- supervised()
   
   handles_regression <- if('continuous' %in% response_types_ag()) {
     TRUE
@@ -139,9 +138,33 @@ observe({
   
   if(input$user_level_pick == "beginner"){
     
+    id_col <- which(colnames(temp_omic$e_data) == 
+                      get_edata_cname(temp_omic))
+    
+    samples_per_feature <- nrow(temp_omic$e_data)/
+      min(get_group_table(temp_omic)) > 300
+    
+    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+    
+    ## Change based on algorithim for holdout
+    overfit <- min(get_group_table(temp_omic)) < 5
+    
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+    
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
                               handles_regression = handles_regression
+                              feature_selection = input$feature_selection,
+                              handles_missingness = input$handles_missingness,
+                              explainability = input$explainability,
+                              equation = input$equation,
+                              
+                              ## Autodetect
+                              high_dimensional_data = input$high_dimensional_data,
+                              samples_per_feature = samples_per_feature,
+                              correlation = correlation,
+                              prone_to_overfit = overfit,
+                              handles_outliers = rmd
     )
     
   } else if (input$user_level_pick != "expert"){

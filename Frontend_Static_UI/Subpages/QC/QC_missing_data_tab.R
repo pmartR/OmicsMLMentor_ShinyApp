@@ -149,13 +149,14 @@ missing_data <- function(){
                      multiple = T
                    ),
                    
-                   shiny::textOutput("Note_nonmissing"),
+                   textOutput("Note_nonmissing"),
+                   textOutput("warn_missing_biom"),
                    
                    br(),
                    
                    fluidRow(
                      column(10, ""),
-                     column(2, actionButton("done_biom_miss", "Done", style="float:right"))
+                     column(2, disabled(actionButton("done_biom_miss", "Done", style="float:right")))
                    )
                    
                    # actionButton("done_biom_miss", "Done")
