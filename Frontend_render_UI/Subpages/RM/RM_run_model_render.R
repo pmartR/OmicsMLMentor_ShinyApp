@@ -139,7 +139,7 @@ output$visualize_perf_split_ui <- renderUI({
   req(input$performance_tabset)
   has_test_preds <- if(input$performance_tabset == "Full model") {
     !is.null(attr(omicsData$objRM, "prediction_test"))
-  } else if (input$performance_tabset == "Full model") {
+  } else if (input$performance_tabset != "Full model") {
     !is.null(attr(omicsData$objRM_reduced, "prediction_test"))
   }
   
@@ -176,23 +176,28 @@ output[["VI_tabset_UI_collapse"]] <- renderUI({
 output$Variable_importance_ui <- renderUI({
   req(!is.null(omicsData$objRM) && !is.null(attr(omicsData$objRM, "vi_info")))
   
-  vi_info <- attr(omicsData$objRM, "vi_info")
-  
-  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .80)
-  
   collapseBox(
     collapsed = F,
     value = "select_vi",
 
     "Post-hoc feature selection",
-
-    numericInput(
-      "vi_thresh",
-      "Build reduced model with variable importance equal to or above:",
-      min = 0, max = max(vi_info$var_import), value = signif(set_val, 3),
-      step = 0.001,
-      width = "100%"
+    
+    radioButtons(
+      "vi_choose",
+      "Build reduced model which includes...",
+      choiceNames = list(
+        "top ___ features",
+        "top ___% of features",
+        "features with importance value above ___"
+      ),
+      choiceValues = c(
+        "count",
+        "percent",
+        "value"
+      )
     ),
+    
+    uiOutput("numeric_fill"),
     
     br(),
     
@@ -212,19 +217,95 @@ output$Variable_importance_ui <- renderUI({
   
 })
 
-output$preview_n_features <- renderText({
-  req(!is.null(omicsData$objRM) && !is.null(input$vi_thresh))
+output[["numeric_fill"]] <- renderUI({
   
-  vi_cutoff <- input$vi_thresh
+  req(!is.null(omicsData$objRM) && !is.null(attr(omicsData$objRM, "vi_info")))
+  
   vi_info <- attr(omicsData$objRM, "vi_info")
   
-  kept_features <- nrow(vi_info[vi_info$var_import >= vi_cutoff,])
-  removed_features <- nrow(vi_info[vi_info$var_import < vi_cutoff,])
+  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .80)
+  
+  if(input$vi_choose == "count"){
+    numericInput(
+      "vi_thresh_count",
+      "Count",
+      min = 0, max = dim(vi_info)[1], 
+      value = isolate(ifelse(is.null(input$vi_thresh_count), 10,
+                             input$vi_thresh_count)),
+      step = 1
+    )
+    
+  } else if (input$vi_choose == "percent"){
+    numericInput(
+      "vi_thresh_pct",
+      "Percent",
+      min = 0, max = 100, 
+      value = isolate(ifelse(is.null(input$vi_thresh_pct), 5,
+                             input$vi_thresh_pct))
+    )
+  } else if (input$vi_choose == "value"){
+    numericInput(
+      "vi_thresh",
+      "Value",
+      min = 0, 
+      value = isolate(ifelse(is.null(input$vi_thresh), signif(set_val),
+                             input$vi_thresh))
+    )
+  }
+  
+})
+
+output$preview_n_features <- renderText({
+  req(!is.null(omicsData$objRM) && (
+    !is.null(input$vi_thresh_count) || !is.null(input$vi_thresh_count) ||
+      !is.null(input$vi_thresh)
+  ))
+  
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  
+  if(input$vi_choose == "count"){
+    kept_features <- input$vi_thresh_count
+    removed_features <- nrow(vi_info) - input$vi_thresh_count
+  } else if(input$vi_choose == "percent") {
+    kept_features <- round(nrow(vi_info)*input$vi_thresh_pct/100)
+    removed_features <- nrow(vi_info) - kept_features
+  } else if(input$vi_choose == "value"){
+    vi_cutoff <- input$vi_thresh
+    
+    kept_features <- nrow(vi_info[vi_info$var_import >= vi_cutoff,])
+    removed_features <- nrow(vi_info[vi_info$var_import < vi_cutoff,])
+  }
+  
+  req(!is.null(kept_features) && !is.null(removed_features) && 
+        !is.na(removed_features) && !is.na(kept_features))
+  if (kept_features == 0 || removed_features == 0) {
+    shinyjs::disable("feature_select_posthoc")
+  } else {
+    shinyjs::enable("feature_select_posthoc")
+  }
   
   paste0("At current cut-off, ", kept_features, " features will be kept and ", 
          removed_features, " features will be excluded from the reduced model.")
   
 })
+
+observeEvent(c(input$vi_choose, input$vi_thresh_count), {
+  req(input$vi_choose == "count")
+  req(!is.null(input$vi_thresh_count))
+  req(!is.null(omicsData$objRM))
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(!is.null(vi_info))
+  updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor(input$vi_thresh_count)] - 0.0001)
+}, ignoreInit = FALSE)
+
+observeEvent(c(input$vi_choose, input$vi_thresh_pct), {
+  req(input$vi_choose == "percent")
+  req(!is.null(input$vi_thresh_pct))
+  req(!is.null(omicsData$objRM))
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(!is.null(vi_info))
+  updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor((input$vi_thresh_pct) / 100 * length(vi_info$var_import))] - 0.0001)
+}, ignoreInit = FALSE)
 
 output$VI_tabset_UI <- renderUI({
   
@@ -291,6 +372,8 @@ output$Variable_importance_plot <- renderPlotly({
   
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
                                    levels = plotting_df$names_orig)
+  
+  req(!is.null(plotting_df) && nrow(plotting_df) > 0)
   
   p <- ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
     geom_col() +
@@ -674,8 +757,17 @@ observeEvent(input$run_sl, {
       if(str_detect(e$message, "No variable importance method implemented for method")){
         do.call(slopeR::fit, list_args)
       } else {
-        shinyalert("Something went wrong: ", paste0("System error: ", e$message))
-        NULL
+        unregister()
+        omicsData$objRM <- tryCatch({
+          do.call(slopeR::variable_importance, list_args)
+        }, error = function(e){
+          if(str_detect(e$message, "No variable importance method implemented for method")){
+            do.call(slopeR::fit, list_args)
+          } else {
+            shinyalert("Something went wrong: ", paste0("System error: ", e$message))
+            NULL
+          }
+      })
       }
     })
     
@@ -757,7 +849,17 @@ observeEvent(input$feature_select_posthoc, {
   prior_info <- left_join(attr(omicsData$objRM, "feature_info"), 
             attr(omicsData$objRM, "vi_info"), 
             by = c(names_compact = "var_name"))
-  e_data_keep <- prior_info$names_orig[prior_info$var_import >= input$vi_thresh]
+  
+  prior_info <- arrange(prior_info, desc(var_import))
+
+  if(input$vi_choose == "count"){
+    e_data_keep <- prior_info$names_orig[1:input$vi_thresh_count]
+  } else if(input$vi_choose == "percent"){
+    numb <- round(length(prior_info$names_orig)*input$vi_thresh_pct/100)
+    e_data_keep <- prior_info$names_orig[1:numb]
+  } else {
+    e_data_keep <- prior_info$names_orig[prior_info$var_import >= input$vi_thresh]
+  }
     
   temp_omics <- omicsData$objPP
   
@@ -859,6 +961,7 @@ observeEvent(input$feature_select_posthoc, {
     
     list_args <- c(list_args, custom_args)
     
+    unregister()
     omicsData$objRM_reduced <- do.call(slopeR::variable_importance, list_args)
   
     shinyjs::show("complete_RM")
