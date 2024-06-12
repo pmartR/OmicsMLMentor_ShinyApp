@@ -33,7 +33,7 @@ output$New_model_button <- renderUI({
   cond <- is.null(zipped_file$fs)
   
   button <- appButton(inputId = "new_model",
-                      label = tags$b("Try a different model"),
+                      label = tags$b("Try something else..."),
                       icon = icon("fast-backward"),
                       lib = "glyphicon",
                       style = "margin-left:5px"
@@ -48,6 +48,215 @@ output$New_model_button <- renderUI({
     button
   )
   
+})
+
+observeEvent(input$new_model, {
+  showModal(modalDialog(
+    title = "Select page to rewind to...", 
+    div(
+      style = "text-align: center;",
+      appButton(inputId = "rewind_qc", label = "Change quality control filtering [Quality Control]"),
+      br(),
+      appButton(inputId = "rewind_msu", label = "Choose a different model [Model Set-up]"),
+      br(),
+      appButton(inputId = "rewind_pp", label = "Change pre-processing filtering [Pre-processing]"),
+      br(),
+      appButton(inputId = "rewind_rm", label = "Run the model with different parameters [Run Model]")
+    )
+  ))
+})
+
+reset_qc <- function() {
+  omicsData$objQC <- omicsData$obj
+  
+  for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "QC__"))]) {
+    plot_table_current$table[[name]] <- NULL
+  }
+  
+  for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "QC__"))]) {
+    table_table_current$table[[name]] <- NULL
+  }
+  
+  shinyjs::show(id = "low_ob_box")
+  shinyjs::hide(id = "remove_outlier_box")
+  shinyjs::hide(id = "missing_data_box")
+  shinyjs::hide(id = "QC_review_selection_box")
+  
+  shinyjs::addClass("show_low_obs", "blueoutline")
+  shinyjs::removeClass("show_outlier_detect", "blueoutline")
+  shinyjs::removeClass("show_missing_data", "blueoutline")
+  shinyjs::removeClass("review_QC", "blueoutline")
+  
+  shinyjs::disable("show_outlier_detect")
+  
+  shinyjs::disable("show_missing_data")
+  updateBoxCollapse(session, "missing_data_box", open = "missing_by_biomolecule")
+  updateBoxCollapse(session, "qc_missing_plots", open = "missing_data_biomolecule_plot")
+  shinyjs::hide("done_md")
+  
+  shinyjs::disable("review_QC")
+  
+  updateProgressBar(session, "QC_lo_done", value = 0)
+  updateProgressBar(session, "QC_outlier_done", value = 0)
+  updateProgressBar(session, "missing_data_done", value = 0)
+}
+
+reset_msu <- function() {
+  omicsData$objMSU <- omicsData$objQC
+  
+  for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "MSU__"))]) {
+    plot_table_current$table[[name]] <- NULL
+  }
+  
+  for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "MSU__"))]) {
+    table_table_current$table[[name]] <- NULL
+  }
+  
+  shinyjs::show(id = "VS_box")
+  shinyjs::hide(id = "AG_box")
+  shinyjs::hide(id = "EM_box")
+  shinyjs::hide(id = "MSU_review_selection_box")
+  
+  shinyjs::addClass("show_VS", "blueoutline")
+  shinyjs::removeClass("show_AGoals", "blueoutline")
+  shinyjs::removeClass("show_EM", "blueoutline")
+  shinyjs::removeClass("review_MSU", "blueoutline")
+  
+  updateBoxCollapse(session, "vs_collapse_right", open = "data_preview_all", close = "detected_plots")
+  updateBoxCollapse(session, "vs_collapse_left", open = "use_cols_vs", close = "factor_cols_vs")
+  shinyjs::hide("done_VS")
+  
+  shinyjs::disable("show_AGoals")
+  updateBoxCollapse(session, "ag_collapse_center", open = "ag_choices")
+
+  shinyjs::disable("show_EM")
+  
+  shinyjs::disable("review_MSU")
+  
+  updateProgressBar(session, "VS_done", value = 0)
+  updateProgressBar(session, "AGoals_done", value = 0)
+  updateProgressBar(session, "EM_done", value = 0)
+}
+
+reset_pp <- function() {
+  omicsData$objPP <- omicsData$objMSU
+  omicsData$objNorm <- NULL
+
+  for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "PP__"))]) {
+    plot_table_current$table[[name]] <- NULL
+  }
+  
+  for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "PP__"))]) {
+    table_table_current$table[[name]] <- NULL
+  }
+  
+  shinyjs::show(id = "transform_box")
+  shinyjs::hide(id = "filter_box")
+  shinyjs::hide(id = "norm_box")
+  shinyjs::hide(id = "rollup_box")
+  shinyjs::hide(id = "PP_review_selection_box")
+  
+  shinyjs::addClass("show_transform", "blueoutline")
+  shinyjs::removeClass("show_filters", "blueoutline")
+  shinyjs::removeClass("show_normalization", "blueoutline")
+  shinyjs::removeClass("show_protein_roll", "blueoutline")
+  shinyjs::removeClass("review_PP", "blueoutline")
+  
+  updateBoxCollapse(session, id = "transform_collapse", open = "transformation")
+  shinyjs::hide("complete_transform")
+  
+  omicsData$objfilters <- NULL
+  filter_settings_stored$stored <- NULL
+  shinyjs::disable("show_filters")
+  shinyjs::enable("apply_filters")
+  
+  shinyjs::disable("show_normalization")
+  updateBoxCollapse(session, id = "normalization_picker", open = "picker")
+  
+  shinyjs::disable("review_PP")
+  
+  updateProgressBar(session, "transform_done", value = 0)
+  updateProgressBar(session, "filters_done", value = 0)
+  updateProgressBar(session, "norm_done", value = 0)
+  updateProgressBar(session, "rollup_done", value = 0)
+}
+
+reset_rm <- function () {
+  omicsData$objRM <- omicsData$objPP
+  
+  for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__"))]) {
+    plot_table_current$table[[name]] <- NULL
+  }
+  
+  for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "RM__"))]) {
+    table_table_current$table[[name]] <- NULL
+  }
+  
+  shinyjs::show(id = "rm_prompt_box")
+  shinyjs::hide(id = "train_box")
+  shinyjs::hide(id = "param_box")
+  shinyjs::hide(id = "RM_box")
+  shinyjs::hide(id = "RM_result_box")
+  
+  shinyjs::addClass("show_model_options", "blueoutline")
+  shinyjs::removeClass("show_TrainSize", "blueoutline")
+  shinyjs::removeClass("show_parameters", "blueoutline")
+  shinyjs::removeClass("show_runmodel", "blueoutline")
+  shinyjs::removeClass("review_RM", "blueoutline")
+  
+  disable("show_TrainSize")
+  updateBoxCollapse(session, id = "TS_side_collapse", open = "train_param_RM")
+  shinyjs::hide("complete_TS_RM")
+  
+  disable("show_parameters")
+  updateBoxCollapse(session = session, id = "PO_RM_side_collapse", open = "side_param_RM")
+  shinyjs::hide("complete_param")
+  
+  disable("show_runmodel")
+  shinyjs::hide("complete_RM")
+  
+  disable("review_RM")
+  
+  updateProgressBar(session, "MO_done", value = 0)
+  updateProgressBar(session, "TS_done", value = 0)
+  updateProgressBar(session, "params_done", value = 0)
+  updateProgressBar(session, "RM_done", value = 0)
+  
+  updateBoxCollapse(session = session, id = "download_collapse_pages", open = "download_tabset_QC")
+}
+
+observeEvent(input$rewind_qc, {
+  reset_qc()
+  reset_rm()
+  reset_pp()
+  reset_msu()
+  
+  updateNavbarPage(session, "top_page", "Quality Control")
+  removeModal()
+})
+
+observeEvent(input$rewind_msu, {
+  reset_rm()
+  reset_pp()
+  reset_msu()
+  
+  updateNavbarPage(session, "top_page", "Model Set-Up")
+  removeModal()
+})
+
+observeEvent(input$rewind_pp, {
+  reset_rm()
+  reset_pp()
+  
+  updateNavbarPage(session, "top_page", "Pre-processing")
+  removeModal()
+})
+
+observeEvent(input$rewind_rm, {
+  reset_rm()
+  
+  updateNavbarPage(session, "top_page", "Run Model")
+  removeModal()
 })
 
 output$Download_button <- renderUI({

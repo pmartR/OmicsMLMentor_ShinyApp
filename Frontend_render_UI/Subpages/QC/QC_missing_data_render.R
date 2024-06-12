@@ -149,6 +149,10 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   #   p <- p + ggtitle("Protein level preview")
   # }
   
+  if (inherits(omicsData$objQC, "pepData")) {
+    p <- p + ggtitle("Protein level preview")
+  }
+  
   isolate(plot_table_current$table$QC__missing_features <- p)
   
   p

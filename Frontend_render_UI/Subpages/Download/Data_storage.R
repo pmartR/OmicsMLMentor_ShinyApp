@@ -117,6 +117,7 @@ table_table_current <- reactiveValues(
     RM__variable_importance__full = NULL,
     RM__variable_importance__reduced = NULL
   ),
+
   names = list(
     Upload__e_data = "Abundance Data",
     Upload__e_meta = "Biomolecule Information",
