@@ -178,9 +178,9 @@ observe({
     updateCheckboxInput(session = session, "equation", value = F)
     
   } else {
-    updateCheckboxInput(session = session, "feature_selection", value = F)
-    updateCheckboxInput(session = session, "explainability", value = F)
-    updateCheckboxInput(session = session, "equation", value = F)
+    updateCheckboxInput(session = session, "feature_selection", value = T)
+    updateCheckboxInput(session = session, "explainability", value = T)
+    updateCheckboxInput(session = session, "equation", value = T)
   }
   })
 
@@ -193,5 +193,5 @@ observe({
 #     updateCheckboxInput(session = session, "feature_selection", value = F)
 #     
 #   }
-})
+# })
 
