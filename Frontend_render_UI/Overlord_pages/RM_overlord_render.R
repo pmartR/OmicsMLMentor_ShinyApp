@@ -1,7 +1,7 @@
 
 output$RM_ui <- renderUI({
   
-  if(input$ag_prompts == "supervised"){
+  if(supervised()){
     
     div(
       fluidRow(

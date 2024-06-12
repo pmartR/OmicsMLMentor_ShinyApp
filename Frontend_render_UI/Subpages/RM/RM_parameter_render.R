@@ -543,7 +543,7 @@ output[["model_specific_parameters"]] <- renderUI({
         !is.null(input$rm_prompts_hp) &&
         ((!is.null(input$pick_model_group_pick) || 
            !is.null(input$f_data_response_picker)) ||
-           input$ag_prompts == "unsupervised"
+           !supervised()
            )
         )
   

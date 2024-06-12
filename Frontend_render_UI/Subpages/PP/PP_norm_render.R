@@ -1075,6 +1075,24 @@ load_norm_observers <- function(tab) {
     # Tab tool tip for normalization picker
     observeEvent(input[[paste0(tab, "_normalize_option")]],
                  {
+                   updatePickerInput(session, paste0(tab, "_subset_fn"), choices = 
+                     if (is.na(supervised()) || supervised()) {
+                       c(
+                         "No subsetting" = "all",
+                         "Top L order statistics (los)" = "los",
+                         "Percentage present (ppp)" = "ppp",
+                         "Complete" = "complete",
+                         "Rank invariant (rip)" = "rip",
+                         "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
+                       )
+                     } else {
+                       c(
+                         "No subsetting" = "all",
+                         "Top L order statistics (los)" = "los",
+                         "Complete" = "complete"
+                       )
+                   })
+                   
                    # req(tab %in% ALL_DATATYPE_NAMES)
                    show_add_tooltip(
                      session, paste0(tab, "_norm_picker_icon"),
@@ -1082,7 +1100,8 @@ load_norm_observers <- function(tab) {
                      "Specify normalization to apply"
                    )
                  },
-                 ignoreNULL = FALSE
+                 ignoreNULL = FALSE,
+                 ignoreInit = FALSE
     )
 
     # Tab tool tip for normalization sidebar
@@ -1112,7 +1131,6 @@ load_norm_observers <- function(tab) {
     # },
     # ignoreNULL = FALSE
     # )
-
 }
 
 norm_settings <- reactiveValues()
@@ -1871,12 +1889,15 @@ assign_norm_output <- function(tab) {
       # input$complete_filters
 
       norm_choices <- c(
-        "SPANS - Proteomics only",
         "Global Normalization",
         # "Loess Normalization",
         "Zero-to-one scaling",
         "No Normalization"
       )
+      
+      if (!is.na(supervised()) && supervised()) {
+        norm_choices <- c("SPANS - Proteomics only", norm_choices)
+      }
       
       ### Pre-Normalized data w/ disabled UI
       if (!is.null(get_data_norm(isolate(omicsData$objPP))) &&
@@ -2177,6 +2198,8 @@ assign_norm_output <- function(tab) {
     }),
     
     output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
+      
+      req(!all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))
       
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
