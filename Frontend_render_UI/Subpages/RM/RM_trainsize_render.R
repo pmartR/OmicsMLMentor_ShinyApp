@@ -396,6 +396,7 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
   
   list_args <- c(list_args, custom_args)
   
+  unregister()
   suppressWarnings({
     cv_eval$result <- do.call(slopeR::eval_cv_grid, list_args)
   })
