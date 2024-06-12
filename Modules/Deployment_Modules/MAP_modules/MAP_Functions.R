@@ -226,8 +226,7 @@ make_objects <- function() {
                                      el$Transform
                               )
           ),
-          isobaric_norm = any(el$Ref_applied, el$Inst_Normalized),
-          check.names = FALSE
+          isobaric_norm = any(el$Ref_applied, el$Inst_Normalized)
         )
         
         attr(out, paste0(tolower(name), "_info"))$norm_info$is_normalized <- any(el$Ref_applied, el$Inst_Normalized)
@@ -237,7 +236,7 @@ make_objects <- function() {
       
       return(func(
         e_data = tmp_edata, f_data = tmp_fdata, e_meta = el$Emeta, edata_cname = el$Edata_cname,
-        fdata_cname = el$Fdata_cname, emeta_cname = el$Emeta_cname, data_scale = el$Scale, is_normalized = el$Normalized, check.names = FALSE
+        fdata_cname = el$Fdata_cname, emeta_cname = el$Emeta_cname, data_scale = el$Scale, is_normalized = el$Normalized
       ))
     }) %>% setNames(names(datatypes_pos$dataholder))
     

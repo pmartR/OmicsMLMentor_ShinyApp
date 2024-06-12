@@ -47,8 +47,8 @@ output$transform_preview_plot <- renderPlotly({
   
   p <- plot(out)
   
-  isolate(plot_table_current$PP$transform <- p)
-  isolate(table_table_current$PP$transform <- out$e_data)
+  isolate(plot_table_current$table$PP__transform <- p)
+  isolate(table_table_current$table$PP__transform <- out$e_data)
   
   p
   

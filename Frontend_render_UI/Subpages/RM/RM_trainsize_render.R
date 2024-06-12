@@ -67,7 +67,7 @@ output$TS_preview_plot <- renderPlotly({
       theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
                         subset = "Holdout split")
     
-    isolate(table_table_current$RM$training_structure$performance <- out1$data)
+    isolate(table_table_current$table$RM__training_structure__performance <- out1$data)
     
     group_info_training <- group_info[group_info$Status == "Tuning data",]
     
@@ -95,7 +95,7 @@ output$TS_preview_plot <- renderPlotly({
       geom_bar(show.legend = F) + facet_wrap(~fold) + 
       theme_bw() + labs(x = "", y = "Number of samples")
     
-    isolate(table_table_current$RM$training_structure$tuning <- out$data)
+    isolate(table_table_current$table$RM__training_structure__tuning <- out$data)
     
     # group_info$Status <- "Training data"
     # 
@@ -133,7 +133,7 @@ output$TS_preview_plot <- renderPlotly({
       theme_bw() + labs(x = "", fill = "", y = "Number of samples", 
                         subtitle = text)
     
-    isolate(table_table_current$RM$training_structure$performance <- out$data)
+    isolate(table_table_current$table$RM__training_structure__performance <- out$data)
     
     ## tuning and no holdout -- cv hp tuning applied
   } else if (input$rm_prompts_hp == "tuned") {
@@ -167,7 +167,7 @@ output$TS_preview_plot <- renderPlotly({
       geom_bar(show.legend = F) + facet_wrap(~fold) + 
       theme_bw() + labs(x = "", y = "Number of samples")
     
-  isolate(table_table_current$RM$training_structure$performance <- out$data)
+  isolate(table_table_current$table$RM__training_structure__performance <- out$data)
     
   } else if (input$rm_prompts_hp != "tuned") {
     
@@ -200,12 +200,12 @@ output$TS_preview_plot <- renderPlotly({
       geom_bar(show.legend = F) + facet_wrap(~fold) + 
       theme_bw() + labs(x = "", y = "Number of samples")
     
-    isolate(table_table_current$RM$training_structure$performance <- out$data)
+    isolate(table_table_current$table$RM__training_structure__performance <- out$data)
     
     
   }
 
-  isolate(plot_table_current$RM$training_structure <- out)
+  isolate(plot_table_current$table$RM__training_structure <- out)
   
   out
   
@@ -425,8 +425,8 @@ observeEvent(cv_eval$result, {
     p <- plot(cv_eval$result) + theme_bw() + 
       scale_x_continuous(breaks = cv_eval$result$nFolds)
     
-    isolate(plot_table_current$RM$rec_folds <- p)
-    isolate(table_table_current$RM$rec_folds <- p$data)
+    isolate(plot_table_current$table$RM__rec_folds <- p)
+    isolate(table_table_current$table$RM__rec_folds <- p$data)
     
     ggplotly(p) %>%
       layout(

@@ -14,25 +14,32 @@ output$data_select_UI <- renderUI({
   label_emeta <- ifelse(input$data_type == "RNA-seq", 
                         "Transcript information", "Biomolecule information")
   relevant_examples <- ifelse(input$data_type == "RNA-seq", 
-                              "Optional (E.g., KEGG pathways, genes, proteins)",
-                              "Optional (E.g., KEGG pathways, lipid class, molecular activity)"
+                              "(E.g., KEGG pathways, genes, proteins)",
+                              "(E.g., KEGG pathways, lipid class, molecular activity)"
                               )
   
   
   choices <- c("e_data","e_meta")
   names(choices) <- c(label_edata, label_emeta)
   
-  pickerInput(
-    "data_select",
-    "What experimental files do you have?",
-    multiple = T,
-    choices = choices,
-    choicesOpt = list(
-      disabled = c(1,0),
-      subtext = c("Required",
-                  relevant_examples
-      )),
-    selected = if(!is.null(isolate(input$normalized))) input$normalized else "e_data"
+  div(
+    p(tags$b("What experimental files do you have?")),
+    
+    disabled(prettySwitch("have_edata", label_edata, value = T, fill = T, status = "primary")),
+    p("Required", style = "margin-top: -10px;"),
+    br(),
+    if (input$data_type %in% c("Label-free", "Isobaric")) {
+      tagList(
+        disabled(prettySwitch("have_emeta", label_emeta, value = T, fill = T, status = "primary")),
+        div("Required", relevant_examples, style = "margin-top: -10px;")
+      )
+    } else {
+      tagList(
+        prettySwitch("have_emeta", label_emeta, value = F, fill = T, status = "primary"),
+        div("Optional", relevant_examples, style = "margin-top: -10px;")
+      )
+    },
+    br()
   )
 })
 
@@ -67,7 +74,7 @@ output$e_meta_upload_UI <- renderUI({
   req(!input$use_example && 
         input$data_type_done > 0 && 
         input$specify_edata_done > 0 && !AWS)
-  req("e_meta" %in% input$data_select)
+  req(isTruthy(input$have_emeta))
   
   div(
     collapseBox(
@@ -163,7 +170,7 @@ output$e_data_spec_UI <- renderUI({
 
 output$e_meta_spec_UI <- renderUI({
   
-  req("e_meta" %in% input$data_select && 
+  req(isTruthy(input$have_emeta) && 
         (input$emeta_upload_done > 0 || 
            input$specify_edata_done > 0 && (input$use_example || AWS)) &&
         !is.null(reactive_dataholder[["e_meta"]]$file))
@@ -219,7 +226,7 @@ output$boxplot_UI <- renderPlotly({
     ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5)) +
     labs(x = "", y = ifelse(input$data_type != "RNA-seq", "Abundance", "Counts"))
   
-  isolate(plot_table_current$Upload$boxplot <- p)
+  isolate(plot_table_current$table$Upload__boxplot <- p)
   
   p
   
@@ -268,10 +275,10 @@ observeEvent(input$upload_done, {
 
 ## completion button show
 observe({
-  cond <- (!("e_meta" %in% input$data_select) && 
+  cond <- (!(isTruthy(input$have_emeta)) && 
              !is.null(input$specify_edata_done) &&
              input$specify_edata_done > 0) ||
-    ("e_meta" %in% input$data_select && 
+    (isTruthy(input$have_emeta) && 
        !is.null(input$specify_emeta_done) &&
        input$specify_emeta_done > 0)
   

@@ -2,7 +2,7 @@
 ## Top page of filters
 observeEvent(input$em_select, once = T, {
   output$filter_page <- renderUI({
-    filter_tab_temp(isolate(str_to_title(class(omicsData$objPP)[[1]])),
+    filter_tab_temp(isolate(get_omicsData_type(omicsData$objPP)),
                     # F,
                     input$keep_missing == "Yes",
                     input$user_level_pick)
@@ -28,7 +28,7 @@ filter_settings_stored <- reactiveValues()
 apply_filt_flags <- reactive({
   
   req(!is.null(omicsData$objPP))
-  front <- str_to_title(class(omicsData$objPP)[[1]])
+  front <- get_omicsData_type(omicsData$objPP)
   input_text <- grep(paste0(front, "_add_"), names(input), value = T)
   flags <- map_lgl(input_text, function(x) input[[x]])
   names(flags) <- gsub(paste0(front, "_add_"), "", input_text)
@@ -40,7 +40,7 @@ apply_filt_flags <- reactive({
 output$cv_threshold_UI <- renderUI({
   
   max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
-  nm <- str_to_title(class(omicsData$objMSU)[[1]])
+  nm <- get_omicsData_type(omicsData$objMSU)
   
   numericInput(paste0(nm, "_cv_threshold"), 
                "Maximum CV", value = round(min(150, max_cv - 1)), 
@@ -51,7 +51,7 @@ output$cv_threshold_UI <- renderUI({
 ## For more robustness -- check applied filter settings against stored settings
 observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   flags <- apply_filt_flags()
   active_filters <- names(flags[flags])
   active_filters <- gsub("edata|fdata", "", active_filters)
@@ -161,7 +161,7 @@ get_filters_ipmart <- function(omicsData, filter_type, element = NULL) {
 }
 
 observeEvent(omicsData$objPP, ignoreNULL = T, {
-  filters[[str_to_title(class(omicsData$objPP)[[1]])]] <- list(
+  filters[[get_omicsData_type(omicsData$objPP)]] <- list(
     imdanovafilt = NULL,
     cvfilt = NULL,
     molfilt = NULL,
@@ -186,7 +186,7 @@ observe({
   ### For each datatype, for each filter, we store the removed molecules and samples for that filter
   removed_mols <- list()
   removed_samples <- list()
-  classy <- str_to_title(class(omicsData$objPP)[[1]])
+  classy <- get_omicsData_type(omicsData$objPP)
   
   #
   tryCatch(
@@ -325,7 +325,7 @@ observe({
 # Whenever we observe object creation, create the observers for the filter tab of that object
 observeEvent(omicsData$objPP, {
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   
   # ### Low varience ###
   # observeEvent(input[[paste0("_add_LVmol")]], {
@@ -605,10 +605,10 @@ observeEvent(omicsData$objPP, {
   imputation_function <- function(omicsData){
     
     thresholds <- list(
-      keep = input[["filter_filt_keep"]],
-      impute = input[["filter_filt_impute"]],
-      convert = input[["filter_filt_convert"]],
-      remove = input[["filter_filt_remove"]]
+      keep = missingHandleSliderValsFilter()$md_keep,
+      impute = missingHandleSliderValsFilter()$md_impute,
+      convert = missingHandleSliderValsFilter()$md_convert,
+      remove = missingHandleSliderValsFilter()$md_remove
     )
     edata_nathresh_transform(as.slData(omicsData), thresholds)
     
@@ -625,10 +625,10 @@ observeEvent(omicsData$objPP, {
                 "Something went wrong assigning your imputation filter.", 
                 imputation_function,
                 settings = list(
-                  keep = input[["filter_filt_keep"]],
-                  impute = input[["filter_filt_impute"]],
-                  convert = input[["filter_filt_convert"]],
-                  remove = input[["filter_filt_remove"]]
+                  keep = missingHandleSliderValsFilter()$md_keep,
+                  impute = missingHandleSliderValsFilter()$md_impute,
+                  convert = missingHandleSliderValsFilter()$md_convert,
+                  remove = missingHandleSliderValsFilter()$md_remove
                 )
     )
     
@@ -671,10 +671,10 @@ observeEvent(omicsData$objPP, {
                 func = imputation_function,
                 preview = TRUE,
                 settings = list(
-                  keep = input[["filter_filt_keep"]],
-                  impute = input[["filter_filt_impute"]],
-                  convert = input[["filter_filt_convert"]],
-                  remove = input[["filter_filt_remove"]]
+                  keep = missingHandleSliderValsFilter()$md_keep,
+                  impute = missingHandleSliderValsFilter()$md_impute,
+                  convert = missingHandleSliderValsFilter()$md_convert,
+                  remove = missingHandleSliderValsFilter()$md_remove
                 )
     )
     
@@ -1124,8 +1124,8 @@ observeEvent(omicsData$objMSU, {
   tryCatch({
     if(!inherits(omicsData$objMSU, "seqData")){
       max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
-      nm <- paste(str_to_title(class(omicsData$objPP)[[1]]), "_cv_threshold")
-      filter_flags[["max_cv"]][[str_to_title(class(omicsData$objPP)[[1]])]] <- max_cv
+      nm <- paste(get_omicsData_type(omicsData$objPP), "_cv_threshold")
+      filter_flags[["max_cv"]][[get_omicsData_type(omicsData$objPP)]] <- max_cv
     }
   }, error = function(e){""})
 },
@@ -1137,17 +1137,19 @@ priority = 10
 ### Apply filters ###
 observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   
   # gather indices in f_data of removed samples from all sample filters
-  removed_indices <- NULL
-  
-  removed_samples <- unlist(filter_effects$removed_samples)
-  removed_rows <- which(omicsData$objPP$f_data[, get_fdata_cname(omicsData$objPP)] %in% removed_samples)
-  removed_indices <- union(removed_indices, removed_rows)
-  
-  # dont blow up the data
-  if (length(removed_indices) >= nrow(omicsData$objPP$f_data)) error("Combined across all datasets, your sample filters removed all samples.")
+  if (!is.null(omicsData$objPP$f_data)) {
+    removed_indices <- NULL
+    
+    removed_samples <- unlist(filter_effects$removed_samples)
+    removed_rows <- which(omicsData$objPP$f_data[, get_fdata_cname(omicsData$objPP)] %in% removed_samples)
+    removed_indices <- union(removed_indices, removed_rows)
+    
+    # dont blow up the data
+    if (length(removed_indices) >= nrow(omicsData$objPP$f_data)) error("Combined across all datasets, your sample filters removed all samples.")
+  }
   
   # apply all filters in a loop
   tryCatch(
@@ -1179,7 +1181,23 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         
         thresholds <- filter_settings[[name]]$imputefilt
         
-        tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
+        # Only apply impute 
+        if (get_omicsData_type(tmp) == "Pepdata") {
+          # Impute all of e_data
+          imputed_data <- slopeR::imputation(as.slData(tmp))
+          imputed_data <- cbind(E_DATA_CNAME = tmp$e_data[[get_edata_cname(tmp)]], imputed_data)
+          names(imputed_data)[1] <- get_edata_cname(tmp)
+          
+          # Get the proteins whose peptides will be imputed
+          impute_proteins <- pepQCData$transforms_df[which(pepQCData$transforms_df$Handling == "Estimate"),][[get_edata_cname(pepQCData$objQCPro)]]
+          
+          # Replace just those peptides with their imputed versions
+          impute_pep_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
+          tmp$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
+        } else {
+          tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
+        }
+        
         attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
         # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
 
@@ -1225,7 +1243,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       ## i.e if the sample in row 1 of Protein data is filtered, the sample in row 1 of Lipid is also filtered
       
       # construct a custom filter based on union of all filtered rows and apply it
-      if (length(removed_indices) > 0) {
+      if (!is.null(omicsData$objPP$f_data) && length(removed_indices) > 0) {
         to_rmv <- omicsData$objPP$f_data[removed_indices, get_fdata_cname(omicsData$objPP)]
         
         tmp_customfilt <- custom_filter(tmp, f_data_remove = to_rmv)
@@ -1262,7 +1280,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     selector = '.dropdown-toggle[data-value="Filter"]'
   )
   
-  name <- str_to_title(class(omicsData$objPP)[[1]])
+  name <- get_omicsData_type(omicsData$objPP)
   all_filts <- names(filters[[name]])[!map_lgl(filters[[name]], is.null)]
   
   if(length(all_filts) > 0){
@@ -1382,7 +1400,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
 #       input[[id]]
 #     }) %>% any()
 # 
-#     has_filters[[str_to_title(class(omicsData$objPP)[[1]])]] <- anyselected
+#     has_filters[[get_omicsData_type(omicsData$objPP)]] <- anyselected
 # 
 #     if (!anyselected && (is.null(input$apply_filters) || input$apply_filters < 1)) {
 #       tooltip_span <- generate_warning_tooltip(paste0(name, "filter-", name, "-warning-tooltip"))
@@ -1430,101 +1448,125 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
 output$slider_options_filter_ui <- renderUI({
   
   splitter <- length(input$missing_options_filter)
-  
   req(splitter > 0)
   
-  tested_qc <- map(input$missing_options_filter, function(lab){
-    og_thresh <- input[[paste0("md_", lab)]]
-  })
+  sliders <- list()
+  if ("impute" %in% input$missing_options_filter &&
+      "convert" %in% input$missing_options_filter)
+  {
+    sliders <- append(sliders, list(
+      list(value = 
+             if (!is.null(missingHandleSliderVals()$md_impute[2]))
+               missingHandleSliderVals()$md_impute[2]
+             else if ("remove" %in% input$missing_options_filter)
+               33
+             else
+               50,
+           intentAfter = "warning", intentBefore = "success")
+    ))
+  }
+  if ("convert" %in% input$missing_options_filter &&
+      "remove" %in% input$missing_options_filter) {
+    sliders <- append(sliders, list(
+      list(value = 
+             if (!is.null(missingHandleSliderVals()$md_remove[1]))
+               missingHandleSliderVals()$md_remove[1]
+             else if ("impute" %in% input$missing_options_filter)
+               66
+             else
+               50,
+           intentBefore = "warning", intentAfter = "danger")
+    ))
+  }
+  if ("impute" %in% input$missing_options_filter &&
+      "remove" %in% input$missing_options_filter &&
+      !"convert" %in% input$missing_options_filter) {
+    sliders <- append(sliders, list(
+      list(value = 
+             if (!is.null(missingHandleSliderVals()$md_remove[1]))
+               missingHandleSliderVals()$md_remove[1]
+             else
+               50,
+           intentAfter = "danger", intentBefore = "success")
+    ))
+  }
   
-  thresholds <- floor(100/splitter * 1:splitter)
-  thresholds2 <- c(0, thresholds[-length(thresholds)])
-  
-  slides <- pmap(list(as.list(input$missing_options_filter), 
-                      as.list(thresholds), 
-                      as.list(thresholds2)), 
-                 function(lab, t1, t2){
-
-                   
-                   if(!is.null(input[[paste0("md_", lab)]]) &&
-                      lab %in% input$missing_options_filter &&
-                      lab %in% input$missing_options){
-                     vals <- input[[paste0("md_", lab)]]
-                   } else vals <- c(t2, t1)
-                   
-                   text <- ifelse(lab == "impute", "Estimate missing values",
-                                  paste0(str_to_title(lab), " missing values"))
-                   
-                   sliderInput(paste0("filter_filt_", lab), text,
-                               min = 0, max = 100, value = vals, round = T, width = "100%")
-                   
-                 })
-  
-  tagList(slides)
+  div(
+    column(11,
+  MultiSlider.shinyInput(
+    "missingness_handle_filter_slider",
+    values = sliders,
+    min = 0,
+    max = 100,
+    labelStepSize = 25
+  )
+  ),
+  column(1, "  ")
+  )
   
 })
 
-## Fix slider relations
-observeEvent(c(input$filter_filt_keep, input$filter_filt_impute, 
-               input$filter_filt_convert, input$filter_filt_remove), {
+# change individual slider values into individual thresholds
+missingHandleSliderValsFilter <- reactive({
+  thresholds <- list(
+    md_keep = NULL,
+    md_impute = NULL,
+    md_convert = NULL,
+    md_remove = NULL
+  )
   
-  ## Minimums
-  ## Must always be zero if no other options
-  min <- 0 ## Always 0
-  min1 <- 0 
-  min2 <- 0
-  min3 <- 0 
+  if ("keep" %in% input$missing_options_filter) {
+    thresholds$md_keep <- c(0, 100)
+    # keep
+    return(thresholds)
+  }
   
-  ## impute
-  if(!is.null(input$filter_filt_keep) && 
-     "keep" %in% input$missing_options_filter) min1 <- max(input$filter_filt_keep)
+  if ("impute" %in% input$missing_options_filter) {
+    if (length(input$missing_options_filter) == 1) {
+      thresholds$md_impute <- c(0, 100)
+      # impute
+      return(thresholds)
+    }
+    
+    thresholds$md_impute <- c(0, input$missingness_handle_filter_slider[1])
+    
+    if ("convert" %in% input$missing_options_filter) {
+      thresholds$md_convert <- c(input$missingness_handle_filter_slider[1], 100)
+      
+      if ("remove" %in% input$missing_options_filter) {
+        thresholds$md_convert[2] <- input$missingness_handle_filter_slider[2]
+        thresholds$md_remove <- c(input$missingness_handle_filter_slider[2], 100)
+      }
+      
+      # impute, convert, [remove]
+      return(thresholds)
+    }
+    
+    thresholds$md_remove <- c(input$missingness_handle_filter_slider[1], 100)
+    # impute, remove
+    return(thresholds)
+  }
   
-  ## Convert
-  if(!is.null(input$filter_filt_keep) && 
-     "keep" %in% input$missing_options_filter) min2 <- max(input$filter_filt_keep)
-  if (!is.null(input$filter_filt_impute) && 
-      "impute" %in% input$missing_options_filter) min2 <- max(input$filter_filt_impute)
+  if ("convert" %in% input$missing_options_filter) {
+    if (length(input$missing_options_filter) == 1) {
+      thresholds$md_convert <- c(0, 100)
+      # convert
+      return(thresholds)
+    }
+    
+    thresholds$md_convert <- c(0, input$missingness_handle_filter_slider[1])
+    thresholds$md_remove <- c(input$missingness_handle_filter_slider[1], 100)
+    # convert, remove
+    return(thresholds)
+  }
   
-  ## Remove
-  if(!is.null(input$filter_filt_keep) && 
-     "keep" %in% input$missing_options_filter) min3 <- max(input$filter_filt_keep)
-  if(!is.null(input$filter_filt_impute) && 
-     "impute" %in% input$missing_options_filter) min3 <- max(input$filter_filt_impute)
-  if (!is.null(input$filter_filt_convert) && 
-      "convert" %in% input$missing_options_filter) min3 <- max(input$filter_filt_convert)
+  if ("remove" %in% input$missing_options_filter) {
+    thresholds$md_remove <- c(0, 100)
+  }
   
-  ## Maximums
-  ## Must always be 100 if no other options
-  max <- 100
-  max1 <- 100 
-  max2 <- 100
-  max3 <- 100 ## Always 100
-  
-  ## Keep
-  if (!is.null(input$filter_filt_remove) && 
-      "remove" %in% input$missing_options_filter) max <- min3
-  if (!is.null(input$filter_filt_convert) && 
-      "convert" %in% input$missing_options_filter) max <- min2
-  if (!is.null(input$filter_filt_impute) && 
-      "impute" %in% input$missing_options_filter) max <- min1
-  
-  ## Impute
-  if (!is.null(input$filter_filt_remove) && 
-      "remove" %in% input$missing_options_filter) max1 <- min3
-  if (!is.null(input$filter_filt_convert) && 
-      "convert" %in% input$missing_options_filter) max1 <- min2
-  
-  ## Convert
-  if (!is.null(input$filter_filt_remove) && 
-      "remove" %in% input$missing_options_filter) max2 <- min3
-  
-  updateSliderInput(session, "filter_filt_keep", value = c(min, max))
-  updateSliderInput(session, "filter_filt_impute", value = c(min1, max1))
-  updateSliderInput(session, "filter_filt_convert", value = c(min2, max2))
-  updateSliderInput(session, "filter_filt_remove", value = c(min3, max3))
+  # none, [remove]
+  return(thresholds)
 })
-
-
 
 output$missing_options_filter_UI <- renderUI({
   
@@ -1564,7 +1606,7 @@ output$missing_options_filter_UI <- renderUI({
 
 
 observeEvent(input$em_select, ignoreNULL = T, once = T, {
-  name  <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+  name  <- isolate(get_omicsData_type(omicsData$objPP))
   
   # output[[paste0(name, "_filter_plots")]] <- renderPlotly({
   #   
@@ -1868,10 +1910,11 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       
   output[[paste0(filter_tag, "_plot")]] <- renderPlotly({
     
-    tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+    tabname <- isolate(get_omicsData_type(omicsData$objPP))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
-    isolate(table_table_current$PP$filters[[filter_tag]] <- filter$e_data)
+    isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
+    isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     req(!is.null(filter))
     
@@ -1928,7 +1971,9 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
     } else if (filter_tag == "cvfilt" ){
       
-      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
 
       if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
         p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
@@ -1941,13 +1986,15 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
     } else {
       
-      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
 
       p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                       settings))
     }
     
-    isolate(plot_table_current$PP$filters[[filter_tag]] <- p)
+    isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
+    isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     p
   })
@@ -1955,7 +2002,7 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
 output$add_impute_ui <- renderUI({
   
-  tabname <- isolate(str_to_title(class(omicsData$objPP)[[1]]))
+  tabname <- isolate(get_omicsData_type(omicsData$objPP))
   
   out1 <- prettySwitch(
     inputId = paste0(tabname, "_add_imputefilt"),

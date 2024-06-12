@@ -133,8 +133,32 @@ observe({
   
   if(input$user_level_pick == "beginner"){
     
+    id_col <- which(colnames(temp_omic$e_data) == 
+                      get_edata_cname(temp_omic))
+    
+    samples_per_feature <- nrow(temp_omic$e_data)/
+      min(get_group_table(temp_omic)) > 300
+    
+    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+    
+    ## Change based on algorithim for holdout
+    overfit <- min(get_group_table(temp_omic)) < 5
+    
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+    
     suggests <- expert_mentor(temp_omic,
-                              supervised = supervised
+                              supervised = supervised,
+                              # feature_selection = input$feature_selection,
+                              handles_missingness = input$handles_missingness,
+                              explainability = input$explainability,
+                              equation = input$equation,
+                              
+                              ## Autodetect
+                              high_dimensional_data = input$high_dimensional_data,
+                              samples_per_feature = samples_per_feature,
+                              correlation = correlation,
+                              prone_to_overfit = overfit,
+                              handles_outliers = rmd
     )
     
   } else if (input$user_level_pick != "expert"){
@@ -218,7 +242,14 @@ observe({
   df[7] <- signif(df[7], 3)
   df[8] <- signif(df[8], 3)
   
-  missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  if (is.null(omicsData$objModel$f_data)) {
+    missingness <- list(
+      num_NA = sum(is.na(omicsData$objQC$e_data)),
+      num_non_NA = sum(!is.na(omicsData$objQC$e_data))
+    )
+  } else {
+    missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  }
   total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
   
   group_text <- ifelse(!is.null(get_group_table(omicsData$objModel)), 
@@ -281,7 +312,7 @@ observe({
   # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
   
   
-  table_table_current$MSU$expert_mentor_summary <- df
+  table_table_current$table$MSU__expert_mentor_summary <- df
   
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
