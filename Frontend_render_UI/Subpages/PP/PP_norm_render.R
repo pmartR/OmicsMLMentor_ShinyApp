@@ -1850,6 +1850,24 @@ assign_norm_output <- function(tab) {
       
       req(!is.null(isolate(omicsData$objPP)))
       
+      UI_elements <- paste0(tab, c(
+        "_normalize_option",
+        "_subset_fn",
+        "_norm_fn",
+        "_backtransform",
+        "_los",
+        "_ppp",
+        "_rip"#,
+        # "_loess_method",
+        # "_loess_span"
+      ))
+      
+      if(!get_data_norm(omicsData$objPP)){
+        omicsData$objNorm <- NULL
+        norm_settings[[tab]] <- NULL
+        map(UI_elements, enable)
+      }
+      
       # input$complete_filters
 
       norm_choices <- c(
