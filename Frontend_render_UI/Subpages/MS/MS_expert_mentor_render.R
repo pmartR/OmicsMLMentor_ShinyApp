@@ -153,7 +153,7 @@ observe({
     
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
-                              handles_regression = handles_regression
+                              handles_regression = handles_regression,
                               feature_selection = input$feature_selection,
                               handles_missingness = input$handles_missingness,
                               explainability = input$explainability,
