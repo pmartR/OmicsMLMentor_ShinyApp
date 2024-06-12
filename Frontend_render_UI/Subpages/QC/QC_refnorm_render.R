@@ -6,17 +6,6 @@ assign_ref_uploads <- function(tabname) {
   # Sidebars for NMR vs. Isobaric
   if (tabname == "Nmrdata") {
     output[["Nmrdata_reference_choice_UI"]] <- renderUI({
-      # if (input$use_example) {
-      #   return(
-      #     disabled(
-      #       radioGroupButtons("Nmrdata_reference_choice",
-      #                         label = "Apply reference normalization to data?",
-      #                         choices = c("Yes", "No"),
-      #                         selected = "Yes"
-      #       )
-      #     )
-      #   )
-      # } else {
         return(
           radioGroupButtons("Nmrdata_reference_choice",
                             label = "Apply reference normalization to data?",
@@ -28,21 +17,6 @@ assign_ref_uploads <- function(tabname) {
     })
     
     output[["Nmrdata_reference_source_UI"]] <- renderUI({
-      # if (input$use_example) {
-      #   return(
-      #     disabled(
-      #       radioButtons(
-      #         "Nmrdata_reference_source",
-      #         label = "Select reference source:",
-      #         choices = c(
-      #           "Row in Data File (e.g. metabolite)",
-      #           "Upload Reference File with column (e.g. sample concentration)"
-      #         ),
-      #         selected = "Upload Reference File with column (e.g. sample concentration)"
-      #       )
-      #     )
-      #   )
-      # } else 
         
         if (!is.null(input$Nmrdata_reference_choice) && 
                  input$Nmrdata_reference_choice == "Yes") {
@@ -76,88 +50,8 @@ assign_ref_uploads <- function(tabname) {
       }
     })
     
-    # output[["Nmrdata_file_fdata_UI"]] <- renderUI({
-    #   input$Nmrdata_clear_fdata
-    #   
-    #   # if (input$use_example) {
-    #     # out <- list(
-    #       # disabled(
-    #       #   # hidden(
-    #       #   fileInput(
-    #       #     "Nmrdata_file_fdata",
-    #       #     "Upload CSV Reference File",
-    #       #     multiple = FALSE,
-    #       #     accept = c(
-    #       #       "text/csv",
-    #       #       "text/comma-separated-values,text/plain",
-    #       #       ".csv"
-    #       #     )
-    #       #   )
-    #       # ),
-    #       # disabled(
-    #       #   # hidden(
-    #       #   actionButton("Nmrdata_clear_fdata", "Clear Data")
-    #       # )
-    #     # )
-    #   # } else 
-    #     if (!is.null(input$Nmrdata_reference_choice) &&
-    #              !is.null(input$Nmrdata_reference_source) &&
-    #              input$Nmrdata_reference_choice == "Yes" &&
-    #              input$Nmrdata_reference_source == "Column in Sample Data (e.g. sample concentration)"
-    #         # "Upload Reference File with column (e.g. sample concentration)"
-    #         ) {
-    #     out <- list(
-    #       fileInput(
-    #         "Nmrdata_file_fdata",
-    #         "Upload CSV Reference File",
-    #         multiple = FALSE,
-    #         accept = c(
-    #           "text/csv",
-    #           "text/comma-separated-values,text/plain",
-    #           ".csv"
-    #         )
-    #       ),
-    #       actionButton("Nmrdata_clear_fdata", "Clear Data")
-    #     )
-    #   } else {
-    #     out <- list(
-    #       hidden(
-    #         fileInput(
-    #           "Nmrdata_file_fdata",
-    #           "Upload CSV Reference File",
-    #           multiple = FALSE,
-    #           accept = c(
-    #             "text/csv",
-    #             "text/comma-separated-values,text/plain",
-    #             ".csv"
-    #           )
-    #         )
-    #       ),
-    #       hidden(actionButton("Nmrdata_clear_fdata", "Clear Data"))
-    #     )
-    #   }
-    #   
-    #   do.call(tagList, out)
-    # })
-    
     ## Specify Values
     output[["Nmrdata_ref_id_UI"]] <- renderUI({
-      # if (input$use_example) {
-      #   df <- omicsData$objQC$f_data
-      #   return(
-      #     pickerInput(
-      #       "Nmrdata_picker_reference",
-      #       "Select reference column:",
-      #       choices = colnames(df),
-      #       options = pickerOptions(maxOptions = 1),
-      #       selected = "Concentration",
-      #       multiple = TRUE,
-      #       choicesOpt = list(
-      #         disabled = colnames(df) != "Concentration"
-      #       )
-      #     )
-      #   )
-      # } else 
         
       if (is.null(input$Nmrdata_reference_choice) || input$Nmrdata_reference_choice == "No") {
         return(
@@ -340,21 +234,6 @@ assign_ref_uploads <- function(tabname) {
             )
           ),
           
-          # disabled(
-          #   fileInput(
-          #     paste0(tabname, "_file_fdata"),
-          #     "Upload CSV Reference File",
-          #     multiple = FALSE,
-          #     accept = c(
-          #       "text/csv",
-          #       "text/comma-separated-values,text/plain",
-          #       ".csv"
-          #     )
-          #   )
-          # ),
-          
-          # disabled(actionButton(paste0(tabname, "_clear_fdata"), "Clear Data")),
-          
           uiOutput(sprintf("%s_reference_warning", tabname))
         )
       } else {
@@ -370,17 +249,6 @@ assign_ref_uploads <- function(tabname) {
             div(
               id = sprintf("js_%s_file_fdata", tabname),
               br(),
-              # fileInput(
-              #   paste0(tabname, "_file_fdata"),
-              #   "Upload CSV Reference File",
-              #   multiple = FALSE,
-              #   accept = c(
-              #     "text/csv",
-              #     "text/comma-separated-values,text/plain",
-              #     ".csv"
-              #   )
-              # ),
-              # actionButton(paste0(tabname, "_clear_fdata"), "Clear Data"),
               uiOutput(sprintf("%s_reference_warning", tabname))
             )
           })
@@ -409,7 +277,6 @@ assign_ref_uploads <- function(tabname) {
                       options = pickerOptions(maxOptions = 1),
                       choicesOpt = list(
                         disabled = colnames(omicsData$objQC$f_data) != "Sample"
-                        # rep(TRUE, length(colnames(omicsData$objQC$f_data)))
                       )
           )
         )
@@ -669,7 +536,7 @@ assign_ref_uploads <- function(tabname) {
   output[[paste0(tabname, "_norm_edata_UI")]] <- renderUI({
     input[[paste0(tabname, "_clear_fdata")]]
     
-    if (is.null(omicsData$objQC$e_data_norm_applied)) {
+    if (is.null(omicsData$objRefnorm)) {
       return(textOutput(paste0(tabname, "_no_norm")))
     } else {
       return(DTOutput(paste0(tabname, "_norm_edata")))
@@ -680,7 +547,7 @@ assign_ref_uploads <- function(tabname) {
     {
       input[[paste0(tabname, "_clear_fdata")]]
       
-      omicsData$objQC$e_data_norm_applied
+      omicsData$objRefnorm$e_data
     },
     options = list(dom = "tip", scrollX = TRUE),
     selection = "none"
@@ -810,17 +677,9 @@ assign_ref_uploads <- function(tabname) {
           name = input$Nmrdata_picker_reference,
           yaxis = "y2"
         ) %>%
-          # add_lines(y = median(plot_data$value),  ## For aprox. median line up
-          #           x = plot_data$variable) %>%
-          # add_lines(y = median(reference_vals[[1]]),
-          #           x = reference_vals[[2]],
-          #           name = "median conc",
-          #           yaxis = "y2") %>%
           layout(
             yaxis2 = ay,
-            legend = list( # orientation = "h",   # show entries horizontally
-              # yanchor = "center",  # use center of legend as anchor
-              # y = 1.025,
+            legend = list(
               xanchor = "center", # use center of legend as anchor
               x = 1.25
             )
@@ -1007,136 +866,6 @@ observeEvent(input[[paste0(str_to_title(class(omicsData$objQC)[[1]]), "_ref_samp
              priority = 1
 )
 
-#### Observe changes in fdata files on each page ####
-# observeEvent(
-#   c(input[[paste0(str_to_title(class(omicsData$objQC)[[1]]), "_file_fdata")]], 
-#     input[[paste0(str_to_title(class(omicsData$objQC)[[1]]), "_ref_samps")]]), {
-#       ref_yn = input[[paste0(str_to_title(class(omicsData$objQC)[[1]]), "_ref_samps")]]
-#       req(grepl("_reference$", input$top_page), isTruthy(ref_yn == "Yes"))
-#       
-#       tab <- str_to_title(class(omicsData$objQC)[[1]])
-#       if (MAP_ACTIVE) {
-#         tmp_fdata <- MapConnect$pmart_project[[tab]]$Data$f_data
-#         fdata_filename <- MapConnect$pmart_project[[tab]]$Data$f_data_filename
-#         js$setFileInput(
-#           id = sprintf("%s_file_fdata", tab),
-#           text_selector = sprintf("#js_%s_file_fdata .form-control", tab),
-#           text = "Uploaded from MAP"
-#         )
-#         disable(sprintf("%s_file_fdata", tab))
-#       } else {
-#         req(tab %in% names(datatypes_pos$dataholder) &&
-#               length(input[[paste0(tab, "_file_fdata")]]$name) > 0)
-#         tmp_fdata <- read.csv(
-#           input[[paste0(tab, "_file_fdata")]]$datapath,
-#           check.names = FALSE
-#         )
-#         fdata_filename <- input[[paste0(tab, "_file_fdata")]]$name
-#       }
-#       
-#       omicsData$objQC$f_data <- tmp_fdata
-#       omicsData$objQC$f_data_filename <- fdata_filename
-#       
-#       check_fdata_file(
-#         tab,
-#         omicsData$objQC$e_data,
-#         omicsData$objQC$f_data,
-#         omicsData$objQC$e_data_cname
-#       )
-#       
-#       
-#       file <- omicsData$objQC$f_data
-#       edata <- omicsData$objQC$e_data
-#       edata_cname <- omicsData$objQC$e_data_cname
-#       subtr <- which(colnames(edata) == edata_cname)
-#       
-#       fdata_cname <- which(map_lgl(1:ncol(file), function(col) {
-#         all(colnames(edata)[-subtr] %in% file[[col]])
-#       }))
-#       omicsData$objQC$f_data_cname <- colnames(file)[fdata_cname]
-#     })
-
-# #### Enable Groups tab when all selected data types are complete ####
-# observe({
-#   selecteddata <- names(datatypes_pos$dataholder) # Grab selected entries
-#   req(length(selecteddata) > 0)
-#   
-#   requires_refnorm <- any(selecteddata %in% c("Nmrdata", "Isobaricpepdata"))
-#   valid_progress <- complete_goals() && complete_upload() &&
-#     Tab_Completion_tracking$state[["Upload"]] > 0
-#   req(requires_refnorm, valid_progress)
-#   
-#   if (isTruthy(input$use_example)) {
-#     if ((is.null(input$reference_engage) || Tab_Completion_tracking$state[["Reference"]] == 0)) {
-#       tooltip_span <- generate_warning_tooltip("reference-warning-tooltip")
-#       html(
-#         html = sprintf('<div>%sReference <span class="caret"></span></div>', tooltip_span),
-#         selector = '.dropdown-toggle[data-value="Reference"]'
-#       )
-#       addPrompter(session, "reference-warning-tooltip", 'Confirm selections from "Progress" page')
-#       
-#       tooltip_span <- generate_warning_tooltip("reference-progress-warning-tooltip")
-#       html(
-#         html = sprintf("<div>%sProgress</div>", tooltip_span),
-#         selector = 'a[data-value="Reference_progress"]'
-#       )
-#       
-#       show_add_tooltip(
-#         session,
-#         "reference-progress-warning-tooltip",
-#         (is.null(input$reference_engage) || input$reference_engage == 0),
-#         "Confirm reference selections to proceed"
-#       )
-#     }
-#     
-#     
-#     return()
-#   }
-#   
-#   if (complete_reference()) {
-#     tooltip_span <- generate_warning_tooltip("reference-progress-warning-tooltip")
-#     html(
-#       html = sprintf("<div>%sProgress</div>", tooltip_span),
-#       selector = 'a[data-value="Reference_progress"]'
-#     )
-#     
-#     show_add_tooltip(
-#       session,
-#       "reference-progress-warning-tooltip",
-#       complete_goals() && complete_upload() && complete_reference() &&
-#         Tab_Completion_tracking$state[["Reference"]] == 0,
-#       "Confirm reference selections to proceed"
-#     )
-#   } else {
-#     html(html = 'Groups <span class="caret"></span>', selector = '.dropdown-toggle[data-value="Groups"]')
-#     
-#     tooltip_span <- generate_warning_tooltip("reference-warning-tooltip")
-#     html(
-#       html = sprintf('<div>%sReference <span class="caret"></span></div>', tooltip_span),
-#       selector = '.dropdown-toggle[data-value="Reference"]'
-#     )
-#     addPrompter(session, "reference-warning-tooltip", "One or more required items are missing")
-#   }
-# })
-
-
-###
-# observeEvent(input$reference_engage, {
-#   
-#   Tab_Completion_tracking$state[["Reference"]] <- 1
-#   
-#   html(
-#     html = 'Reference <span class="caret"></span>',
-#     selector = '.dropdown-toggle[data-value="Reference"]'
-#   )
-#   
-#   html(html = "<div>Progress</div>", selector = 'a[data-value="Reference_progress"]')
-#   
-#   updateNavbarPage(session, "top_page",
-#                    selected = "Groups"
-#   )
-# })
-
 ### Load Reference tooltips
 observe({
   tab <- str_to_title(class(omicsData$objQC)[[1]])
@@ -1156,7 +885,7 @@ observe({
   show_add_tooltip(
     session,
     paste0(tab, "_reference_input_icon"),
-    is.null(omicsData$objQC$e_data_norm_applied) &&
+    is.null(omicsData$objRefnorm) &&
       !is.null(input[[paste0(tab, "_ref_samps")]]) &&
       input[[paste0(tab, "_ref_samps")]] == "Yes",
     "Please specify all inputs and click 'Apply reference normalization' button"

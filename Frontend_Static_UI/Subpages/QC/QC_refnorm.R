@@ -10,18 +10,6 @@ upload_reference <- function(tabname) {
       collapseBoxGroup(
         id = "references_collapse_left",
         
-        # collapseBox(
-        #   paste0("Upload Isobaricpepdata Reference Data File"),
-        #   icon_id = "Isobaricpepdata_fdata_reference_icon",
-        #   icon = icon("exclamation-sign", lib = "glyphicon"),
-        #   value = "datselect",
-        #   collapsed = F,
-        #   
-        #   div(
-        #     uiOutput("Isobaricpepdata_fdata_upload_UI")
-        #   )
-        # ), # End collapse panel
-        
         # specify various data info sub-collapse div
         collapseBox(
           "Specify Reference Column and Notation",

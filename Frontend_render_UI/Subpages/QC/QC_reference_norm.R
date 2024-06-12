@@ -4,6 +4,13 @@ observeEvent(
   input[[paste0(str_to_title(class(omicsData$objQC)[[1]]), "_ref_done_idcols")]], {
     
     tab <- str_to_title(class(omicsData$objQC)[[1]])
+    if(tab == "Isobaricpepdata"){
+      req(is.null(get_isobaric_norm(omicsData$objQC)) || 
+            !get_isobaric_norm(omicsData$objQC))
+    } else {
+      req(is.null(get_nmr_norm(omicsData$objQC)) || 
+            !get_nmr_norm(omicsData$objQC))
+    }
     
     tryCatch({
       
@@ -123,16 +130,14 @@ observeEvent(
                         selected = "Reference Normalized"
       )
       updateTabsetPanel(session, paste0(tab, "_ref_preview_tables"),
-                        selected = paste0("Reference Normalized ", tab, " Data File")
+                        selected = paste0("Reference Normalized Data File")
       )
     },
     error = function(e) {
-      output[[paste0(tab, "_ref_idcols_warning")]] <- renderUI(HTML(
         shinyalert(
           paste0("Something went wrong: ", e$message),
           type = "error"
         )
-      ))
     })
   })
 
