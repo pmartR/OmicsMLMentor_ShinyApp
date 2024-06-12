@@ -87,7 +87,7 @@ observeEvent(input$review_QC, {
 observeEvent(input$refnorm_complete, ignoreInit = T, {
   
   if(!is.null(input$refnorm_complete) && input$refnorm_complete > 0){
-    disable("show_low_obs")
+    enable("show_low_obs")
     disable("show_outlier_detect")
     disable("show_missing_data")
     disable("review_QC")
