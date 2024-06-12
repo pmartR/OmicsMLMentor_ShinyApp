@@ -167,5 +167,31 @@ observeEvent(input$done_md, {
   
 })
 
+observe({
+  if (!is.null(input$ag_prompts) &&
+      input$ag_prompts == 'supervised' && 
+    !is.null(input$ag_prompts_supervised) &&
+    input$ag_prompts_supervised == "accuracy"){
+    
+    updateCheckboxInput(session = session, "feature_selection", value = F)
+    updateCheckboxInput(session = session, "explainability", value = F)
+    updateCheckboxInput(session = session, "equation", value = F)
+    
+  } else {
+    updateCheckboxInput(session = session, "feature_selection", value = T)
+    updateCheckboxInput(session = session, "explainability", value = T)
+    updateCheckboxInput(session = session, "equation", value = T)
+  }
+  })
 
+# observe({
+#   if (!is.null(input$ag_prompts) &&
+#       input$ag_prompts == 'unsupervised' &&
+#       !is.null(input$ag_prompts_supervised) &&
+#       input$ag_prompts_supervised == "clusters"){
+#     
+#     updateCheckboxInput(session = session, "feature_selection", value = F)
+#     
+#   }
+# })
 
