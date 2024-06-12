@@ -99,8 +99,8 @@ supervised_tab <- function() {
             value = "results_RM",
             
             div(
-              uiOutput("super_plot_type_UI"),
-              uiOutput("visualize_perf_split_ui"),
+              column(6, uiOutput("super_plot_type_UI")),
+              column(6, uiOutput("visualize_perf_split_ui")),
               style= "float:right;z-index:1100;"
             ),
           

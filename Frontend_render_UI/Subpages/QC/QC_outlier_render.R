@@ -59,7 +59,8 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
     temp_dat$f_data$Temp_col_all <- "All"
   } else {
     temp_dat$f_data <- data.frame(
-      SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
       Temp_col_all = "All"
     )
   }
@@ -198,7 +199,8 @@ output$rmd_plot_qc_select <- renderPlotly({
     temp_dat$f_data$Temp_col_all <- "All"
   } else {
     temp_dat$f_data <- data.frame(
-      SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
       Temp_col_all = "All"
     )
   }
@@ -227,7 +229,8 @@ observeEvent(input$outliers_done, {
     
     if(is.null(temp_dat$f_data)){
       temp_dat$f_data <- data.frame(
-        SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+        SampleID = colnames(temp_dat$e_data)[
+          colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
         Temp_col_all = "All"
       )
     }

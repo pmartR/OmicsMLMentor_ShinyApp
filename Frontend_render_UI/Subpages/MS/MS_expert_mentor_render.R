@@ -134,7 +134,23 @@ observe({
       Temp_col_all = "All"
     )
     temp_omic <- group_designation(temp_omic, "Temp_col_all")
+  } else if(supervised){
+    temp_omic$f_data$Temp_col_all <- "All"
+    temp_omic <- group_designation(temp_omic, "Temp_col_all")
   }
+  
+  id_col <- which(colnames(temp_omic$e_data) == 
+                    get_edata_cname(temp_omic))
+  
+  samples_per_feature <- nrow(temp_omic$e_data)/
+    min(get_group_table(temp_omic)) > 300
+  
+  correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+  
+  ## Change based on algorithim for holdout
+  overfit <- min(get_group_table(temp_omic)) < 5
+  
+  rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
   
   if(input$user_level_pick == "beginner"){
     
@@ -168,19 +184,6 @@ observe({
     )
     
   } else if (input$user_level_pick != "expert"){
-    
-    id_col <- which(colnames(temp_omic$e_data) == 
-                      get_edata_cname(temp_omic))
-    
-    samples_per_feature <- nrow(temp_omic$e_data)/
-      min(get_group_table(temp_omic)) > 300
-    
-    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
-    
-    ## Change based on algorithim for holdout
-    overfit <- min(get_group_table(temp_omic)) < 5
-    
-    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
     
     ## Auto detect for some of these
     suggests <- expert_mentor(temp_omic,
