@@ -932,6 +932,11 @@ observeEvent(input$feature_select_posthoc, {
         stop_iter = input$stop_iter,
         sample_size = input$sample_prop
       )
+    }  else if (method == "pls") {
+      custom_args <- list(
+        num_comp = input$pls_num_comp,
+        predictor_prop = input$pls_predictor_prop
+      )
     }
     
     if(holdout_valid() && input$rm_prompts_hp == "tuned"){
