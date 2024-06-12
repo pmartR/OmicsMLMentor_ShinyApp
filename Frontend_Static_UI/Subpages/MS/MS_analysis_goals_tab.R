@@ -78,7 +78,7 @@ analysis_goals <- function() {
                      uiOutput("pick_model_UI"),
                      
                      uiOutput("pick_model_group_pick_UI")
-                     
+
                    )),
                    
                    
@@ -88,23 +88,30 @@ analysis_goals <- function() {
                        
                        uiOutput("ag_prompt_UI"),
 
-                       conditionalPanel("input.ag_prompts == 'supervised'", {
-                           uiOutput("f_data_response_picker_UI")
-                         }),
+                       conditionalPanel("input.ag_prompts == 'supervised'",
+                          uiOutput("f_data_response_picker_UI")
+                       ),
                        
-                       conditionalPanel("input.ag_prompts == 'supervised' && input.f_data_response_picker != null && input.f_data_response_picker != '' && input.f_data_response_picker.length > 0", {
+                       conditionalPanel(
+                         paste(
+                           "input.ag_prompts == 'supervised'",
+                           "input.f_data_response_picker != null",
+                           "input.f_data_response_picker != ''",
+                           "input.f_data_response_picker.length > 0",
+                           sep = " && "
+                          ), {
                          div(
-                         br(),
-                         strong("What would you like to prioritize in your model?"),
-                         
-                         radioButtons(
-                           "ag_prompts_supervised",
-                           label = "",
-                           choiceNames = choiceNames_ag[2:3],
-                           choiceValues = choiceValues_ag[2:3],
-                           inline = T,
-                           selected = character(0)
-                         )
+                           br(),
+                           strong("What would you like to prioritize in your model?"),
+                           
+                           radioButtons(
+                             "ag_prompts_supervised",
+                             label = "",
+                             choiceNames = choiceNames_ag[2:3],
+                             choiceValues = choiceValues_ag[2:3],
+                             inline = T,
+                             selected = character(0)
+                           )
                          )
                        }),
                        

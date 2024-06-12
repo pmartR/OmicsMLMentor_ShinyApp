@@ -98,46 +98,60 @@ supervised_tab <- function() {
             
             value = "results_RM",
             
-          div(
-          column(
-              6,
-                pickerInput(label = "Select vizualization type:", "super_plot_type", 
-                            choices = c(
-                              "True positive performance",
-                              "Prediction vs. truth",
-                              "Classification accuracy",
-                              "Confidence in sample predictions - bar",
-                              "Confidence in sample predictions - scatter"
-                            )
-                )
-              
+            div(
+              column(6, uiOutput("super_plot_type_UI")),
+              column(6, uiOutput("visualize_perf_split_ui")),
+              style= "float:right;z-index:1100;"
             ),
-              
-          column(
-            6,
-              uiOutput("visualize_perf_split_ui")
-            
-          ),
-          style= "float:right;z-index:1100;"),
           
-          uiOutput("performance_tabset_UI"),
+            uiOutput("performance_tabset_UI")
+          ),
           
           uiOutput("VI_tabset_UI_collapse")
-        
-        )# main column
         )
-      )
+      )# main column
     ) # fluidRow
   ) # tabPanel
   
 }
+
+#' @details Make the picker of plot type depend on the task.
+output$super_plot_type_UI <- renderUI({
+  req(omicsData$objRM)
+  task <- attr(omicsData$objRM, 'fit_info')$task
+  
+  if (task == 'regression') {
+    choices = c(
+      "Predicted vs Actual Values" = 'predicted_v_actual'
+    )
+  } else if (task == "classification") {
+    choices = c(
+      "True positive performance" = "roc_curve",
+      "Prediction vs. truth" = "prediction_bar",
+      "Classification accuracy" = "confusion_heatmap",
+      "Confidence in sample predictions - bar" = "confidence_bar",
+      "Confidence in sample predictions - scatter" = "confidence_scatter"
+    )
+  } else {
+    stop(sprintf("Task type '%s' not supported"))  
+  }
+  
+  non_supported_plots <- setdiff(choices, c(slopeR:::CLASSIFICATION_PLOTS, slopeR:::REGRESSION_PLOTS))
+  
+  if (length(non_supported_plots) > 0) {
+    warning(sprintf("Some plot types are not found in slopeR: %s", paste(non_supported_plots, collapse = ", ")))
+    choices = intersect(choices, c(slopeR:::CLASSIFICATION_PLOTS, slopeR:::REGRESSION_PLOTS))
+  }
+  
+  pickerInput(label = "Select vizualization type:", "super_plot_type", choices = choices)
+})
 
 # determine the split used
 output$visualize_perf_split_ui <- renderUI({
   req(input$performance_tabset)
   has_test_preds <- if(input$performance_tabset == "Full model") {
     !is.null(attr(omicsData$objRM, "prediction_test"))
-  } else if (input$performance_tabset != "Full model") {
+  } else if (input$performance_tabset == "Reduced model") {
     !is.null(attr(omicsData$objRM_reduced, "prediction_test"))
   }
   
@@ -447,7 +461,9 @@ output$performance_tabset_UI <- renderUI({
     
     br(),
     
-    uiOutput("full_super_plot_UI")
+    withSpinner(plotlyOutput("performance_plot_RM")),
+    br(),
+    uiOutput("true_pos_picker_ui")
     
   )
   
@@ -459,7 +475,9 @@ output$performance_tabset_UI <- renderUI({
       
       br(),
       
-      uiOutput("reduced_super_plot_UI")
+      withSpinner(plotlyOutput("performance_plot_RM_reduced")),
+      br(),
+      uiOutput("true_pos_picker_ui_reduced")
       )
     
   } else NULL
@@ -468,52 +486,6 @@ output$performance_tabset_UI <- renderUI({
                             reduced_tabset,
                             full_tabset))
 
-})
-
-
-output$reduced_super_plot_UI <- renderUI({
-  
-  out <- if(input$super_plot_type == "True positive performance"){
-    div(
-      withSpinner(plotlyOutput("roc_curve_reduced"))
-    )
-  } else if (input$super_plot_type == "Prediction vs. truth"){
-    withSpinner(plotlyOutput("prediction_bar_reduced"))
-  } else if (input$super_plot_type == "Classification accuracy"){
-    withSpinner(plotlyOutput("confusion_heatmap_reduced"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
-    withSpinner(plotlyOutput("confidence_bar_reduced"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
-    div(
-      withSpinner(plotlyOutput("confidence_scatter_reduced")),
-      br(),
-      uiOutput("true_pos_picker_ui_reduced")
-    )
-  }
-  
-  out
-})
-
-output$full_super_plot_UI <- renderUI({
-  out <- if(input$super_plot_type == "True positive performance"){
-    div(
-      withSpinner(plotlyOutput("roc_curve"))
-    )
-  } else if (input$super_plot_type == "Prediction vs. truth"){
-    withSpinner(plotlyOutput("prediction_bar"))
-  } else if (input$super_plot_type == "Classification accuracy"){
-    withSpinner(plotlyOutput("confusion_heatmap"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
-    withSpinner(plotlyOutput("confidence_bar"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
-    div(
-      withSpinner(plotlyOutput("confidence_scatter")),
-      br(),
-      uiOutput("true_pos_picker_ui")
-    )
-  }
-  
-  out
 })
 
 unsupervised_tab <- function() {
@@ -636,7 +608,7 @@ unsupervised_tab <- function() {
 }
 
 observeEvent(input$run_sl, {
-
+  
   ## Check normalization application
   shinyjs::show("RM_busy")
   
@@ -655,13 +627,9 @@ observeEvent(input$run_sl, {
       response <- input$f_data_response_picker
     }
 
-    ## Run with correct response variable type
-    class_responses <- apply(omicsData$objPP$f_data[response], 2, class)
-    rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
-
     runner <- as.slData(omicsData$objPP,
                         response_cols = response,
-                        response_types = rep(rt, length(response)))
+                        response_types = response_types_ag())
 
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
@@ -870,14 +838,10 @@ observeEvent(input$feature_select_posthoc, {
     } else {
       response <- input$f_data_response_picker
     }
-    
-    ## Run with correct response variable type
-    class_responses <- apply(temp_omics$f_data[response], 2, class)
-    rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
-    
+
     runner <- as.slData(temp_omics,
                         response_cols = response,
-                        response_types = rep(rt, length(response)))
+                        response_types = response_types_ag())
     
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
@@ -974,6 +938,7 @@ observeEvent(input$feature_select_posthoc, {
 #######
 
 output$true_pos_picker_ui <- renderUI({
+  req(input$super_plot_type %in% c("confidence_scatter"))
   
   if(isTruthy(input$skip_ag)){
     response <- input$pick_model_group_pick
@@ -991,6 +956,7 @@ output$true_pos_picker_ui <- renderUI({
 })
 
 output$true_pos_picker_ui_reduced <- renderUI({
+  req(input$super_plot_type %in% c("confidence_scatter"))
   
   if(isTruthy(input$skip_ag)){
     response <- input$pick_model_group_pick
@@ -1009,149 +975,40 @@ output$true_pos_picker_ui_reduced <- renderUI({
 
 #### Performance Plots ####
 
-output$roc_curve <- renderPlotly({
+#' Consolidated performance plot, takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
+output$performance_plot_RM <- renderPlotly({
   req(!is.null(omicsData$objRM))
   validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
+  validate(need(input$super_plot_type, "Specify which plot type"))
+  
+  p <- plot(omicsData$objRM, input$super_plot_type, split = input$visualize_perf_which_split)
+  
+  if (input$super_plot_type == "confidence_bar") {
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  }
+  
+  isolate(plot_table_current$RM$model_eval$full[[input$super_plot_type]] <- p)
+  isolate(table_table_current$RM$model_eval$full[[input$super_plot_type]] <- p$data)
 
-  p <- plot(omicsData$objRM, "roc_curve", split = input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__full__roc_curve <- p)
-  isolate(table_table_current$table$RM__model_eval__full__roc_curve <- p$data)
-  
-  p
+  return(p)
 })
 
-output$roc_curve_reduced <- renderPlotly({
-  req(!is.null(omicsData$objRM_reduced))
-validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot(omicsData$objRM_reduced, "roc_curve", split = input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__reduced__roc_curve <- p)
-  isolate(table_table_current$table$RM__model_eval__reduced__roc_curve <- p$data)
-  
-  p
-  
-})
-
-
-
-output$confidence_bar <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = input$visualize_perf_which_split) + 
-    theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
-  
-  
-  isolate(plot_table_current$table$RM__model_eval__full__confidence_bar <- p)
-  isolate(table_table_current$table$RM__model_eval__full__confidence_bar <- p$data)
-  
-  p
-
-})
-
-output$confidence_bar_reduced <- renderPlotly({
-  
+#' Consolidated performance plot for the reduced model, for comparison.  Takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
+output$performance_plot_RM_reduced <- renderPlotly({
   req(!is.null(omicsData$objRM_reduced))
   validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
+  validate(need(input$super_plot_type, "Specify which plot type"))
   
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split=input$visualize_perf_which_split) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  p <- plot(omicsData$objRM_reduced, input$super_plot_type, split = input$visualize_perf_which_split)
   
-  isolate(plot_table_current$table$RM__model_eval__reduced__confidence_bar <- p)
-  isolate(table_table_current$table$RM__model_eval__reduced__confidence_bar <- p$data)
+  if (input$super_plot_type == "confidence_bar") {
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  }
   
-  p
-  
-})
+  isolate(plot_table_current$RM$model_eval$reduced[[input$super_plot_type]] <- p)
+  isolate(table_table_current$RM$model_eval$reduced[[input$super_plot_type]] <- p$data)
 
-output$prediction_bar <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, plotType = "prediction_bar", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__full__prediction_bar <- p)
-  isolate(table_table_current$table$RM__model_eval__full__prediction_bar <- p$data)
-  
-  p
-
-})
-
-output$prediction_bar_reduced <- renderPlotly({
-  
-  req(!is.null(omicsData$objRM_reduced))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__reduced__prediction_bar <- p)
-  isolate(table_table_current$table$RM__model_eval__reduced__prediction_bar <- p$data)
-  
-  p
-  
-})
-
-output$confusion_heatmap <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__full__confusion_heatmap <- p)
-  isolate(table_table_current$table$RM__model_eval__full__confusion_heatmap <- p$data)
-  
-  
-  p
-})
-
-output$confusion_heatmap_reduced <- renderPlotly({
-  
-  req(!is.null(omicsData$objRM_reduced))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__reduced__confusion_heatmap <- p)
-  isolate(table_table_current$table$RM__model_eval__reduced__confusion_heatmap <- p$data)
-  
-  p
-  
-})
-
-output$confidence_scatter <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, 
-        plotType = "confidence_scatter",
-        pos_class = input$true_pos_picker, split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__full__confidence_scatter <- p)
-  isolate(table_table_current$table$RM__model_eval__full__confidence_scatter <- p$data)
-  
-  p
-
-})
-
-output$confidence_scatter_reduced <- renderPlotly({
-  
-  req(!is.null(omicsData$objRM_reduced))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
-             pos_class = input$true_pos_picker_reduced, split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$table$RM__model_eval__reduced__confidence_scatter <- p)
-  isolate(table_table_current$table$RM__model_eval__reduced__confidence_scatter <- p$data)
-  
-  p
-  
+  return(p)
 })
 
 # 

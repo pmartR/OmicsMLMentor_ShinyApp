@@ -1192,7 +1192,9 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
           impute_proteins <- pepQCData$transforms_df[which(pepQCData$transforms_df$Handling == "Estimate"),][[get_edata_cname(pepQCData$objQCPro)]]
           
           # Replace just those peptides with their imputed versions
-          impute_pep_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
+          impute_pro_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
+          impute_peps <- tmp$e_meta[[get_edata_cname(tmp)]][impute_pro_idx]
+          impute_pep_idx <- which(tmp$e_data[[get_edata_cname(tmp)]] %in% impute_peps)
           tmp$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
         } else {
           tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)

@@ -100,9 +100,8 @@ tbl <- function(data, index, namecol)  {
 
 ## Make dashboard -- lots of elements to consider, so we use observe here
 observe({
-  
-  req(!any(
-    map_lgl(
+  req(
+    !any(map_lgl(
       list(
         input$skip_ag,
         omicsData$objMSU,
@@ -110,9 +109,10 @@ observe({
         input$feature_selection
       ),
       is.null
-    )
-  ))
-  
+    )), 
+    response_types_ag(),
+    input$top_page == "Model Set-Up"
+  )
   temp_omic <- omicsData$objModel
   
   if(get_data_scale(temp_omic) == "abundance"){
@@ -121,14 +121,36 @@ observe({
   
   supervised <- supervised()
   
-  if(is.null(get_group_DF(omicsData$objMSU))){
+  handles_regression <- if('continuous' %in% response_types_ag()) {
+    TRUE
+  } else {
+    FALSE
+  }
+  
+  if(is.null(omicsData$objQC$f_data) && supervised){
     temp_omic$f_data <- data.frame(
       SampleID = colnames(temp_omic$e_data)[
         colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
       Temp_col_all = "All"
     )
     temp_omic <- group_designation(temp_omic, "Temp_col_all")
+  } else if(supervised){
+    temp_omic$f_data$Temp_col_all <- "All"
+    temp_omic <- group_designation(temp_omic, "Temp_col_all")
   }
+  
+  id_col <- which(colnames(temp_omic$e_data) == 
+                    get_edata_cname(temp_omic))
+  
+  samples_per_feature <- nrow(temp_omic$e_data)/
+    min(get_group_table(temp_omic)) > 300
+  
+  correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+  
+  ## Change based on algorithim for holdout
+  overfit <- min(get_group_table(temp_omic)) < 5
+  
+  rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
   
   if(input$user_level_pick == "beginner"){
     
@@ -147,7 +169,8 @@ observe({
     
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
-                              # feature_selection = input$feature_selection,
+                              handles_regression = handles_regression,
+                              feature_selection = input$feature_selection,
                               handles_missingness = input$handles_missingness,
                               explainability = input$explainability,
                               equation = input$equation,
@@ -162,19 +185,6 @@ observe({
     
   } else if (input$user_level_pick != "expert"){
     
-    id_col <- which(colnames(temp_omic$e_data) == 
-                      get_edata_cname(temp_omic))
-    
-    samples_per_feature <- nrow(temp_omic$e_data)/
-      min(get_group_table(temp_omic)) > 300
-    
-    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
-    
-    ## Change based on algorithim for holdout
-    overfit <- min(get_group_table(temp_omic)) < 5
-    
-    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
-    
     ## Auto detect for some of these
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
@@ -182,7 +192,7 @@ observe({
                               handles_missingness = input$handles_missingness,
                               explainability = input$explainability,
                               equation = input$equation,
-                              
+                              handles_regression = handles_regression,
                               ## Autodetect
                               high_dimensional_data = input$high_dimensional_data,
                               samples_per_feature = samples_per_feature,
@@ -216,7 +226,8 @@ observe({
                               prone_to_overfit = input$prone_to_overfit,
                               handles_missingness = input$handles_missingness,
                               high_dimensional_data = input$high_dimensional_data,
-                              handles_outliers = input$handles_outliers
+                              handles_outliers = input$handles_outliers,
+                              handles_regression = handles_regression
     )
     
   }
@@ -235,11 +246,11 @@ observe({
   
   df <- df[df$supervised,] ## supervised/unsupervised
   df <- df[df$n_levels,] ## Correct number of levels for analysis
-  df[2] <- unlist(suggests)
-  df <- df[-7]
+  df$supervised <- unlist(suggests)
+  df <- df %>% dplyr::select(-dplyr::one_of("any_is_na"))
   
-  df[7] <- signif(df[7], 3)
-  df[8] <- signif(df[8], 3)
+  df$n_predictors_per_sample <- signif(df$n_predictors_per_sample, 3)
+  df$prop_missing <- signif(df$prop_missing, 3)
   
   if (is.null(omicsData$objModel$f_data)) {
     missingness <- list(
@@ -261,6 +272,7 @@ observe({
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
     paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
     paste0("Runs with a minimum group size of ", group_text, "?"),
+    "Can handle a continuous response?",
     paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
@@ -317,7 +329,7 @@ observe({
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
   } else if(input$user_level_pick == "beginner"){
-    df <- df[1:3,]
+    df <- df[1:4,]
   } else if (input$user_level_pick == "familiar"){
     df <- df[1:min(c(nrow(df), 10)),]
   }

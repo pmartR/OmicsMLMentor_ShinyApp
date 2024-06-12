@@ -52,13 +52,26 @@ load_rollup_observers <- function(tab) {
                                                   parallel = TRUE
         )
         
-        # Remove proteins which got filtered out
-        transforms_df <- pepQCData$transforms_df[
-          -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
-        ]
-        omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
-        
-        
+        if (input$keep_missing != "Yes") {
+          # Remove proteins which got filtered out
+          transforms_df <- pepQCData$transforms_df[
+            -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
+          ]
+          
+          if (dim(transforms_df)[1] == 0) {
+            transforms_df <- pepQCData$transforms_df
+          }
+          
+          omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          
+          # Remove all remaining proteins with missingness.
+          # These occur when a protein is only made up of peptides that are 100% missing.
+          if (any(is.na(omicsData$objPP$e_data))) {
+            transforms_df <- slopeR::get_transform_df(omicsData$objPP, list())
+            transforms_df$Handling[which(transforms_df$`Percentage missing` > 0)] <- "Remove"
+            omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          }
+        }
         
         updateTabsetPanel(session, paste0(tab, "_rollup_res_tabpanel"),
                           selected = "Roll-up Visualization"
