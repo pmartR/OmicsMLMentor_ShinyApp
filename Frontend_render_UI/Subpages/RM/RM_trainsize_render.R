@@ -326,14 +326,10 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
     response <- input$f_data_response_picker
   }
   
-  ## Run with correct response variable type
-  class_responses <- apply(omicsData$objPP$f_data[response], 2, class)
-  rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
-  
-  
   data <- as.slData(omicsData$objPP,
                       response_cols = response,
-                      response_types = rep(rt, length(response)))
+                      response_types = response_types_ag())
+  
   group_info <- get_group_DF(omicsData$objPP)
   
   ## Cap the top of folds to test

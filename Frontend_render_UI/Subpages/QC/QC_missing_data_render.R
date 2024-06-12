@@ -173,7 +173,8 @@ output$missing_data_hist_sample <- renderPlotly({
   
   if(is.null(omicsData$objQC$f_data)){
     temp_dat$f_data <- data.frame(
-      SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
       Temp_col_all = "All"
     )
   }
@@ -404,7 +405,8 @@ observeEvent(input$done_sample_miss, {
     
     if(is.null(temp_dat$f_data)){
       temp_dat$f_data <- data.frame(
-        SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+        SampleID = colnames(temp_dat$e_data)[
+          colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
         Temp_col_all = "All"
       )
     }

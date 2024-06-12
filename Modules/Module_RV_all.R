@@ -20,6 +20,7 @@ omicsData <- reactiveValues(obj = NULL,
 ## Peptide object specific variables
 pepQCData <- reactiveValues(
   objQCPro = NULL,
+  keep = FALSE,
   transforms_df = NULL
 )
 
