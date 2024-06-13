@@ -142,7 +142,7 @@ observeEvent(
   })
 
 observeEvent(input$refnorm_complete, {
-  
+  req(str_to_title(class(omicsData$objQC)[[1]]) %in% c("Nmrdata", "Isobaricpepdata"))
   omicsData$objQC <- omicsData$objRefnorm
   
 })
