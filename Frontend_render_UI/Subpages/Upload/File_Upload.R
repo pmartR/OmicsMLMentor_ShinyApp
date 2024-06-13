@@ -170,6 +170,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
       
       if(input$use_fdata == "f_data"){
         pmartRdata_prefix <- switch(data_type_val,
+                                    "ProteinTMT" = "pro_", 
                                     "Protein" = "pro_", 
                                     "Label-free" = "pep_", 
                                     "Isobaric" = "isobaric_", 
@@ -234,6 +235,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                      if(label %in% data_select_val){
                        pmartRdata_prefix <- switch(data_type_val,
                                                    "Protein" = "pro_", 
+                                                   "ProteinTMT" = "pro_", 
                                                    "Label-free" = "pep_", 
                                                    "Isobaric" = "isobaric_", 
                                                    "Negative" = "lipid_neg_", 

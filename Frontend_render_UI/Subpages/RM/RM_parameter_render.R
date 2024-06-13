@@ -557,31 +557,3 @@ output[["model_specific_parameters"]] <- renderUI({
 
 outputOptions(output, "model_specific_parameters", suspendWhenHidden = FALSE)
 
-# observeEvent(input$pick_model_EM, {
-#   
-#   fun <- input$pick_model_EM
-#   list_parm_strings <- c()
-#   
-#   if(method == "rf"){
-#     list_parm_strings <- c("trees", "min_n", "mtry")
-#   } else if (method == "lsvm"){
-#     list_parm_strings <- c("cost", "svm_margin")
-#   } else if (method == "psvm"){
-#     list_parm_strings <- c("cost", "svm_margin", "degree", "scale_factor")
-#   } else if (method == "rsvm"){
-#     list_parm_strings <- c("cost", "svm_margin", "rbf_sigma")
-#   } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
-#     list_parm_strings <- c("penalty", "mixture")
-#   } else if (method == "gbtree"){
-#     
-#     list_parm_strings <- c("trees", "min_n", "mtry", "tree_depth",
-#                            "loss_reduction", "learn_rate", "stop_iter",
-#                            "sample_prop")
-#   }
-#   
-#   map(list_parm_strings, function(str){
-#     outputOptions(output, "model_specific_parameters", suspendWhenHidden = FALSE)
-#   })
-#   
-# })
-
