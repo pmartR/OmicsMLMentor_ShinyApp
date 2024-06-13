@@ -27,6 +27,7 @@ observeEvent(input$check_group_cols, {
     "Label-free" = "as.pepData",
     "Isobaric" = "as.isobaricpepData", 
     "Protein" = "as.proData", 
+    "ProteinTMT" = "as.proData", 
     "GC-MS" = "as.metabData", 
     "NMR" = "as.nmrData",
     "RNA-seq" = "as.seqData"
