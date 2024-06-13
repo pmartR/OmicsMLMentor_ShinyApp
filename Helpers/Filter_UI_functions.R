@@ -283,7 +283,7 @@ select_biofilter_UI <- function(
       uiOutput(paste0(tabname, "_edata_filter_preview"))
     ),
     
-    protfilt = div(
+    profilt = div(
       id = paste0(tabname, "_profilt_UI"),
       tagList(
         fluidRow(

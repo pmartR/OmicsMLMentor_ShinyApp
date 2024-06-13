@@ -1986,6 +1986,15 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       
       p <- p + labs(title = "Coefficient of Variation (CV)")
 
+    } else if (filter_tag == "profilt") {
+      ### idk why the do call isn't going well for this one, but here is fix
+      
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter)
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
+      p <- pmartR:::plot.proteomicsFilt(filter, 
+                                        min_num_peps = settings$min_num_peps)
+      
     } else {
       
       isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
