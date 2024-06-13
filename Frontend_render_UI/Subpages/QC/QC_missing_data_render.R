@@ -383,7 +383,7 @@ output$Note_nonmissing <- renderText({
       list(id = "keep_missing")
     )
     
-    "Selections have been disabled, as all biomolecule observations are complete. No further action is needed on this page"
+    "Selections have been disabled, as all biomolecule observations are complete. No further action is needed on this page."
   } else {
     ""
   }
@@ -411,8 +411,11 @@ observeEvent(input$done_sample_miss, {
       )
     }
     
-    
-    res <- missingval_result(temp_dat)$na.by.sample
+    if(inherits(temp_dat, "seqData")){
+      res <- missingval_result(temp_dat)$zeros.by.sample
+    } else {
+      res <- missingval_result(temp_dat)$na.by.sample
+    }
     rmv_fdata <- 1 - res$num_NA/nrow(temp_dat$e_data) < input$missing_value_thresh/100
     rmv <- res[rmv_fdata, 1]
     

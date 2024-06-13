@@ -4,7 +4,13 @@
 output$transform_picker_UI <- renderUI({
   
   if(inherits(omicsData$objQC, "seqData")){
-    return("Data scaling and transformation is not appropriate for count-based RNA-seq data.")
+    return(
+      div(
+        br(),
+        "Data scaling and transformation is not appropriate for count-based RNA-seq data. Click 'Done' to continue.",
+        br(),br()
+      )
+      )
   }
   
   ## Disable for seqdata
@@ -64,12 +70,18 @@ observeEvent(input$done_tr_box, {
 
 observeEvent(input$complete_transform, {
   
-  req(!is.null(omicsData$objMSU) && input$complete_transform > 0 && 
+  req(!is.null(omicsData$objMSU) &&
+        input$complete_transform > 0 && 
         !is.null(input$transform) && 
         input$transform != "No transformation" &&
         input$transform != get_data_scale(omicsData$objMSU))
   
   ## Call from previous so they can redo as they like
+  if(!inherits(omicsData$objMSU, "seqData")){
     omicsData$objPP <- edata_transform(omicsData$objMSU, input$transform)
+  } else {
+    browser()
+    omicsData$objPP <- edata_transform_seq(omicsData$objMSU, input$transform)
+  }
   
 })

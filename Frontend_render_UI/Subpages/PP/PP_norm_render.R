@@ -1900,6 +1900,24 @@ assign_norm_output <- function(tab) {
       }
       
       ### Pre-Normalized data w/ disabled UI
+      if (isolate(inherits(omicsData$objPP, "seqData"))) {
+        out <- list(
+          strong("Not available for RNA seq data"),
+          br(),
+          
+          disabled(pickerInput(paste0(tab, "_normalize_option"),
+                               label = "",
+                               choices = norm_choices,
+                               selected = "No Normalization",
+                               multiple = TRUE,
+                               options = pickerOptions(maxOptions = 1)
+          ))
+        )
+        
+        return(do.call(tagList, out))
+      }
+      
+      ### Pre-Normalized data w/ disabled UI
       if (!is.null(get_data_norm(isolate(omicsData$objPP))) &&
           length(get_data_norm(isolate(omicsData$objPP))) > 0 &&
           get_data_norm(isolate(omicsData$objPP))) {
