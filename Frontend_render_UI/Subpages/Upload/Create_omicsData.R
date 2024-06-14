@@ -27,6 +27,7 @@ observeEvent(input$check_group_cols, {
     "Label-free" = "as.pepData",
     "Isobaric" = "as.isobaricpepData", 
     "Protein" = "as.proData", 
+    "ProteinTMT" = "as.proData", 
     "GC-MS" = "as.metabData", 
     "NMR" = "as.nmrData",
     "RNA-seq" = "as.seqData"
@@ -63,10 +64,10 @@ observeEvent(input$check_group_cols, {
   }
 
   isolate({
-    table_table_current$Upload$e_data <- od$e_data
-    table_table_current$Upload$f_data <- od$f_data
-    if(!is.null(od$e_meta)) table_table_current$Upload$e_meta <- od$e_meta
-    table_table_current$Upload$summary <- summary(od)
+    table_table_current$table$Upload__e_data <- od$e_data
+    if(!is.null(od$f_data)) table_table_current$table$Upload__f_data <- od$f_data
+    if(!is.null(od$e_meta)) table_table_current$table$Upload__e_meta <- od$e_meta
+    table_table_current$table$Upload__summary <- summary(od)
   })
   
   omicsData$obj <-  od

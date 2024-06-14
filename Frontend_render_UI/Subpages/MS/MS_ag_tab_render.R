@@ -1,3 +1,41 @@
+### Reactives for response columns and response types
+
+#' Response types for each column selected as the response, as specified by the user
+response_types_ag <- reactive({
+  if (is.null(response_cols_ag())) {
+    return(NULL)
+  }
+  
+  ## Run with correct response variable type
+  rt <- NULL
+  for (i in 1:length(response_cols_ag())){
+    rt <- c(rt, ifelse(class(omicsData$objPP$f_data[, response_cols_ag()[i]]) %in% c("factor", "character"), "categorical", "continuous"))
+  }
+  
+  return(rt)
+})
+
+#' The response columns, based on whether we are using 'expert mode' or not
+response_cols_ag <- reactive({
+  expert_cond <- !is.null(input$skip_ag) && 
+    input$skip_ag && 
+    input$pick_model %in% models_supervised
+  
+  other_cond <- !is.null(input$ag_prompts) && 
+    input$ag_prompts == "supervised"
+  
+  if(expert_cond){
+    response <- input$pick_model_group_pick
+  } else if(other_cond){
+    response <- input$f_data_response_picker
+  } else {
+    response <- NULL
+  }
+  
+  return(response)
+})
+
+
 
 ### Picker for experts
 output$pick_model_UI <- renderUI({
@@ -123,38 +161,17 @@ observeEvent(input$ag_prompts, {
   }
 })
 
+#' create the omicsData object for running the model.  Pulls arguments for
+#' response cols and types from two reactives, response_cols_ag and response_types_ag.
 observeEvent(input$ag_done, {
   
-  expert_cond <- !is.null(input$skip_ag) && 
-    input$skip_ag && 
-    input$pick_model %in% models_supervised
-  
-  other_cond <- !is.null(input$ag_prompts) && 
-    input$ag_prompts == "supervised"
-  
-  if(expert_cond){
-    
-    response <- input$pick_model_group_pick
-    
-    omicsData$objMSU <- group_designation(omicsData$objMSU, 
-                                          main_effects = response)
-    
-    omicsData$objModel <- as.slData(omicsData$objMSU, 
-                                    response_cols = response)
-    
-  } else if(other_cond){
-    
-    response <- input$f_data_response_picker
-    
-    omicsData$objMSU <- group_designation(omicsData$objMSU, 
-                                          main_effects = response)
-    
-    omicsData$objModel <- as.slData(omicsData$objMSU, 
-                                    response_cols = response)
-    
-  } else {
-    omicsData$objModel <- as.slData(omicsData$objMSU)
+  if (!is.null(response_cols_ag())) {
+    omicsData$objMSU <- group_designation(omicsData$objMSU, main_effects = response_cols_ag())
   }
+  
+  omicsData$objModel <- as.slData(omicsData$objMSU, 
+                                  response_cols = response_cols_ag(),
+                                  response_types = response_types_ag())
 
 })
 
@@ -167,5 +184,31 @@ observeEvent(input$done_md, {
   
 })
 
+observe({
+  if (!is.null(input$ag_prompts) &&
+      input$ag_prompts == 'supervised' && 
+    !is.null(input$ag_prompts_supervised) &&
+    input$ag_prompts_supervised == "accuracy"){
+    
+    updateCheckboxInput(session = session, "feature_selection", value = F)
+    updateCheckboxInput(session = session, "explainability", value = F)
+    updateCheckboxInput(session = session, "equation", value = F)
+    
+  } else {
+    updateCheckboxInput(session = session, "feature_selection", value = T)
+    updateCheckboxInput(session = session, "explainability", value = T)
+    updateCheckboxInput(session = session, "equation", value = T)
+  }
+  })
 
+# observe({
+#   if (!is.null(input$ag_prompts) &&
+#       input$ag_prompts == 'unsupervised' &&
+#       !is.null(input$ag_prompts_supervised) &&
+#       input$ag_prompts_supervised == "clusters"){
+#     
+#     updateCheckboxInput(session = session, "feature_selection", value = F)
+#     
+#   }
+# })
 

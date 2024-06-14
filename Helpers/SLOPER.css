@@ -616,8 +616,15 @@ div.box-body .shiny-input-container:not(.shiny-input-container-inline) {
 	color: black;
 }
 
+.shiny-split-layout > div {
+  overflow: visible;
+}
+
 .ui-tooltip {
   display: none !important;
+
+.shiny-split-layout > div {
+  overflow: visible;
 }
 
 .em-col-info-btn {

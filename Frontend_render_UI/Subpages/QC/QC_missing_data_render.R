@@ -137,13 +137,23 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   text_ylab <- "biomolecules"
   
   p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
-    geom_histogram() + theme_bw() + labs(y = paste0("Count of ", text_ylab))
+    geom_histogram() + theme_bw() + 
+    labs(y = paste0("Count of ", text_ylab)) +
+    scale_fill_manual(values = 
+                        c("Convert" = "#c87619", 
+                          "Estimate" = "#238551", 
+                          "Remove" ="#cd4246"))
+  
+
+  # if (inherits(omicsData$objQC, "pepData")) {
+  #   p <- p + ggtitle("Protein level preview")
+  # }
   
   if (inherits(omicsData$objQC, "pepData")) {
     p <- p + ggtitle("Protein level preview")
   }
   
-  isolate(plot_table_current$QC$missing_features <- p)
+  isolate(plot_table_current$table$QC__missing_features <- p)
   
   p
   
@@ -163,7 +173,8 @@ output$missing_data_hist_sample <- renderPlotly({
   
   if(is.null(omicsData$objQC$f_data)){
     temp_dat$f_data <- data.frame(
-      SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
       Temp_col_all = "All"
     )
   }
@@ -179,15 +190,15 @@ output$missing_data_hist_sample <- renderPlotly({
   p <- plot(missingval_result(temp_dat), temp_dat, 
        nonmissing = T, proportion = T, display_count = input$missing_data_hist_sample_prop)
   
-  if (!input$missing_data_hist_sample_names) {
-    p <- p + theme(axis.title.x=element_blank(),
-                   axis.text.x=element_blank(),
-                   axis.ticks.x=element_blank())
-  }
+  # if (!input$missing_data_hist_sample_names) {
+  #   p <- p + theme(axis.title.x=element_blank(),
+  #                  axis.text.x=element_blank(),
+  #                  axis.ticks.x=element_blank())
+  # }
   
-  isolate(plot_table_current$QC$missing_samples <- p)
-  isolate(table_table_current$QC$missing_samples <- missingval_result(temp_dat)[[1]])
-  isolate(table_table_current$QC$missing_features <- missingval_result(temp_dat)[[2]])
+  isolate(plot_table_current$table$QC__missing_samples <- p)
+  isolate(table_table_current$table$QC__missing_samples <- missingval_result(temp_dat)[[1]])
+  isolate(table_table_current$table$QC__missing_features <- missingval_result(temp_dat)[[2]])
   
   p
   
@@ -270,47 +281,56 @@ output$slider_options_ui <- renderUI({
   }
   
   div(
-    MultiSlider.shinyInput(
+    column(1, "  "),
+    column(9, MultiSlider.shinyInput(
       "missingness_handle_slider",
       values = sliders,
       min = 0,
       max = 100,
-      labelStepSize = 10
+      labelStepSize = 25
+    )
+    # uiOutput("missingness_handle_legend")
     ),
-    uiOutput("missingness_handle_legend"),
+    column(2, "  "),
+
+    column(12, 
+           br(),
+           strong("Use slider above to determine thresholds for each handling method.")
+    )
+    
   )
   
 })
 
-output$missingness_handle_legend <- renderUI({
-  req(length(input$missing_options) > 1)
-  
-  div(
-    if ("impute" %in% input$missing_options) {
-      div(
-        style = "display: inline-block; margin-right: 20px;",
-        div(style = "width: 10px; height: 10px; display: inline-block; background-color: #238551;"),
-        "Estimate"
-      )
-    },
-    
-    if ("convert" %in% input$missing_options) {
-      div(
-        style = "display: inline-block; margin-right: 20px;",
-        div(style = "width: 10px; height: 10px; display: inline-block; background-color: #c87619;"),
-        "Convert"
-      )
-    },
-    
-    if ("remove" %in% input$missing_options) {
-      div(
-        style = "display: inline-block; margin-right: 20px;",
-        div(style = "width: 10px; height: 10px; display: inline-block; background-color: #cd4246;"),
-        "Remove"
-      )
-    },
-  )
-})
+# output$missingness_handle_legend <- renderUI({
+#   req(length(input$missing_options) > 1)
+#   
+#   # div(
+#   #   if ("impute" %in% input$missing_options) {
+#   #     div(
+#   #       style = "display: inline-block; margin-right: 20px;",
+#   #       div(style = "width: 10px; height: 10px; display: inline-block; background-color: #238551;"),
+#   #       "Estimate"
+#   #     )
+#   #   },
+#   # 
+#   #   if ("convert" %in% input$missing_options) {
+#   #     div(
+#   #       style = "display: inline-block; margin-right: 20px;",
+#   #       div(style = "width: 10px; height: 10px; display: inline-block; background-color: #c87619;"),
+#   #       "Convert"
+#   #     )
+#   #   },
+#   # 
+#   #   if ("remove" %in% input$missing_options) {
+#   #     div(
+#   #       style = "display: inline-block; margin-right: 20px;",
+#   #       div(style = "width: 10px; height: 10px; display: inline-block; background-color: #cd4246;"),
+#   #       "Remove"
+#   #     )
+#   #   },
+#   # )
+# })
 
 output$missing_data_sample_picker_UI <- renderUI({
   
@@ -385,7 +405,8 @@ observeEvent(input$done_sample_miss, {
     
     if(is.null(temp_dat$f_data)){
       temp_dat$f_data <- data.frame(
-        SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+        SampleID = colnames(temp_dat$e_data)[
+          colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
         Temp_col_all = "All"
       )
     }
@@ -490,6 +511,38 @@ observeEvent(input$done_qc_rollup, {
                     open = "missing_data_biomolecule_plot")
 })
 
+observeEvent(c(input$keep_missing, input$missing_options, input$missingness_handle_slider), {
+  if ((!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
+      !is.null(input$missing_options)) {
+    # Prevent user from Removing all biomolecules
+    
+    thresholds <- list(
+      keep = missingHandleSliderVals()$md_keep,
+      impute = missingHandleSliderVals()$md_impute,
+      convert = missingHandleSliderVals()$md_convert,
+      remove = missingHandleSliderVals()$md_remove
+    )
+
+    if (inherits(omicsData$objQC, "pepData")) {
+      transform_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
+    } else {
+      transform_df <- slopeR::get_transform_df(omicsData$objQC, thresholds)
+    }
+    
+    if (all(transform_df$Handling == "Remove")) {
+      output$warn_missing_biom <- renderText("All biomolecules would be removed with the specified handling. Please ensure at least one biomolecule is kept.")
+      shinyjs::disable("done_biom_miss")
+    } else {
+      output$warn_missing_biom <- renderText("")
+      shinyjs::enable("done_biom_miss")
+    }
+    
+  } else {
+    output$warn_missing_biom <- renderText("")
+    shinyjs::disable("done_biom_miss")
+  }
+}, ignoreNULL = FALSE)
+
 observeEvent(input$done_biom_miss, {
   if(input$done_biom_miss > 0){
     
@@ -501,7 +554,7 @@ observeEvent(input$done_biom_miss, {
         remove = missingHandleSliderVals()$md_remove
       )
       
-      pepQCData$transforms_df <- slopeR:::get_transform_df(pepQCData$objQCPro, thresholds)
+      pepQCData$transforms_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
     }
     
     updateBoxCollapse(session, "missing_data_box", 

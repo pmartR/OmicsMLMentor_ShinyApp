@@ -20,8 +20,15 @@ omicsData <- reactiveValues(obj = NULL,
 ## Peptide object specific variables
 pepQCData <- reactiveValues(
   objQCPro = NULL,
+  keep = FALSE,
   transforms_df = NULL
 )
+
+## Determine if selected model is supervised
+supervised <- reactive({
+  (input$skip_ag && input$pick_model %in% models_supervised) ||
+    (!input$skip_ag && input$ag_prompts == "supervised")
+})
 
 popup <- reactiveValues()
 

@@ -1,8 +1,6 @@
 output[["RM_tab_UI"]] <- renderUI({
 
-  req(!is.null(input$ag_prompts))
-  
-  if(input$ag_prompts == "supervised"){
+  if(supervised()){
     supervised_tab()
   } else {
     unsupervised_tab()
@@ -100,46 +98,60 @@ supervised_tab <- function() {
             
             value = "results_RM",
             
-          div(
-          column(
-              6,
-                pickerInput(label = "Select vizualization type:", "super_plot_type", 
-                            choices = c(
-                              "True positive performance",
-                              "Prediction vs. truth",
-                              "Classification accuracy",
-                              "Confidence in sample predictions - bar",
-                              "Confidence in sample predictions - scatter"
-                            )
-                )
-              
+            div(
+              column(6, uiOutput("super_plot_type_UI")),
+              column(6, uiOutput("visualize_perf_split_ui")),
+              style= "float:right;z-index:1100;"
             ),
-              
-          column(
-            6,
-              uiOutput("visualize_perf_split_ui")
-            
-          ),
-          style= "float:right;z-index:1100;"),
           
-          uiOutput("performance_tabset_UI"),
+            uiOutput("performance_tabset_UI")
+          ),
           
           uiOutput("VI_tabset_UI_collapse")
-        
-        )# main column
         )
-      )
+      )# main column
     ) # fluidRow
   ) # tabPanel
   
 }
+
+#' @details Make the picker of plot type depend on the task.
+output$super_plot_type_UI <- renderUI({
+  req(omicsData$objRM)
+  task <- attr(omicsData$objRM, 'fit_info')$task
+  
+  if (task == 'regression') {
+    choices = c(
+      "Predicted vs Actual Values" = 'predicted_v_actual'
+    )
+  } else if (task == "classification") {
+    choices = c(
+      "True positive performance" = "roc_curve",
+      "Prediction vs. truth" = "prediction_bar",
+      "Classification accuracy" = "confusion_heatmap",
+      "Confidence in sample predictions - bar" = "confidence_bar",
+      "Confidence in sample predictions - scatter" = "confidence_scatter"
+    )
+  } else {
+    stop(sprintf("Task type '%s' not supported"))  
+  }
+  
+  non_supported_plots <- setdiff(choices, c(slopeR:::CLASSIFICATION_PLOTS, slopeR:::REGRESSION_PLOTS))
+  
+  if (length(non_supported_plots) > 0) {
+    warning(sprintf("Some plot types are not found in slopeR: %s", paste(non_supported_plots, collapse = ", ")))
+    choices = intersect(choices, c(slopeR:::CLASSIFICATION_PLOTS, slopeR:::REGRESSION_PLOTS))
+  }
+  
+  pickerInput(label = "Select vizualization type:", "super_plot_type", choices = choices)
+})
 
 # determine the split used
 output$visualize_perf_split_ui <- renderUI({
   req(input$performance_tabset)
   has_test_preds <- if(input$performance_tabset == "Full model") {
     !is.null(attr(omicsData$objRM, "prediction_test"))
-  } else if (input$performance_tabset == "Full model") {
+  } else if (input$performance_tabset == "Reduced model") {
     !is.null(attr(omicsData$objRM_reduced, "prediction_test"))
   }
   
@@ -176,23 +188,28 @@ output[["VI_tabset_UI_collapse"]] <- renderUI({
 output$Variable_importance_ui <- renderUI({
   req(!is.null(omicsData$objRM) && !is.null(attr(omicsData$objRM, "vi_info")))
   
-  vi_info <- attr(omicsData$objRM, "vi_info")
-  
-  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .80)
-  
   collapseBox(
     collapsed = F,
     value = "select_vi",
 
     "Post-hoc feature selection",
-
-    numericInput(
-      "vi_thresh",
-      "Build reduced model with variable importance equal to or above:",
-      min = 0, max = max(vi_info$var_import), value = signif(set_val, 3),
-      step = 0.001,
-      width = "100%"
+    
+    radioButtons(
+      "vi_choose",
+      "Build reduced model which includes...",
+      choiceNames = list(
+        "top ___ features",
+        "top ___% of features",
+        "features with importance value above ___"
+      ),
+      choiceValues = c(
+        "count",
+        "percent",
+        "value"
+      )
     ),
+    
+    uiOutput("numeric_fill"),
     
     br(),
     
@@ -212,19 +229,95 @@ output$Variable_importance_ui <- renderUI({
   
 })
 
-output$preview_n_features <- renderText({
-  req(!is.null(omicsData$objRM) && !is.null(input$vi_thresh))
+output[["numeric_fill"]] <- renderUI({
   
-  vi_cutoff <- input$vi_thresh
+  req(!is.null(omicsData$objRM) && !is.null(attr(omicsData$objRM, "vi_info")))
+  
   vi_info <- attr(omicsData$objRM, "vi_info")
   
-  kept_features <- nrow(vi_info[vi_info$var_import >= vi_cutoff,])
-  removed_features <- nrow(vi_info[vi_info$var_import < vi_cutoff,])
+  set_val <- quantile(vi_info$var_import[vi_info$var_import != 0], .80)
+  
+  if(input$vi_choose == "count"){
+    numericInput(
+      "vi_thresh_count",
+      "Count",
+      min = 0, max = dim(vi_info)[1], 
+      value = isolate(ifelse(is.null(input$vi_thresh_count), 10,
+                             input$vi_thresh_count)),
+      step = 1
+    )
+    
+  } else if (input$vi_choose == "percent"){
+    numericInput(
+      "vi_thresh_pct",
+      "Percent",
+      min = 0, max = 100, 
+      value = isolate(ifelse(is.null(input$vi_thresh_pct), 5,
+                             input$vi_thresh_pct))
+    )
+  } else if (input$vi_choose == "value"){
+    numericInput(
+      "vi_thresh",
+      "Value",
+      min = 0, 
+      value = isolate(ifelse(is.null(input$vi_thresh), signif(set_val),
+                             input$vi_thresh))
+    )
+  }
+  
+})
+
+output$preview_n_features <- renderText({
+  req(!is.null(omicsData$objRM) && (
+    !is.null(input$vi_thresh_count) || !is.null(input$vi_thresh_count) ||
+      !is.null(input$vi_thresh)
+  ))
+  
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  
+  if(input$vi_choose == "count"){
+    kept_features <- input$vi_thresh_count
+    removed_features <- nrow(vi_info) - input$vi_thresh_count
+  } else if(input$vi_choose == "percent") {
+    kept_features <- round(nrow(vi_info)*input$vi_thresh_pct/100)
+    removed_features <- nrow(vi_info) - kept_features
+  } else if(input$vi_choose == "value"){
+    vi_cutoff <- input$vi_thresh
+    
+    kept_features <- nrow(vi_info[vi_info$var_import >= vi_cutoff,])
+    removed_features <- nrow(vi_info[vi_info$var_import < vi_cutoff,])
+  }
+  
+  req(!is.null(kept_features) && !is.null(removed_features) && 
+        !is.na(removed_features) && !is.na(kept_features))
+  if (kept_features == 0 || removed_features == 0) {
+    shinyjs::disable("feature_select_posthoc")
+  } else {
+    shinyjs::enable("feature_select_posthoc")
+  }
   
   paste0("At current cut-off, ", kept_features, " features will be kept and ", 
          removed_features, " features will be excluded from the reduced model.")
   
 })
+
+observeEvent(c(input$vi_choose, input$vi_thresh_count), {
+  req(input$vi_choose == "count")
+  req(!is.null(input$vi_thresh_count))
+  req(!is.null(omicsData$objRM))
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(!is.null(vi_info))
+  updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor(input$vi_thresh_count)] - 0.0001)
+}, ignoreInit = FALSE)
+
+observeEvent(c(input$vi_choose, input$vi_thresh_pct), {
+  req(input$vi_choose == "percent")
+  req(!is.null(input$vi_thresh_pct))
+  req(!is.null(omicsData$objRM))
+  vi_info <- attr(omicsData$objRM, "vi_info")
+  req(!is.null(vi_info))
+  updateNumericInput(session, "vi_thresh", value = rev(sort(vi_info$var_import))[floor((input$vi_thresh_pct) / 100 * length(vi_info$var_import))] - 0.0001)
+}, ignoreInit = FALSE)
 
 output$VI_tabset_UI <- renderUI({
   
@@ -292,6 +385,8 @@ output$Variable_importance_plot <- renderPlotly({
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
                                    levels = plotting_df$names_orig)
   
+  req(!is.null(plotting_df) && nrow(plotting_df) > 0)
+  
   p <- ggplot(plotting_df, aes(x = names_orig, y = var_import)) +
     geom_col() +
     ggplot2::theme_bw() + 
@@ -309,8 +404,8 @@ output$Variable_importance_plot <- renderPlotly({
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
     )
   
-  isolate(plot_table_current$RM$variable_importance$full <- p)
-  isolate(table_table_current$RM$variable_importance$full <- plotting_df)
+  isolate(plot_table_current$table$RM__variable_importance__full <- p)
+  isolate(table_table_current$table$RM__variable_importance__full <- plotting_df)
   
   p
   
@@ -349,8 +444,8 @@ output$Variable_importance_plot_reduced <- renderPlotly({
       axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)
     )
   
-  isolate(plot_table_current$RM$variable_importance$reduced <- p)
-  isolate(table_table_current$RM$variable_importance$reduced <- plotting_df)
+  isolate(plot_table_current$table$RM__variable_importance__reduced <- p)
+  isolate(table_table_current$table$RM__variable_importance__reduced <- plotting_df)
   
   p
   
@@ -366,7 +461,9 @@ output$performance_tabset_UI <- renderUI({
     
     br(),
     
-    uiOutput("full_super_plot_UI")
+    withSpinner(plotlyOutput("performance_plot_RM")),
+    br(),
+    uiOutput("true_pos_picker_ui")
     
   )
   
@@ -378,7 +475,9 @@ output$performance_tabset_UI <- renderUI({
       
       br(),
       
-      uiOutput("reduced_super_plot_UI")
+      withSpinner(plotlyOutput("performance_plot_RM_reduced")),
+      br(),
+      uiOutput("true_pos_picker_ui_reduced")
       )
     
   } else NULL
@@ -387,52 +486,6 @@ output$performance_tabset_UI <- renderUI({
                             reduced_tabset,
                             full_tabset))
 
-})
-
-
-output$reduced_super_plot_UI <- renderUI({
-  
-  out <- if(input$super_plot_type == "True positive performance"){
-    div(
-      withSpinner(plotlyOutput("roc_curve_reduced"))
-    )
-  } else if (input$super_plot_type == "Prediction vs. truth"){
-    withSpinner(plotlyOutput("prediction_bar_reduced"))
-  } else if (input$super_plot_type == "Classification accuracy"){
-    withSpinner(plotlyOutput("confusion_heatmap_reduced"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
-    withSpinner(plotlyOutput("confidence_bar_reduced"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
-    div(
-      withSpinner(plotlyOutput("confidence_scatter_reduced")),
-      br(),
-      uiOutput("true_pos_picker_ui_reduced")
-    )
-  }
-  
-  out
-})
-
-output$full_super_plot_UI <- renderUI({
-  out <- if(input$super_plot_type == "True positive performance"){
-    div(
-      withSpinner(plotlyOutput("roc_curve"))
-    )
-  } else if (input$super_plot_type == "Prediction vs. truth"){
-    withSpinner(plotlyOutput("prediction_bar"))
-  } else if (input$super_plot_type == "Classification accuracy"){
-    withSpinner(plotlyOutput("confusion_heatmap"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - bar"){
-    withSpinner(plotlyOutput("confidence_bar"))
-  } else if (input$super_plot_type == "Confidence in sample predictions - scatter"){
-    div(
-      withSpinner(plotlyOutput("confidence_scatter")),
-      br(),
-      uiOutput("true_pos_picker_ui")
-    )
-  }
-  
-  out
 })
 
 unsupervised_tab <- function() {
@@ -555,7 +608,7 @@ unsupervised_tab <- function() {
 }
 
 observeEvent(input$run_sl, {
-
+  
   ## Check normalization application
   shinyjs::show("RM_busy")
   
@@ -574,13 +627,9 @@ observeEvent(input$run_sl, {
       response <- input$f_data_response_picker
     }
 
-    ## Run with correct response variable type
-    class_responses <- apply(omicsData$objPP$f_data[response], 2, class)
-    rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
-
     runner <- as.slData(omicsData$objPP,
                         response_cols = response,
-                        response_types = rep(rt, length(response)))
+                        response_types = response_types_ag())
 
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
@@ -674,8 +723,17 @@ observeEvent(input$run_sl, {
       if(str_detect(e$message, "No variable importance method implemented for method")){
         do.call(slopeR::fit, list_args)
       } else {
-        shinyalert("Something went wrong: ", paste0("System error: ", e$message))
-        NULL
+        unregister()
+        omicsData$objRM <- tryCatch({
+          do.call(slopeR::variable_importance, list_args)
+        }, error = function(e){
+          if(str_detect(e$message, "No variable importance method implemented for method")){
+            do.call(slopeR::fit, list_args)
+          } else {
+            shinyalert("Something went wrong: ", paste0("System error: ", e$message))
+            NULL
+          }
+      })
       }
     })
     
@@ -757,7 +815,17 @@ observeEvent(input$feature_select_posthoc, {
   prior_info <- left_join(attr(omicsData$objRM, "feature_info"), 
             attr(omicsData$objRM, "vi_info"), 
             by = c(names_compact = "var_name"))
-  e_data_keep <- prior_info$names_orig[prior_info$var_import >= input$vi_thresh]
+  
+  prior_info <- arrange(prior_info, desc(var_import))
+
+  if(input$vi_choose == "count"){
+    e_data_keep <- prior_info$names_orig[1:input$vi_thresh_count]
+  } else if(input$vi_choose == "percent"){
+    numb <- round(length(prior_info$names_orig)*input$vi_thresh_pct/100)
+    e_data_keep <- prior_info$names_orig[1:numb]
+  } else {
+    e_data_keep <- prior_info$names_orig[prior_info$var_import >= input$vi_thresh]
+  }
     
   temp_omics <- omicsData$objPP
   
@@ -770,14 +838,10 @@ observeEvent(input$feature_select_posthoc, {
     } else {
       response <- input$f_data_response_picker
     }
-    
-    ## Run with correct response variable type
-    class_responses <- apply(temp_omics$f_data[response], 2, class)
-    rt <- if(all(class_responses %in% c("factor", "character"))) "categorical" else "continuous"
-    
+
     runner <- as.slData(temp_omics,
                         response_cols = response,
-                        response_types = rep(rt, length(response)))
+                        response_types = response_types_ag())
     
     ## Get correct train/test split
     if(!is.null(input$numb_test)){
@@ -832,6 +896,11 @@ observeEvent(input$feature_select_posthoc, {
         stop_iter = input$stop_iter,
         sample_size = input$sample_prop
       )
+    }  else if (method == "pls") {
+      custom_args <- list(
+        num_comp = input$pls_num_comp,
+        predictor_prop = input$pls_predictor_prop
+      )
     }
     
     if(holdout_valid() && input$rm_prompts_hp == "tuned"){
@@ -859,6 +928,7 @@ observeEvent(input$feature_select_posthoc, {
     
     list_args <- c(list_args, custom_args)
     
+    unregister()
     omicsData$objRM_reduced <- do.call(slopeR::variable_importance, list_args)
   
     shinyjs::show("complete_RM")
@@ -868,6 +938,7 @@ observeEvent(input$feature_select_posthoc, {
 #######
 
 output$true_pos_picker_ui <- renderUI({
+  req(input$super_plot_type %in% c("confidence_scatter"))
   
   if(isTruthy(input$skip_ag)){
     response <- input$pick_model_group_pick
@@ -885,6 +956,7 @@ output$true_pos_picker_ui <- renderUI({
 })
 
 output$true_pos_picker_ui_reduced <- renderUI({
+  req(input$super_plot_type %in% c("confidence_scatter"))
   
   if(isTruthy(input$skip_ag)){
     response <- input$pick_model_group_pick
@@ -903,149 +975,40 @@ output$true_pos_picker_ui_reduced <- renderUI({
 
 #### Performance Plots ####
 
-output$roc_curve <- renderPlotly({
+#' Consolidated performance plot, takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
+output$performance_plot_RM <- renderPlotly({
   req(!is.null(omicsData$objRM))
   validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
+  validate(need(input$super_plot_type, "Specify which plot type"))
+  
+  p <- plot(omicsData$objRM, input$super_plot_type, split = input$visualize_perf_which_split)
+  
+  if (input$super_plot_type == "confidence_bar") {
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  }
+  
+  isolate(plot_table_current$RM$model_eval$full[[input$super_plot_type]] <- p)
+  isolate(table_table_current$RM$model_eval$full[[input$super_plot_type]] <- p$data)
 
-  p <- plot(omicsData$objRM, "roc_curve", split = input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$full$roc_curve <- p)
-  isolate(table_table_current$RM$model_eval$full$roc_curve <- p$data)
-  
-  p
+  return(p)
 })
 
-output$roc_curve_reduced <- renderPlotly({
-  req(!is.null(omicsData$objRM_reduced))
-validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot(omicsData$objRM_reduced, "roc_curve", split = input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$reduced$roc_curve <- p)
-  isolate(table_table_current$RM$model_eval$reduced$roc_curve <- p$data)
-  
-  p
-  
-})
-
-
-
-output$confidence_bar <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, plotType = "confidence_bar", split = input$visualize_perf_which_split) + 
-    theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
-  
-  
-  isolate(plot_table_current$RM$model_eval$full$confidence_bar <- p)
-  isolate(table_table_current$RM$model_eval$full$confidence_bar <- p$data)
-  
-  p
-
-})
-
-output$confidence_bar_reduced <- renderPlotly({
-  
+#' Consolidated performance plot for the reduced model, for comparison.  Takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
+output$performance_plot_RM_reduced <- renderPlotly({
   req(!is.null(omicsData$objRM_reduced))
   validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
+  validate(need(input$super_plot_type, "Specify which plot type"))
   
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_bar", split=input$visualize_perf_which_split) +
-    theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  p <- plot(omicsData$objRM_reduced, input$super_plot_type, split = input$visualize_perf_which_split)
   
-  isolate(plot_table_current$RM$model_eval$reduced$confidence_bar <- p)
-  isolate(table_table_current$RM$model_eval$reduced$confidence_bar <- p$data)
+  if (input$super_plot_type == "confidence_bar") {
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  }
   
-  p
-  
-})
+  isolate(plot_table_current$RM$model_eval$reduced[[input$super_plot_type]] <- p)
+  isolate(table_table_current$RM$model_eval$reduced[[input$super_plot_type]] <- p$data)
 
-output$prediction_bar <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, plotType = "prediction_bar", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$full$prediction_bar <- p)
-  isolate(table_table_current$RM$model_eval$full$prediction_bar <- p$data)
-  
-  p
-
-})
-
-output$prediction_bar_reduced <- renderPlotly({
-  
-  req(!is.null(omicsData$objRM_reduced))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "prediction_bar", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$reduced$prediction_bar <- p)
-  isolate(table_table_current$RM$model_eval$reduced$prediction_bar <- p$data)
-  
-  p
-  
-})
-
-output$confusion_heatmap <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$full$confusion_heatmap <- p)
-  isolate(table_table_current$RM$model_eval$full$confusion_heatmap <- p$data)
-  
-  
-  p
-})
-
-output$confusion_heatmap_reduced <- renderPlotly({
-  
-  req(!is.null(omicsData$objRM_reduced))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confusion_heatmap", split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$reduced$confusion_heatmap <- p)
-  isolate(table_table_current$RM$model_eval$reduced$confusion_heatmap <- p$data)
-  
-  p
-  
-})
-
-output$confidence_scatter <- renderPlotly({
-
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-
-  p <- plot( omicsData$objRM, 
-        plotType = "confidence_scatter",
-        pos_class = input$true_pos_picker, split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$full$confidence_scatter <- p)
-  isolate(table_table_current$RM$model_eval$full$confidence_scatter <- p$data)
-  
-  p
-
-})
-
-output$confidence_scatter_reduced <- renderPlotly({
-  
-  req(!is.null(omicsData$objRM_reduced))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  
-  p <- plot( omicsData$objRM_reduced, plotType = "confidence_scatter", 
-             pos_class = input$true_pos_picker_reduced, split=input$visualize_perf_which_split)
-  
-  isolate(plot_table_current$RM$model_eval$reduced$confidence_scatter <- p)
-  isolate(table_table_current$RM$model_eval$reduced$confidence_scatter <- p$data)
-  
-  p
-  
+  return(p)
 })
 
 # 
@@ -1093,7 +1056,7 @@ output$confidence_scatter_reduced <- renderPlotly({
 # 
 output$unsup_res_aes_UI <- renderUI({
 
-  req(!is.null(input$pick_model_EM) && input$ag_prompts != "supervised")
+  req(!is.null(input$pick_model_EM) && !supervised())
 
   method <- input$pick_model_EM ## While summary getting fixed
 
@@ -1176,14 +1139,17 @@ output$unsup_slider_UI <- renderUI({
 output$structure_plot <- renderPlotly({
   
   req(!is.null(input$pick_model_EM) && 
-        input$ag_prompts != "supervised")
+        !supervised())
   validate(
     need(!is.null(omicsData$objRM), 
          "No model results found.  Please run the model to see results plots."))
 
   method <- input$pick_model_EM ## While summary getting fixed
 
-  color_by <- if(input$color_by_unsup != "Parameter clusters") sym(input$color_by_unsup) else NULL
+  color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
+                sym(input$color_by_unsup)
+              else
+                NULL
 
   runner <- as.slData(omicsData$objPP)
 
@@ -1289,8 +1255,8 @@ output$structure_plot <- renderPlotly({
     yvar =  if (!is.null(input$unsup_pca_yaxis_pc)) paste0("PC", input$unsup_pca_yaxis_pc) else "PC2"
     
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw()
     } else {
       ## Where is R2?
       p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]])) + geom_point(size = 3) + theme_bw()
@@ -1319,8 +1285,8 @@ output$structure_plot <- renderPlotly({
     }
 
     if(length(color_by) > 0){
-      return(ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw())
+      p <- ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
+               geom_point(size = 3) + theme_bw()
     } else {
       ## Where is R2?
       p <- ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
@@ -1329,8 +1295,9 @@ output$structure_plot <- renderPlotly({
 
   }
   
-  isolate(plot_table_current$RM$model_eval[[method]] <- p)
-  isolate(table_table_current$RM$model_eval <- p$data)
+  isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
+  isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
+  isolate(table_table_current$table$RM__model_eval <- p$data)
 
   p
 })

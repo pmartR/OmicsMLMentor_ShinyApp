@@ -162,7 +162,7 @@ output$e_data_spec_UI <- renderUI({
       
       fluidRow(
         column(10, ""),
-        column(2, actionButton("specify_edata_done", "Done", style="float:right"))
+        column(2, disabled(actionButton("specify_edata_done", "Done", style="float:right")))
       )
     )
   )
@@ -226,7 +226,7 @@ output$boxplot_UI <- renderPlotly({
     ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5)) +
     labs(x = "", y = ifelse(input$data_type != "RNA-seq", "Abundance", "Counts"))
   
-  isolate(plot_table_current$Upload$boxplot <- p)
+  isolate(plot_table_current$table$Upload__boxplot <- p)
   
   p
   
@@ -246,6 +246,16 @@ output$detected_box_upload <- renderUI({
   ))
 })
 
+observeEvent(input$data_type, {
+  if (!is.null(input$data_type)) {
+    shinyjs::enable("data_type_done")
+    shinyjs::show("use_example")
+  } else {
+    shinyjs::disable("data_type_done")
+    shinyjs::hide("use_example")
+  }
+}, ignoreNULL = FALSE)
+
 observeEvent(input$data_type_done, {
   updateBoxCollapse(session, "upload_collapse_left", close = "datselect")
 })
@@ -257,6 +267,14 @@ observeEvent(input$edata_upload_done, {
 observeEvent(input$emeta_upload_done, {
   updateBoxCollapse(session, "upload_collapse_left", close = "upload_e_meta_UI_box")
 })
+
+observeEvent(c(input$datascale, input$normalized), {
+  if (!is.null(input$datascale) && !is.null(input$normalized)) {
+    shinyjs::enable("specify_edata_done")
+  } else {
+    shinyjs::disable("specify_edata_done")
+  }
+}, ignoreNULL = FALSE)
 
 observeEvent(input$specify_edata_done, {
   updateBoxCollapse(session, "upload_collapse_left", close = "params_box")

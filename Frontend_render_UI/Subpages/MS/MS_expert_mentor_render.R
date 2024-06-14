@@ -100,9 +100,8 @@ tbl <- function(data, index, namecol)  {
 
 ## Make dashboard -- lots of elements to consider, so we use observe here
 observe({
-  
-  req(!any(
-    map_lgl(
+  req(
+    !any(map_lgl(
       list(
         input$skip_ag,
         omicsData$objMSU,
@@ -110,34 +109,50 @@ observe({
         input$feature_selection
       ),
       is.null
-    )
-  ))
-  
+    )), 
+    response_types_ag(),
+    input$top_page == "Model Set-Up"
+  )
   temp_omic <- omicsData$objModel
   
   if(get_data_scale(temp_omic) == "abundance"){
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
-  supervised <- (input$skip_ag && input$pick_model %in% models_supervised) ||
-    (!input$skip_ag && input$ag_prompts == "supervised")
+  supervised <- supervised()
   
-  if(is.null(get_group_DF(omicsData$objMSU))){
+  handles_regression <- if('continuous' %in% response_types_ag()) {
+    TRUE
+  } else {
+    FALSE
+  }
+  
+  if(is.null(omicsData$objQC$f_data) && supervised){
     temp_omic$f_data <- data.frame(
       SampleID = colnames(temp_omic$e_data)[
         colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
       Temp_col_all = "All"
     )
     temp_omic <- group_designation(temp_omic, "Temp_col_all")
+  } else if(supervised){
+    temp_omic$f_data$Temp_col_all <- "All"
+    temp_omic <- group_designation(temp_omic, "Temp_col_all")
   }
   
+  id_col <- which(colnames(temp_omic$e_data) == 
+                    get_edata_cname(temp_omic))
+  
+  samples_per_feature <- nrow(temp_omic$e_data)/
+    min(get_group_table(temp_omic)) > 300
+  
+  correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+  
+  ## Change based on algorithim for holdout
+  overfit <- min(get_group_table(temp_omic)) < 5
+  
+  rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  
   if(input$user_level_pick == "beginner"){
-    
-    suggests <- expert_mentor(temp_omic,
-                              supervised = supervised
-    )
-    
-  } else if (input$user_level_pick != "expert"){
     
     id_col <- which(colnames(temp_omic$e_data) == 
                       get_edata_cname(temp_omic))
@@ -152,6 +167,24 @@ observe({
     
     rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
     
+    suggests <- expert_mentor(temp_omic,
+                              supervised = supervised,
+                              handles_regression = handles_regression,
+                              feature_selection = input$feature_selection,
+                              handles_missingness = input$handles_missingness,
+                              explainability = input$explainability,
+                              equation = input$equation,
+                              
+                              ## Autodetect
+                              high_dimensional_data = input$high_dimensional_data,
+                              samples_per_feature = samples_per_feature,
+                              correlation = correlation,
+                              prone_to_overfit = overfit,
+                              handles_outliers = rmd
+    )
+    
+  } else if (input$user_level_pick != "expert"){
+    
     ## Auto detect for some of these
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
@@ -159,7 +192,7 @@ observe({
                               handles_missingness = input$handles_missingness,
                               explainability = input$explainability,
                               equation = input$equation,
-                              
+                              handles_regression = handles_regression,
                               ## Autodetect
                               high_dimensional_data = input$high_dimensional_data,
                               samples_per_feature = samples_per_feature,
@@ -193,7 +226,8 @@ observe({
                               prone_to_overfit = input$prone_to_overfit,
                               handles_missingness = input$handles_missingness,
                               high_dimensional_data = input$high_dimensional_data,
-                              handles_outliers = input$handles_outliers
+                              handles_outliers = input$handles_outliers,
+                              handles_regression = handles_regression
     )
     
   }
@@ -212,14 +246,20 @@ observe({
   
   df <- df[df$supervised,] ## supervised/unsupervised
   df <- df[df$n_levels,] ## Correct number of levels for analysis
-  df[2] <- unlist(suggests)
-  df <- df[-5]
-  df <- df[-5]
+  df$supervised <- unlist(suggests)
+  df <- df %>% dplyr::select(-dplyr::one_of("any_is_na"))
   
-  df[7] <- signif(df[7], 3)
-  df[8] <- signif(df[8], 3)
+  df$n_predictors_per_sample <- signif(df$n_predictors_per_sample, 3)
+  df$prop_missing <- signif(df$prop_missing, 3)
   
-  missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  if (is.null(omicsData$objModel$f_data)) {
+    missingness <- list(
+      num_NA = sum(is.na(omicsData$objQC$e_data)),
+      num_non_NA = sum(!is.na(omicsData$objQC$e_data))
+    )
+  } else {
+    missingness <- missingval_result(omicsData$objModel)$na.by.sample
+  }
   total <- sum(missingness$num_NA) + sum(missingness$num_non_NA)
   
   group_text <- ifelse(!is.null(get_group_table(omicsData$objModel)), 
@@ -232,6 +272,7 @@ observe({
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
     #paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
     #paste0("Runs with a minimum group size of ", group_text, "?"),
+    "Can handle a continuous response?",
     paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
@@ -282,7 +323,7 @@ observe({
   # for(filt in names(filts)) if(input[[filt]]) df <- df[df[[filts[[filt]]]],]
   
   
-  table_table_current$MSU$expert_mentor_summary <- df
+  table_table_current$table$MSU__expert_mentor_summary <- df
   
   colnames(df) <- c(
     "Method",
@@ -339,6 +380,19 @@ observe({
     #     )
     #   )
     # ), # "Runs with a minimum group size of ", group_text, "?"
+    paste0(
+      "Continuous Response ", 
+      div(
+        id = "em_info_continuous_response",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'continuous_response')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'continuous_response', 'nonce': Math.random() })"
+        )
+      )
+    ), # "Can handle a continuous response?"
     paste0(
       "Sample/Predictor Ratio Performance ", 
       div(
@@ -462,7 +516,7 @@ observe({
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
   } else if(input$user_level_pick == "beginner"){
-    df <- df[1:3,]
+    df <- df[1:4,]
   } else if (input$user_level_pick == "familiar"){
     df <- df[1:min(c(nrow(df), 10)),]
   }
@@ -519,6 +573,7 @@ get_citations_html <- function(level, column) {
 citations <- list(
   "total_samples" = get_citations_html("hard", "n_samps"),
   "total_classifications" = get_citations_html("hard", "n_levels"),
+  "continuous_response" = get_citations_html("soft", "continuous_response"),
   "sample_predictor_ratio" = get_citations_html("soft", "n_predictors_per_sample"),
   "prop_missing" = get_citations_html("soft", "prop_missing"),
   "best_predictors" = get_citations_html("soft", "feature_selection"),
@@ -551,6 +606,7 @@ get_em_column_info <- function() {
   titles <- list(
     "total_samples" = paste0("Total Samples: ", ncol(omicsData$objModel$e_data) - 1),
     "total_classifications" = paste0("Total Classifications: ", length(get_group_table(omicsData$objModel))),
+    "continuous_response" = "Continuous Response",
     "sample_predictor_ratio" = paste0("Sample/Predictor Ratio: ", ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data)),
     "prop_missing" = paste0("Proportion Missing: ", sum(missingness$num_non_NA), "/", total, " (",
@@ -567,6 +623,7 @@ get_em_column_info <- function() {
   summary <- list(
     "total_samples" = "This score is a pass/fail metric, where a pass indicates that the number of samples in the data meet or exceed the minimum number of samples required for the respective model.",
     "total_classifications" = "This score is a pass/fail metric, where a pass indicates that the number of classifications in the data meet or exceed the minimum number of classifications required for the respective model.",
+    "continuous_response" = "This score indicates how well a given model handles continuous response variables.",
     "sample_predictor_ratio" = "This score indicates the performance of a given model with the ratio of samples to predictors in the data. A higher number indicates better performance.",
     "prop_missing" = "This score indicates the performance of a given model with the proportion of missing data to present data. A higher number indicates better performance.",
     "explainability" = "This value indicates how explainable a given model is.",

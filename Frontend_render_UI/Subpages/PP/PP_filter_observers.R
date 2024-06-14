@@ -1140,14 +1140,16 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   name <- get_omicsData_type(omicsData$objPP)
   
   # gather indices in f_data of removed samples from all sample filters
-  removed_indices <- NULL
-  
-  removed_samples <- unlist(filter_effects$removed_samples)
-  removed_rows <- which(omicsData$objPP$f_data[, get_fdata_cname(omicsData$objPP)] %in% removed_samples)
-  removed_indices <- union(removed_indices, removed_rows)
-  
-  # dont blow up the data
-  if (length(removed_indices) >= nrow(omicsData$objPP$f_data)) error("Combined across all datasets, your sample filters removed all samples.")
+  if (!is.null(omicsData$objPP$f_data)) {
+    removed_indices <- NULL
+    
+    removed_samples <- unlist(filter_effects$removed_samples)
+    removed_rows <- which(omicsData$objPP$f_data[, get_fdata_cname(omicsData$objPP)] %in% removed_samples)
+    removed_indices <- union(removed_indices, removed_rows)
+    
+    # dont blow up the data
+    if (length(removed_indices) >= nrow(omicsData$objPP$f_data)) error("Combined across all datasets, your sample filters removed all samples.")
+  }
   
   # apply all filters in a loop
   tryCatch(
@@ -1190,7 +1192,9 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
           impute_proteins <- pepQCData$transforms_df[which(pepQCData$transforms_df$Handling == "Estimate"),][[get_edata_cname(pepQCData$objQCPro)]]
           
           # Replace just those peptides with their imputed versions
-          impute_pep_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
+          impute_pro_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
+          impute_peps <- tmp$e_meta[[get_edata_cname(tmp)]][impute_pro_idx]
+          impute_pep_idx <- which(tmp$e_data[[get_edata_cname(tmp)]] %in% impute_peps)
           tmp$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
         } else {
           tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
@@ -1241,7 +1245,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       ## i.e if the sample in row 1 of Protein data is filtered, the sample in row 1 of Lipid is also filtered
       
       # construct a custom filter based on union of all filtered rows and apply it
-      if (length(removed_indices) > 0) {
+      if (!is.null(omicsData$objPP$f_data) && length(removed_indices) > 0) {
         to_rmv <- omicsData$objPP$f_data[removed_indices, get_fdata_cname(omicsData$objPP)]
         
         tmp_customfilt <- custom_filter(tmp, f_data_remove = to_rmv)
@@ -1489,12 +1493,17 @@ output$slider_options_filter_ui <- renderUI({
     ))
   }
   
+  div(
+    column(11,
   MultiSlider.shinyInput(
     "missingness_handle_filter_slider",
     values = sliders,
     min = 0,
     max = 100,
-    labelStepSize = 10
+    labelStepSize = 25
+  )
+  ),
+  column(1, "  ")
   )
   
 })
@@ -1906,7 +1915,8 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
     tabname <- isolate(get_omicsData_type(omicsData$objPP))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
-    isolate(table_table_current$PP$filters[[filter_tag]] <- filter$e_data)
+    isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
+    isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     req(!is.null(filter))
     
@@ -1963,7 +1973,9 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
     } else if (filter_tag == "cvfilt" ){
       
-      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
 
       if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
         p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
@@ -1976,13 +1988,15 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
 
     } else {
       
-      isolate(table_table_current$PP$filters[[filter_tag]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
 
       p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                       settings))
     }
     
-    isolate(plot_table_current$PP$filters[[filter_tag]] <- p)
+    isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
+    isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
     
     p
   })

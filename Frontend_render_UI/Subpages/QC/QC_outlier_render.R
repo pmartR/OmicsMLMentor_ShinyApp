@@ -35,7 +35,7 @@ output$QC_rmd_metrics_UI <- renderUI({
 
 output$outlier_remove_advanced_pval <- renderUI({
   
-  nm <- str_to_title(class(isolate(omicsData$objPP))[[1]])
+  nm <- str_to_title(class(isolate(omicsData$objQC))[[1]])
   out <- numericInput(paste0("QC_pvalue_threshold"), 
                       "P-value threshold for outliers:", 0.0001, step = 0.0001, max = 1, min = 0)
   
@@ -59,7 +59,8 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
     temp_dat$f_data$Temp_col_all <- "All"
   } else {
     temp_dat$f_data <- data.frame(
-      SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
       Temp_col_all = "All"
     )
   }
@@ -174,8 +175,10 @@ output$rmd_plot_qc_all <- renderPlotly({
   p <- plot(QC_rmd$res, pvalue_threshold = pval) + 
     theme(legend.position = 0)
   
-  isolate(plot_table_current$QC$rmd_overall <- p)
-  isolate(table_table_current$QC$rmd_table <- QC_rmd$res)
+  ### FIXME: why does this plot only render with plotly???
+  ### - ECG 5/16/2024
+  isolate(plot_table_current$table$QC__rmd_overall <- ggplotly(p))
+  isolate(table_table_current$table$QC__rmd_table <- QC_rmd$res)
   
   p
   
@@ -196,7 +199,8 @@ output$rmd_plot_qc_select <- renderPlotly({
     temp_dat$f_data$Temp_col_all <- "All"
   } else {
     temp_dat$f_data <- data.frame(
-      SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
       Temp_col_all = "All"
     )
   }
@@ -210,7 +214,7 @@ output$rmd_plot_qc_select <- renderPlotly({
   
   p <- plot(QC_rmd$res, sampleID = sampId)
   
-  isolate(plot_table_current$QC$rmd_outliers <- p)
+  isolate(plot_table_current$table$QC__rmd_outliers <- p)
   
   p
   
@@ -225,7 +229,8 @@ observeEvent(input$outliers_done, {
     
     if(is.null(temp_dat$f_data)){
       temp_dat$f_data <- data.frame(
-        SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+        SampleID = colnames(temp_dat$e_data)[
+          colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
         Temp_col_all = "All"
       )
     }
@@ -255,6 +260,16 @@ observeEvent(c(input$QC_rmdfilt_sample_select#, input$QC_rmdfilt_sample_remove
   
   updateTabsetPanel(session, "QC_outlier_tabset", "inspect_samp")
   
+})
+
+observeEvent(input$QC_rmdfilt_sample_remove, {
+  if (length(omicsData$objQC$f_data[[get_fdata_cname(omicsData$objQC)]]) - length(input$QC_rmdfilt_sample_remove) < 6) {
+    output$warn_rmdfilt_samples_remove <- renderText("Too many samples were removed. Please ensure at least 6 samples are present.")
+    disable("outliers_done")
+  } else {
+    output$warn_rmdfilt_samples_remove <- renderText("")
+    enable("outliers_done")
+  }
 })
 
 observeEvent(input$all_outs_inspect_out, {

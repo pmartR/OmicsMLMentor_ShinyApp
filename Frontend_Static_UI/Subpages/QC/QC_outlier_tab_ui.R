@@ -64,7 +64,9 @@ QC_outliers <- function(){
               uiOutput(paste0( tabname, "_rmdfilt_sample_remove_UI")),
               
               actionButton("all_outs_remove_out", "Select all outliers for removal", inline = T),
-              actionButton("all_outs_remove_none", "De-select all", inline = T)
+              actionButton("all_outs_remove_none", "De-select all", inline = T),
+              
+              textOutput("warn_rmdfilt_samples_remove")
             )
           ))
       ), # ,# parent collapse

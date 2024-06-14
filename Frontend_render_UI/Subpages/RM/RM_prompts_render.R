@@ -108,7 +108,7 @@ output$rm_prompt_train_UI <- renderUI({
 
 output$rm_prompt_hp_UI <- renderUI({
   
-  out <- if(input$ag_prompts == "unsupervised"){
+  out <- if(!supervised()){
     
     selected <- isolate(if(is.null(input$rm_prompts_hp)) character(0) else {
       input$rm_prompts_hp

@@ -312,7 +312,7 @@ get_params <- function(subset_fn, tab) {
 }
 
 #' # Evaluate norm bias for global normalization
-inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
+inspect_norm <- function(omicsData, subset_fn, norm_fn, params, backtransform) {
   group_df <- attr(omicsData, "group_DF")
   reorder <- match(
     colnames(omicsData$e_data)[
@@ -332,7 +332,8 @@ inspect_norm <- function(omicsData, subset_fn, norm_fn, params) {
                                        subset_fn,
                                        norm_fn,
                                        params = params,
-                                       apply_norm = FALSE
+                                       apply_norm = FALSE,
+                                       backtransform = backtransform
     )
     
     if (is.null(norm_object)) {
@@ -654,7 +655,7 @@ load_norm_observers <- function(tab) {
           )
         }
         
-        isolate(table_table_current$PP$SPANS <- SPANS_res[[tab]])
+        isolate(table_table_current$table$PP__SPANS <- SPANS_res[[tab]])
         
       })
 
@@ -821,7 +822,8 @@ load_norm_observers <- function(tab) {
           omicsData = temp_dat,
           subset_fn = NULL,
           norm_fn = "Zero-to-one scaling",
-          params = NULL
+          params = NULL,
+          backtransform = FALSE
         )
         
       } else {
@@ -831,7 +833,8 @@ load_norm_observers <- function(tab) {
           omicsData = temp_dat,
           subset_fn = input[[paste0(tab, "_subset_fn")]],
           norm_fn = input[[paste0(tab, "_norm_fn")]],
-          params = params
+          params = params,
+          backtransform = as.logical(input[[paste0(tab, "_backtransform")]])
         )
       }
 
@@ -880,7 +883,7 @@ load_norm_observers <- function(tab) {
 
         output[[paste0(tab, "_normalize_eval_location")]] <- renderPlotly({
           p <- eval$loc_boxplot
-          isolate(plot_table_current$PP$bias$location <- p)
+          isolate(plot_table_current$table$PP__bias__location <- p)
           p
         })
 
@@ -919,7 +922,7 @@ load_norm_observers <- function(tab) {
 
         output[[paste0(tab, "_normalize_eval_scale")]] <- renderPlotly({
           p <- eval$scale_boxplot
-          isolate(plot_table_current$PP$bias$scale <- p)
+          isolate(plot_table_current$table$PP__bias__scale <- p)
           p
         })
 
@@ -996,12 +999,12 @@ load_norm_observers <- function(tab) {
           noconv <- subset_noconv(as.slData(omicsData$objPP))
           conv <- subset_conv(as.slData(omicsData$objPP))
           
-          
           omicsData$objNorm <- check_norm_possible(noconv,
                                              subset_fn = input[[paste0(tab, "_subset_fn")]],
                                              norm_fn = input[[paste0(tab, "_norm_fn")]],
                                              params = params,
-                                             apply_norm = TRUE
+                                             apply_norm = TRUE,
+                                             backtransform = as.logical(input[[paste0(tab, "_backtransform")]])
           )
           
           if(!is.null(conv) && !is.null(noconv) && !identical(noconv, conv)){
@@ -1048,7 +1051,7 @@ load_norm_observers <- function(tab) {
         }
       }
       
-      isolate(table_table_current$PP$normalization <- omicsData$objNorm$e_data)
+      isolate(table_table_current$table$PP__normalization <- omicsData$objNorm$e_data)
     })
 
     ## Reactions to other inputs ##
@@ -1072,6 +1075,24 @@ load_norm_observers <- function(tab) {
     # Tab tool tip for normalization picker
     observeEvent(input[[paste0(tab, "_normalize_option")]],
                  {
+                   updatePickerInput(session, paste0(tab, "_subset_fn"), choices = 
+                     if (is.na(supervised()) || supervised()) {
+                       c(
+                         "No subsetting" = "all",
+                         "Top L order statistics (los)" = "los",
+                         "Percentage present (ppp)" = "ppp",
+                         "Complete" = "complete",
+                         "Rank invariant (rip)" = "rip",
+                         "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
+                       )
+                     } else {
+                       c(
+                         "No subsetting" = "all",
+                         "Top L order statistics (los)" = "los",
+                         "Complete" = "complete"
+                       )
+                   })
+                   
                    # req(tab %in% ALL_DATATYPE_NAMES)
                    show_add_tooltip(
                      session, paste0(tab, "_norm_picker_icon"),
@@ -1079,7 +1100,8 @@ load_norm_observers <- function(tab) {
                      "Specify normalization to apply"
                    )
                  },
-                 ignoreNULL = FALSE
+                 ignoreNULL = FALSE,
+                 ignoreInit = FALSE
     )
 
     # Tab tool tip for normalization sidebar
@@ -1109,7 +1131,6 @@ load_norm_observers <- function(tab) {
     # },
     # ignoreNULL = FALSE
     # )
-
 }
 
 norm_settings <- reactiveValues()
@@ -1727,7 +1748,8 @@ assign_norm_output <- function(tab) {
       }
       
       # Where proteomic, load spans options
-      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata")) {
+      if (tab %in% c("Prodata", "Pepdata", "Isobaricpepdata") &&
+          !is.null(omicsData$objPP$f_data)) {
         
         out <- list(
           cl_inputs,
@@ -1753,7 +1775,7 @@ assign_norm_output <- function(tab) {
       } else {
         ### This should never happen given the req for loading this UI, but just in case
         return(
-          strong("SPANS is only available for proteomic data types")
+          strong("SPANS is only available for proteomic data types and requires Sample Information file.")
         )
       }
     }),
@@ -1846,15 +1868,36 @@ assign_norm_output <- function(tab) {
       
       req(!is.null(isolate(omicsData$objPP)))
       
+      UI_elements <- paste0(tab, c(
+        "_normalize_option",
+        "_subset_fn",
+        "_norm_fn",
+        "_backtransform",
+        "_los",
+        "_ppp",
+        "_rip"#,
+        # "_loess_method",
+        # "_loess_span"
+      ))
+      
+      if(!get_data_norm(omicsData$objPP)){
+        omicsData$objNorm <- NULL
+        norm_settings[[tab]] <- NULL
+        map(UI_elements, enable)
+      }
+      
       # input$complete_filters
 
       norm_choices <- c(
-        "SPANS - Proteomics only",
         "Global Normalization",
         # "Loess Normalization",
         "Zero-to-one scaling",
         "No Normalization"
       )
+      
+      if (!is.na(supervised()) && supervised()) {
+        norm_choices <- c("SPANS - Proteomics only", norm_choices)
+      }
       
       ### Pre-Normalized data w/ disabled UI
       if (!is.null(get_data_norm(isolate(omicsData$objPP))) &&
@@ -2126,7 +2169,7 @@ assign_norm_output <- function(tab) {
       p <- plot(SPANS_res[[tab]], interactive = T)
       p$x$source <- "SPANS"
       
-      isolate(plot_table_current$PP$SPANS <- p)
+      isolate(plot_table_current$table$PP__SPANS <- p)
       
       p
     }),
@@ -2156,9 +2199,11 @@ assign_norm_output <- function(tab) {
     
     output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
       
+      req(!all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))
+      
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
-        return(isolate(plot_table_current$PP$normalization$pre))
+        return(isolate(plot_table_current$table$PP__normalization__pre))
       }
       
       if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
@@ -2191,7 +2236,7 @@ assign_norm_output <- function(tab) {
         )
       }
       
-      isolate(plot_table_current$PP$normalization$pre <- p)
+      isolate(plot_table_current$table$PP__normalization__pre <- p)
       
       p <- p %>% ggplotly()
       
@@ -2239,7 +2284,7 @@ assign_norm_output <- function(tab) {
         )
       }
       
-      isolate(plot_table_current$PP$normalization$post <- p)
+      isolate(plot_table_current$table$PP__normalization__post <- p)
       
       p <- p %>% ggplotly()
       
