@@ -8,6 +8,8 @@ QC_outliers <- function(){
     
     column(
       3,
+      
+      uiOutput("outlier_collapse_UI"),
       collapseBoxGroup(
         id = "QC_outlier_sidebar",
         # biomolecule filters

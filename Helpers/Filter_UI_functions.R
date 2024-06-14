@@ -12,7 +12,7 @@ filter_tab_temp <- function(tabname, keep_missing, user_level) {
   # }
   
   ## Determine which filters are needed
-  if(tabname == "RNA-seq"){
+  if(tabname == "Seqdata"){
     biofilt_UI <- c(
       # "lowvar_mol",
       "molfilt", 
@@ -21,7 +21,7 @@ filter_tab_temp <- function(tabname, keep_missing, user_level) {
       # "imdanovafilt",
       "customfilt",
       # "profilt" # default excluded
-      "TCfilt" # default excluded
+      "totalCountFilt" # default excluded
     )
     sampfilt_UI <- c(
       # "corr_mol",
@@ -308,22 +308,22 @@ select_biofilter_UI <- function(
       )
     ),
     
-    TCfilt =  div(
-      id = paste0(tabname, "_TCfilt_UI"),
+    totalCountFilt =  div(
+      id = paste0(tabname, "_totalCountFilt_UI"),
       tagList(
         fluidRow(
           column(
             6,
             tags$b("Total Count filter"),
-            prettySwitch(paste0(tabname, "_add_TCfilt"),
+            prettySwitch(paste0(tabname, "_add_totalCountFilt"),
                          label = "Add/Remove",
                          width = "100%"
             ),
-            actionButton(inputId = paste0(tabname, "_preview_TCfilt"), "Preview")
+            actionButton(inputId = paste0(tabname, "_preview_totalCountFilt"), "Preview")
           ),
           column(
             6,
-            numericInput(paste0(tabname, "_min_num_trans"), 
+            numericInput(paste0(tabname, "_min_count"), 
                          "Minimum number of RNA-seq counts:", 
                          10, step = 1, min = 0)
           )
