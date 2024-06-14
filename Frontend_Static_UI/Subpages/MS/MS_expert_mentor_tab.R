@@ -41,38 +41,38 @@ EM_tab <- function() {
                    collapsed = T,
                    
                    #### To be re-implementing with weightings
-                   column(6,
-                     wellPanel(
-                         br(),
-                         
-                         checkboxInput("equal_sort", "Prioritize all model features equally", value = T),
-                         
-                         conditionalPanel("input.equal_sort != true", {
-                           div(
-                             "Prioritize model features in this order:",
-                             orderInput(inputId = "soft_sort",
-                                        label = "",
-                                        items = list(
-                                          "N samples",
-                                          "N classifications",
-                                          "N predictors",
-                                          "Minimum group size",
-                                          "Sample/predictor ratio",
-                                          "Missingness handling",
-                                          "Predictor selection",
-                                          "Explainability",
-                                          "Equation"
-                                        ),
-                                        width = "100%",
-                                        class = "btn-group-vertical"
-                             )
-                           )
-                         })
-                         
-                         )),
+                   #column(6,
+                   #  wellPanel(
+                   #      br(),
+                   #      
+                   #      checkboxInput("equal_sort", "Prioritize all model features equally", value = T),
+                   #      
+                   #      conditionalPanel("input.equal_sort != true", {
+                   #        div(
+                   #          "Prioritize model features in this order:",
+                   #          orderInput(inputId = "soft_sort",
+                   #                     label = "",
+                   #                     items = list(
+                   #                       "N samples",
+                   #                       "N classifications",
+                   #                       "N predictors",
+                   #                       "Minimum group size",
+                   #                       "Sample/predictor ratio",
+                   #                       "Missingness handling",
+                   #                       "Predictor selection",
+                   #                       "Explainability",
+                   #                       "Equation"
+                   #                     ),
+                   #                     width = "100%",
+                   #                     class = "btn-group-vertical"
+                   #          )
+                   #        )
+                   #      })
+                   #      
+                   #      )),
                    
                      
-                     column(6,
+                     #column(6,
                       wellPanel("Rank models considering these elements:",
                                 
                                 checkboxInput(
@@ -129,7 +129,8 @@ EM_tab <- function() {
                                     
                                   ))
                                 
-                      ) )
+                      ) 
+                   #)
 
                    # tabsetPanel(
                    #   id = "advanced_settings", 

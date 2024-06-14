@@ -287,29 +287,31 @@ observe({
     "Model handles outliers robustly?"
   )
   
-  if(!input$equal_sort){
-    
-    order_input <- input$soft_sort
-    
-    order_cols <- df_order[3:length(df_order)]
-    names(order_cols) <- c(
-      "N samples",
-      "N classifications",
-      "N predictors",
-      "Minimum group size",
-      "Sample/predictor ratio",
-      "Missingness handling",
-      "Predictor selection",
-      "Explainability",
-      "Equation"
-    )
-    
-    
-    df <- arrange(df, across(starts_with(as.character(order_cols[order_input])), desc))
-    
-  } else {
+  #if(!input$equal_sort){
+  #  
+  #  order_input <- input$soft_sort
+  #  
+  #  order_cols <- df[3:length(df)]
+  #  names(order_cols) <- c(
+  #    "N samples",
+  #    "N classifications",
+  #    "Continuous response",
+  #    "Sample/predictor ratio",
+  #    "Missingness handling",
+  #    "Explainability",
+  #    "Predictor selection",
+  #    "Equation",
+  #    "Overfitting",
+  #    "High correlation",
+  #    "High dimensionality",
+  #    "Outlier handling"
+  #  )
+  #  
+  #  df <- arrange(df, across(starts_with(as.character(order_cols[order_input])), desc))
+  #  
+  #} else {
     df <- arrange(df, desc(Score))
-  }
+  #}
   
   df$Method <- names(models_long_name)[match(df$Method, models_long_name)]
   df <- df[!is.na(df$Method),] ## knn is implemented in summary, but not in sup_models yet lol
@@ -533,57 +535,59 @@ observe({
   
 })
 
-# Load bib file
-bibs <- RefManageR::ReadBib("www/references.bib")
+# bibs <- RefManageR::ReadBib("www/references.bib")
+# 
+# get_citations_html <- function(level, column) {
+#   # Get dataframe with all info
+#   df <- as.data.frame(do.call(rbind, sapply(slopeR::algo_rules, \(x) x[[level]])))
+#   
+#   # Subset to specific level and column and extract citation portion of the list
+#   df2 <- sapply(df[[column]][which(sapply(df[[column]], length) == 3)], \(x) x[[3]])
+#   
+#   # Get citations for models which have them
+#   citations <- sapply(df2[which(sapply(df2, length) > 0)], paste)
+#   
+#   # Get full names
+#   names(citations) <- sapply(names(citations), \(x) slopeR::algo_rules[[x]]$full_name)
+#   
+#   # Get full citations
+#   citations <- sapply(citations, \(x) sapply(x, \(y) utils:::format.bibentry(bibs[[y]])))
+#   
+#   # Apply formatting
+#   citations <- sapply(citations, \(x) gsub("\n", " ", x))
+#   citations <- sapply(citations, \(x) gsub("<", "&lt;", x))
+#   citations <- sapply(citations, \(x) gsub(">", "&gt;", x))
+#   citations <- sapply(citations, \(x) gsub("\\textbar", "|", x))
+#   citations <- sapply(citations, \(x) paste(unname(x), collapse = "<br><br>"))
+#   
+#   if (length(citations) == 0) {
+#     return("No citations available.")
+#   }
+#   
+#   # Get a single HTML source
+#   html <- paste(sapply(1:length(citations), \(x) paste0("<br><b>", names(citations)[x], ":</b><br>", citations[[x]])), collapse = "<br>")
+#   
+#   return(HTML(html))
+# }
+#
+# saveRDS(list(
+#   "total_samples" = get_citations_html("hard", "n_samps"),
+#   "total_classifications" = get_citations_html("hard", "n_levels"),
+#   "continuous_response" = get_citations_html("soft", "continuous_response"),
+#   "sample_predictor_ratio" = get_citations_html("soft", "n_predictors_per_sample"),
+#   "prop_missing" = get_citations_html("soft", "prop_missing"),
+#   "best_predictors" = get_citations_html("soft", "feature_selection"),
+#   "explainability" = get_citations_html("soft", "explainability"),
+#   "equation" = get_citations_html("soft", "equation"),
+#   "avoids_overfitting" = get_citations_html("soft", "prone_to_overfit"),
+#   "high_correlation" = get_citations_html("soft", "correlation"),
+#   "high_dimensional" = get_citations_html("soft", "high_dimensional"),
+#   "handles_outliers" = get_citations_html("soft", "outlier_sensitivity")
+# ), "citations.RDS")
 
-get_citations_html <- function(level, column) {
-  # Get dataframe with all info
-  df <- as.data.frame(do.call(rbind, sapply(slopeR::algo_rules, \(x) x[[level]])))
-  
-  # Subset to specific level and column and extract citation portion of the list
-  df2 <- sapply(df[[column]][which(sapply(df[[column]], length) == 3)], \(x) x[[3]])
-  
-  # Get citations for models which have them
-  citations <- sapply(df2[which(sapply(df2, length) > 0)], paste)
-  
-  # Get full names
-  names(citations) <- sapply(names(citations), \(x) slopeR::algo_rules[[x]]$full_name)
-  
-  # Get full citations
-  citations <- sapply(citations, \(x) sapply(x, \(y) utils:::format.bibentry(bibs[[y]])))
-  
-  # Apply formatting
-  citations <- sapply(citations, \(x) gsub("\n", " ", x))
-  citations <- sapply(citations, \(x) gsub("<", "&lt;", x))
-  citations <- sapply(citations, \(x) gsub(">", "&gt;", x))
-  citations <- sapply(citations, \(x) gsub("\\textbar", "|", x))
-  citations <- sapply(citations, \(x) paste(unname(x), collapse = "<br><br>"))
-  
-  if (length(citations) == 0) {
-    return("No citations available.")
-  }
-  
-  # Get a single HTML source
-  html <- paste(sapply(1:length(citations), \(x) paste0("<br><b>", names(citations)[x], ":</b><br>", citations[[x]])), collapse = "<br>")
-  
-  return(HTML(html))
-}
+# uncomment above and run to regenerate citations
 
-# NOTE: Best to render this out at some point once citations and everything are finalized
-citations <- list(
-  "total_samples" = get_citations_html("hard", "n_samps"),
-  "total_classifications" = get_citations_html("hard", "n_levels"),
-  "continuous_response" = get_citations_html("soft", "continuous_response"),
-  "sample_predictor_ratio" = get_citations_html("soft", "n_predictors_per_sample"),
-  "prop_missing" = get_citations_html("soft", "prop_missing"),
-  "best_predictors" = get_citations_html("soft", "feature_selection"),
-  "explainability" = get_citations_html("soft", "explainability"),
-  "equation" = get_citations_html("soft", "equation"),
-  "avoids_overfitting" = get_citations_html("soft", "prone_to_overfit"),
-  "high_correlation" = get_citations_html("soft", "correlation"),
-  "high_dimensional" = get_citations_html("soft", "high_dimensional"),
-  "handles_outliers" = get_citations_html("soft", "outlier_sensitivity")
-)
+citations <- readRDS("citations.RDS")
 
 get_em_column_info <- function() {
   missingness <- missingval_result(omicsData$objModel)$na.by.sample
