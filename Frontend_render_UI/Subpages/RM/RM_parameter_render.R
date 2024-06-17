@@ -1,9 +1,9 @@
 
-apply_disabled <- function(...) {
+apply_disabled <- function(el) {
   if (input$rm_prompts_hp == "default")
-    disabled(...)
+    disabled(el)
   else
-    ...
+    el
 }
 
 output[["param_opti_UI"]] <- renderUI({
