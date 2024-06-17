@@ -3,7 +3,7 @@ apply_disabled <- function(...) {
   if (input$rm_prompts_hp == "default")
     disabled(...)
   else
-    ...
+    div(...)
 }
 
 output[["param_opti_UI"]] <- renderUI({

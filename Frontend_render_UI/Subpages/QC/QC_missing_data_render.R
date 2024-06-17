@@ -481,7 +481,9 @@ observeEvent(input$done_sample_miss, {
 })
 
 observeEvent(input$qc_apply_rollup, {
-  req(input$qc_apply_rollup > 0)
+  req(input$qc_apply_rollup > 0 && 
+        !is.null(input$qc_which_rollup) && 
+        !is.null(input$qc_which_combine_fn))
   
   shinyjs::show("qc_rollup_busy")
   if (input$qc_which_rollup == "zrollup") {
