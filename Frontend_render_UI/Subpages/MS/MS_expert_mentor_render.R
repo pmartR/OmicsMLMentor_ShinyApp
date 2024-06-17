@@ -110,7 +110,6 @@ observe({
       ),
       is.null
     )), 
-    response_types_ag(),
     input$top_page == "Model Set-Up"
   )
   temp_omic <- omicsData$objModel
@@ -150,22 +149,13 @@ observe({
   ## Change based on algorithim for holdout
   overfit <- min(get_group_table(temp_omic)) < 5
   
-  rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  if (supervised) {
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  } else {
+    rmd <- TRUE
+  }
   
   if(input$user_level_pick == "beginner"){
-    
-    id_col <- which(colnames(temp_omic$e_data) == 
-                      get_edata_cname(temp_omic))
-    
-    samples_per_feature <- nrow(temp_omic$e_data)/
-      min(get_group_table(temp_omic)) > 300
-    
-    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
-    
-    ## Change based on algorithim for holdout
-    overfit <- min(get_group_table(temp_omic)) < 5
-    
-    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
     
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
