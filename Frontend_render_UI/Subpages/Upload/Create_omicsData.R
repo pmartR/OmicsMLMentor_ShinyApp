@@ -1,6 +1,8 @@
 
 observeEvent(input$check_group_cols, {
   
+  req(!is.null(input$data_type))
+  
   edata <- reactive_dataholder[["e_data"]]$file
   fdata <- reactive_dataholder[["f_data"]]$file
   emeta <- reactive_dataholder[["e_meta"]]$file
