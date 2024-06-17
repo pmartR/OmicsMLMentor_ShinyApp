@@ -55,6 +55,9 @@ fileinput_UI <- function(id, label = "e_data", is_RNA) {
 }
 
 input_data_types <- reactive({
+  
+  req(!is.null(input$data_type))
+  
   # e_data
   all_input_data_types <- "e_data"
   
@@ -95,6 +98,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
   observeEvent(input[[paste0(label, "_file")]], ignoreInit = TRUE, {
     
     req(label %in% input_data_types())
+    req(!is.null(input$data_type))
     
     req(!is.null(input[[paste0(label, "_file")]]$name))
     
@@ -149,6 +153,8 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
       input$data_type,
       input$data_select
     ), ignoreInit = TRUE, {
+      
+      req(!is.null(input$data_type))
       
       req(label %in% input_data_types())
       
@@ -213,6 +219,8 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
     
     observeEvent(c(input$use_example, input$data_type, 
                    input$data_select), ignoreInit = TRUE, {
+                     
+                     req(!is.null(input$data_type))
                      
                      req(label %in% input_data_types())
                      
@@ -279,6 +287,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                ignoreInit = TRUE, {
                  
                  req(AWS)
+                 req(!is.null(input$data_type))
                  
                  tablabel <- switch(label,
                                     e_data = ifelse(input$data_type == "RNA-seq",
