@@ -299,7 +299,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                  
                  removeTab(preview_tabset, tablabel, session = session)
                  
-                 use_example_val <- use_example()
+                 use_example_val <- input$use_example
                  data_select_val <- input_data_types()
                  
                  if(label %in% data_select_val){
