@@ -283,8 +283,8 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
   }
   
   ## If AWS, load it up
-  observeEvent(c(AWS, input$data_type, input$data_select), 
-               ignoreInit = TRUE, {
+  observeEvent(c(AWS, input$data_type, input$data_select, input_data_types()), 
+               ignoreInit = FALSE, {
                  
                  req(AWS)
                  req(!is.null(input$data_type))
