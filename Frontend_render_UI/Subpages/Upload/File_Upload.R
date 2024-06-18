@@ -30,8 +30,98 @@
 ## Note: File handling is the only true module, where its own namespace is created. 
 ### This is due to the requirement of multiple UI pieces that rely on the result of this module, but don't do calculations
 
-## Module Functions ##
+## Minio Midpoint Upload
+#' @details Parse and store header parameters.  If we see the 'map-data' prefix, load that up!
+observe({
+  query <- parseQueryString(session$clientData$url_search)
+  
+  # establish minio connection if we are pulling cloud resources
+  if (any(names(query) %in% VALID_HEADER_PARAMS)) {
+    isolate({
+      # store header params in a reactive variable
+      for (key in names(query)) {
+        header_params[[key]] <- query[[key]]
+        message(sprintf("INFO: stored parameter %s: %s", key, query[[key]]))
+      }
+      
+      if ('map-data' %in% names(query)) {
+        # get the appropriate minio config for retrieving CoreMS files
+        cfg_location = if (Sys.getenv("MINIO_CONFIG_PATH") == "") "./cfg/minio_config.yml" else Sys.getenv("MINIO_CONFIG_PATH")
+        minio_con <<- mapDataAccess::map_data_connection(cfg_location)
+        
+        html(selector = "#loading-gray-overlay > div", html = "Loading MAP data...")
+        
+        res <- store_minio_data(query[['map-data']])
+        minio_upload_success <- res[[1]]
+        modalmessage <- res[[2]]
+        
+        if (minio_upload_success) {
+          showModal(minio_upload_success_modal(modalmessage)) 
+        } else {
+          showNotification(
+            modalmessage,
+            duration = NULL,
+            type = "error"
+          )
+        }
+      }
+    })
+  } else if (length(names(query)) > 0) {
+    showNotification(
+      sprintf("No valid header parameters found in query string.  Found parameters: (%s).  Valid header parameters: (%s).  Presenting manual upload dialog.", paste(names(query), collapse = ", "), paste(VALID_MINIO_HEADER_PARAMS, collapse = ", ")),
+      duration = NULL,
+      type = 'error'
+    ) 
+  }
+  
+  on.exit({
+    Sys.sleep(1)
+    hide("loading-gray-overlay")
+  })
+})
 
+#' @details store data files in the appropriate reactiveValues and
+#' return a success or error message for use in a modal
+#' 
+#' @param uri character vector of file paths, either retrieved using mapDataAccess
+#' 
+#' @return modalmessage character vector of message to be used in a modal
+#' 
+store_minio_data <- function(uri) {
+  minio_upload_success <- tryCatch({
+    pullData <- mapDataAccess::get_data(minio_con, uri)
+    
+    if (class(pullData) == "project omic") {
+      minio_upload_data$project_omic <- pullData
+    }
+    
+    modalmessage <- div(class = "column-scroll-sm",
+                        HTML(ttext[["MINIO_UPLOAD_SUCCESS"]]),
+                        HTML(paste(uri, collapse = "<br>"))
+    )
+    TRUE
+  }, error = function(e) {
+    modalmessage <<- div(class = "column-scroll-sm",
+                        HTML(ttext[["MINIO_UPLOAD_ERROR"]]),
+                        HTML(paste(uri, collapse = "<br>"))
+    )
+    FALSE
+  })
+  
+  return(list(minio_upload_success, modalmessage))
+}
+
+
+#' @details Modal indicating minio data was successfully uploaded
+minio_upload_success_modal <- function(modal_message) {
+  modalDialog(
+    modal_message, title = "MAP Upload Success",
+    footer = tagList(
+      # Here would probably be a button to go to upload.
+      modalButton("Dismiss")
+    )
+  )
+}
 ## UI function for upload
 fileinput_UI <- function(id, label = "e_data", is_RNA) {
   
@@ -96,7 +186,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
   
   ## If a file is uploaded, load it up
   observeEvent(input[[paste0(label, "_file")]], ignoreInit = TRUE, {
-    
+
     req(label %in% input_data_types())
     req(!is.null(input$data_type))
     
@@ -281,6 +371,48 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                   condition = !use_example_val)
     })
   }
+  
+  ## If MAP, load it up! b-tsk-b-tsk-b-tsk
+  observeEvent(minio_upload_data, {
+    dtype = minio_upload_data$project_omic$Project$DataType
+    
+    tablabel <- switch(label,
+                       e_data = ifelse(dtype == "RNA-seq", 
+                                       "Expression data",
+                                       "Abundance data"),
+                       f_data = "Sample Information",
+                       e_meta = "Biomolecule information"
+    )
+    
+    ## Remove prior
+    removeTab(preview_tabset, tablabel, session = session)
+    
+    ## make sure if dt changes remove prior
+    if(tablabel == "Abundance data"){
+      removeTab(preview_tabset, "Expression data", session = session)
+    } else if(tablabel == "Expression data"){
+      removeTab(preview_tabset, "Abundance data", session = session)
+    }
+    
+    tmp_key = paste0(label, "_filename")
+    reactive_dataholder[[label]]$filename <- minio_upload_data$project_omic$Data[[tmp_key]]
+    
+    reactive_dataholder[[label]]$file <- if (isTruthy(minio_upload_data$project_omic$Data[[label]])) {
+      default_factor(minio_upload_data$project_omic$Data[[label]])
+    } else {
+      NULL
+    }
+    
+    appendTab(preview_tabset, 
+              select = T,
+              tabPanel(tablabel,
+                       br(),
+                       DTOutput(paste0("DT_", label)),
+                       br()
+              ),
+              session = session
+    )
+  })
   
   ## If AWS, load it up
   observeEvent(c(AWS, input$data_type, input$data_select, input_data_types()), 
