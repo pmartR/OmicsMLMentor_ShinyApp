@@ -150,11 +150,18 @@ models_long_name <- c(
   # `K-nearest neighbors` = "knn" ## not implemented yet
 )
 
-models_supervised <- models_long_name[map_lgl(models_long_name, 
-                             function(x) algo_rules[[x]]$hard$supervised)]
+sup_designation <- 
+  map_lgl(models_long_name, 
+          function(x){
+            if(is.null(algo_rules[[x]]$hard$supervised)){
+              F
+            } else algo_rules[[x]]$hard$supervised
+          }
+  )
 
-models_unsupervised <- models_long_name[!map_lgl(models_long_name, 
-                                              function(x) algo_rules[[x]]$hard$supervised)]
+models_supervised <- models_long_name[sup_designation]
+
+models_unsupervised <- models_long_name[!sup_designation]
 
 #' #'@details Statistical integration methods and corresponding tooltip
 #' VALID_STATSINTEG_ANALYSES = list(
