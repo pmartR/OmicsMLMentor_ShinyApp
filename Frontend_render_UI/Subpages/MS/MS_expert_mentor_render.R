@@ -99,7 +99,14 @@ tbl <- function(data, index, namecol)  {
 }
 
 ## Make dashboard -- lots of elements to consider, so we use observe here
-observe({
+observeEvent(
+  c(
+    input$skip_ag,
+    omicsData$objMSU,
+    omicsData$objModel,
+    input$feature_selection,
+    input$top_page
+  ), {
   req(
     !any(map_lgl(
       list(
