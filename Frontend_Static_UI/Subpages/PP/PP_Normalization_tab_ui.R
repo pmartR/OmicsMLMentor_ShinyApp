@@ -46,7 +46,7 @@ norm_tab <- function(tabname) {
                    tabPanel(
                      "Pre-Normalization",
                      br(),
-                     withSpinner(plotlyOutput(paste0(tabname, "_normalized_boxplots_pre")))
+                     uiOutput(paste0(tabname, "_normalized_boxplots_pre_render"))
                    ),
                    # withSpinner(uiOutput(paste0(tabname, '_normalized_boxplots_pre_UI')))),
                    tabPanel(

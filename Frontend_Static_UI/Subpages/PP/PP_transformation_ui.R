@@ -29,7 +29,8 @@ transformation_UI <- function() {
                collapseBox("Visualize transformation and data scaling",
                            collapsed = F,
                                value = "transform_preview",
-                               plotlyOutput("transform_preview_plot")
+                               uiOutput("transform_preview_plot_render")
+                              #plotlyOutput("transform_preview_plot")
                )             )
            ) # column 8
   )

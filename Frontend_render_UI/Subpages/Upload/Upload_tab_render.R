@@ -241,9 +241,20 @@ output$detected_box_upload <- renderUI({
     "Data Properties",
     value = "summary",
     # uiOutput("Characteristics_module_tabset")
-    withSpinner(plotlyOutput("boxplot_UI"))#,
+    uiOutput("boxplot_UI_render")#,
     # uiOutput("show_log_UI")
   ))
+})
+
+output$boxplot_UI_render <- renderUI({
+  if (isTruthy(input$boxplot_UI_load_button) || dim(reactive_dataholder$e_data$file)[1] < 50000) {
+    withSpinner(plotlyOutput("boxplot_UI"))
+  } else {
+    div(
+      "This plot is large and may take a while to render.",
+      actionButton("boxplot_UI_load_button", "Show plot")
+    )
+  }
 })
 
 observeEvent(input$data_type, {

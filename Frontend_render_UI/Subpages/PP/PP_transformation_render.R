@@ -32,6 +32,16 @@ output$transform_picker_UI <- renderUI({
   
 })
 
+output$transform_preview_plot_render <- renderUI({
+  if (isTruthy(input$transform_preview_plot_load_button) || dim(omicsData$objPP$e_data)[1] < 50000) {
+    withSpinner(plotlyOutput("transform_preview_plot"))
+  } else {
+    div(
+      "This plot is large and may take a while to render.",
+      actionButton("transform_preview_plot_load_button", "Show plot")
+    )
+  }
+})
 
 output$transform_preview_plot <- renderPlotly({
   
