@@ -114,7 +114,8 @@ observe({
   )
   temp_omic <- omicsData$objModel
   
-  if(get_data_scale(temp_omic) == "abundance"){
+  if(get_data_scale(temp_omic) == "abundance" && 
+     !inherits(temp_omic, "seqData")){
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
@@ -151,8 +152,10 @@ observe({
   
   if (supervised) {
     rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  } else if(inherits(temp_omic, "seqData")){
+    rmd <- F
   } else {
-    rmd <- TRUE
+    rmd <- T
   }
   
   if(input$user_level_pick == "beginner"){
@@ -319,7 +322,7 @@ observe({
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
   } else if(input$user_level_pick == "beginner"){
-    df <- df[1:4,]
+    df <- df[1:3,]
   } else if (input$user_level_pick == "familiar"){
     df <- df[1:min(c(nrow(df), 10)),]
   }
