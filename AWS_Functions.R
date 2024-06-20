@@ -84,8 +84,8 @@ output$data_select_UI <- renderUI({
   label_emeta <- ifelse(input$data_type == "RNA-seq", 
                         "Transcript information", "Biomolecule information")
   relevant_examples <- ifelse(input$data_type == "RNA-seq", 
-                              "Optional (E.g., KEGG pathways, genes, proteins)",
-                              "Optional (E.g., KEGG pathways, lipid class, molecular activity)"
+                              "(E.g., KEGG pathways, genes, proteins)",
+                              "(E.g., KEGG pathways, lipid class, molecular activity)"
   )
   
   
@@ -118,6 +118,7 @@ output$data_select_UI <- renderUI({
     },
     br()
   )
+  
 })
 
 observeEvent(input$use_example, {
