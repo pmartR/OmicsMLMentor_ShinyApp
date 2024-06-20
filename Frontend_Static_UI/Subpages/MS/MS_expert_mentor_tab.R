@@ -18,12 +18,15 @@ EM_tab <- function() {
                    
                    "Model Selection Summary",
                    
+                   uiOutput("em_model_display_slider"),
+                   
                    uiOutput("pick_EM_model_UI"),
                    
                    ## stuff from previous page and what is selected from models
                    ## N models available from goals
                    ## Features detected in data
                    uiOutput("em_data_goals"),
+                   
                    
                    ## Selected model info
                    uiOutput("em_select_model")

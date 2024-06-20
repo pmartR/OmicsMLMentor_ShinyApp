@@ -150,23 +150,14 @@ observe({
   ## Change based on algorithim for holdout
   overfit <- min(get_group_table(temp_omic)) < 5
   
-  rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  if (supervised) {
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  } else {
+    rmd <- NULL
+  }
   
   if(input$user_level_pick == "beginner"){
-    
-    id_col <- which(colnames(temp_omic$e_data) == 
-                      get_edata_cname(temp_omic))
-    
-    samples_per_feature <- nrow(temp_omic$e_data)/
-      min(get_group_table(temp_omic)) > 300
-    
-    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
-    
-    ## Change based on algorithim for holdout
-    overfit <- min(get_group_table(temp_omic)) < 5
-    
-    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
-    
+      
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
                               handles_regression = handles_regression,
@@ -517,11 +508,14 @@ observe({
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
-  } else if(input$user_level_pick == "beginner"){
-    df <- df[1:4,]
-  } else if (input$user_level_pick == "familiar"){
-    df <- df[1:min(c(nrow(df), 10)),]
+  } else {
+    df <- df[1:min(nrow(df), max(3, ifelse(is.null(input$em_model_count), 0, input$em_model_count))),]
   }
+  # else if(input$user_level_pick == "beginner"){
+  #  df <- df[1:4,]
+  #} else if (input$user_level_pick == "familiar"){
+  #  df <- df[1:min(c(nrow(df), 10)),]
+  #}
   
   # Convert to Character
   col_names <- names(df)
@@ -684,12 +678,6 @@ observeEvent(input$em_column_info, {
 
 output$EM_dashboard <- renderUI({
   
-  text <- if(input$user_level_pick == "beginner"){
-      " - Top 3 shown"
-    } else if (input$user_level_pick == "familiar"){
-      " - Top 10 shown"
-    } else ""
-  
   # fluidPage(
   #   
   #   br(),
@@ -704,7 +692,7 @@ output$EM_dashboard <- renderUI({
           class = "d-lg-flex align-items-lg-center py-4",
           tags$div(
             class = "h3 text-muted",
-            paste("Recommended Models", text)
+            "Recommended Models"
           )
         ),
         div(
@@ -731,3 +719,29 @@ output$pick_EM_model_UI <- renderUI({
   
 })
 
+output$em_model_display_slider <- renderUI({
+  
+  sliderInput(
+    "em_model_count",
+    "How many top models to show?",
+    min = 3,
+    max = ifelse(
+      input$ag_prompts == "supervised",
+      length(models_supervised),
+      length(models_unsupervised)
+    ), 
+    value = 
+      switch(
+        input$user_level_pick,
+        beginner = 3,
+        familiar = 5,
+        expert = ifelse(
+          input$ag_prompts == "supervised",
+          length(models_supervised),
+          length(models_unsupervised)
+        )
+      ),
+    step = 1
+  )
+  
+})
