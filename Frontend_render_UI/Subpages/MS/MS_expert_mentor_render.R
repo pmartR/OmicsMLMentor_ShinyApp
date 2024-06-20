@@ -115,7 +115,8 @@ observe({
   )
   temp_omic <- omicsData$objModel
   
-  if(get_data_scale(temp_omic) == "abundance"){
+  if(get_data_scale(temp_omic) == "abundance" && 
+     !inherits(temp_omic, "seqData")){
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
@@ -150,22 +151,13 @@ observe({
   ## Change based on algorithim for holdout
   overfit <- min(get_group_table(temp_omic)) < 5
   
-  rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  if(inherits(temp_omic, "seqData")){
+    rmd <- F
+  } else {
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  }
   
   if(input$user_level_pick == "beginner"){
-    
-    id_col <- which(colnames(temp_omic$e_data) == 
-                      get_edata_cname(temp_omic))
-    
-    samples_per_feature <- nrow(temp_omic$e_data)/
-      min(get_group_table(temp_omic)) > 300
-    
-    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
-    
-    ## Change based on algorithim for holdout
-    overfit <- min(get_group_table(temp_omic)) < 5
-    
-    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
     
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
@@ -329,7 +321,7 @@ observe({
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
   } else if(input$user_level_pick == "beginner"){
-    df <- df[1:4,]
+    df <- df[1:3,]
   } else if (input$user_level_pick == "familiar"){
     df <- df[1:min(c(nrow(df), 10)),]
   }

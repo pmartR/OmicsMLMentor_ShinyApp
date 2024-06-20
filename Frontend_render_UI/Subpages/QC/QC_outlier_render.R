@@ -1,6 +1,93 @@
 
 QC_rmd <- reactiveValues(res = NULL)
 
+outlier_collapse_UI <- renderUI({
+  if(!inherits(omicData$obj, "seqData")){
+    collapseBoxGroup(
+      id = "QC_outlier_sidebar",
+      # biomolecule filters
+      
+      collapseBox(
+        value = "outlier_QC",
+        collapsed = F,
+        title = "Robust Mahalanobis distance criteria",
+        fluidRow(
+          column(
+            12,
+            div(
+              id = paste0( tabname, "_rmd_metrics_js"), 
+              style = "color:grey",
+              class = "inline-wrapper-1",
+              
+              uiOutput("outlier_remove_advanced_pval"),
+              
+              
+              ########## Update me laterrr ###############
+              uiOutput(paste0( tabname, "_rmd_metrics_UI")),
+              uiOutput(paste0( tabname, "_rmd_propmis_warn_icon_UI")),
+              hidden(
+                div(
+                  id = paste0( tabname, "_rmd_novariance_warn_icon"),
+                  icon(
+                    "exclamation-sign", lib = "glyphicon", 
+                    style="color:red;display:inline-block"
+                  )
+                )
+              )
+            )
+          )
+        )
+      ),
+      
+      collapseBox(
+        value = "outlier_QC_inspect",
+        collapsed = F,
+        
+        title = "Inspect samples for removal",
+        fluidRow(
+          column(
+            12,
+            uiOutput(paste0( tabname, "_rmdfilt_sample_select_UI")),
+            
+            
+            actionButton("all_outs_inspect_out", "Select all outliers for inspection", inline = T),
+            actionButton("all_outs_inspect_none", "De-select all", inline = T),
+            
+            hr(),
+            
+            ## Remove samples
+            uiOutput(paste0( tabname, "_rmdfilt_sample_remove_UI")),
+            
+            actionButton("all_outs_remove_out", "Select all outliers for removal", inline = T),
+            actionButton("all_outs_remove_none", "De-select all", inline = T),
+            
+            textOutput("warn_rmdfilt_samples_remove")
+          )
+        ))
+    )
+  } else {
+    collapseBoxGroup(
+      id = "QC_outlier_sidebar",
+      # biomolecule filters
+      
+      collapseBox(
+        value = "outlier_QC",
+        collapsed = F,
+        title = "Outlier detection",
+        fluidRow(
+          column(
+            12,
+            br(),
+            br(),
+            "Currently not supported for RNA-seq data, please click 'Confirm Selections to continue.'",
+            br(), br()
+              )
+            )
+          )
+        )
+  }
+})
+
 ## Add disabling for 0 variance data and "not recommended" subtitle for low proportion missing
 output$QC_rmd_metrics_UI <- renderUI({
   
@@ -47,11 +134,13 @@ output$outlier_remove_advanced_pval <- renderUI({
 output$QC_rmdfilt_sample_select_UI <- renderUI({
   
   req(!is.null(omicsData$objQC) && 
+        !inherits(omicsData$objQC, "seqData") &&
         !("customFilt" %in% map(attr(omicsData$objQC, "filters"), 1)))
   
   temp_dat <- omicsData$objQC
   
-  if(get_data_scale(temp_dat) == "abundance"){
+  if(get_data_scale(temp_dat) == "abundance" && 
+     !inherits(omicsData$objMSU, "seqData")){
     temp_dat <- edata_transform(temp_dat, "log2")
   }
   
@@ -122,24 +211,6 @@ output$QC_rmdfilt_sample_remove_UI <- renderUI({
   req(QC_rmd$res)
   
   rmd <- QC_rmd$res
-  
-  # temp_dat <- omicsData$objQC
-  # 
-  # if(get_data_scale(temp_dat) == "abundance"){
-  #   temp_dat <- edata_transform(temp_dat, "log2")
-  # }
-  # 
-  # if(!is.null(omicsData$objQC$f_data)){
-  #   temp_dat$f_data$Temp_col_all <- "All"
-  # } else {
-  #   temp_dat$f_data <- data.frame(
-  #     SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
-  #     Temp_col_all = "All"
-  #   )
-  # }
-  # temp_group <- group_designation(temp_dat, "Temp_col_all")
-  # 
-  # rmd <- rmd_filter(temp_group, metrics = input$QC_rmd_metrics)
 
   pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
     
@@ -191,7 +262,8 @@ output$rmd_plot_qc_select <- renderPlotly({
   
   temp_dat <- omicsData$objQC
 
-  if(get_data_scale(temp_dat) == "abundance"){
+  if(get_data_scale(temp_dat) == "abundance" && 
+     !inherits(omicsData$objMSU, "seqData")){
     temp_dat <- edata_transform(temp_dat, "log2")
   }
 

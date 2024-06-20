@@ -120,7 +120,7 @@ FNAME_MAP <- list(
   "molfilt" = "Molecule", "cvfilt" = "Coefficient of Variation", 
   "imdanovafilt" = "iMd-ANOVA", "rmdfilt" = "Mahalanobis Distance", 
   "profilt" = "Proteomics", "fdata_customfilt" = "Custom (Sample)", 
-  "edata_customfilt" = "Custom (Biomolecule)", "TCfilt" = "Total Count",
+  "edata_customfilt" = "Custom (Biomolecule)", "totalCountFilt" = "Total Count",
   "NZfilt" = "Non-zero", "Libfilt" = "Library size"
 )
 
