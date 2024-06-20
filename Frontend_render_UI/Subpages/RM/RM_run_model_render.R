@@ -987,8 +987,8 @@ output$performance_plot_RM <- renderPlotly({
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   }
   
-  isolate(plot_table_current$RM$model_eval$full[[input$super_plot_type]] <- p)
-  isolate(table_table_current$RM$model_eval$full[[input$super_plot_type]] <- p$data)
+  isolate(plot_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p)
+  isolate(table_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p$data)
 
   return(p)
 })
@@ -1005,8 +1005,8 @@ output$performance_plot_RM_reduced <- renderPlotly({
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   }
   
-  isolate(plot_table_current$RM$model_eval$reduced[[input$super_plot_type]] <- p)
-  isolate(table_table_current$RM$model_eval$reduced[[input$super_plot_type]] <- p$data)
+  isolate(plot_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- p)
+  isolate(table_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- p$data)
 
   return(p)
 })
