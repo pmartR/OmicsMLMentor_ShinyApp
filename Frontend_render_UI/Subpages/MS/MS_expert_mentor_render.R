@@ -510,15 +510,8 @@ observe({
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
-<<<<<<< Frontend_render_UI/Subpages/MS/MS_expert_mentor_render.R
   } else {
     df <- df[1:min(nrow(df), max(3, ifelse(is.null(input$em_model_count), 0, input$em_model_count))),]
-=======
-  } else if(input$user_level_pick == "beginner"){
-    df <- df[1:3,]
-  } else if (input$user_level_pick == "familiar"){
-    df <- df[1:min(c(nrow(df), 10)),]
->>>>>>> Frontend_render_UI/Subpages/MS/MS_expert_mentor_render.R
   }
   # else if(input$user_level_pick == "beginner"){
   #  df <- df[1:4,]
