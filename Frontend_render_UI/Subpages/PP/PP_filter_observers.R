@@ -39,6 +39,8 @@ apply_filt_flags <- reactive({
 
 output$cv_threshold_UI <- renderUI({
   
+  req(!inherits(omicsData$objMSU, "seqData"))
+  
   max_cv <- max(cv_filter(omicsData$objMSU)$CV, na.rm = TRUE)
   nm <- get_omicsData_type(omicsData$objMSU)
   
@@ -67,9 +69,9 @@ observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
            "molfilt" = "moleculeFilt",
             "imputefilt" = "imputationFilt",
            "customfilt" = "customFilt",
-           "TCFilt" = "TCFilt",
-           "NZFilt" = "NZFilt",
-           "LibFilt" = "LibFilt",
+           "totalCountFilt" = "totalCountFilt",
+           "NZfilt" = "RNAFilt",
+           "Libfilt" = "RNAFilt",
            "profilt" = "proFilt"
            )
     )
@@ -113,7 +115,7 @@ FNAME_MAP <- list(
   "molfilt" = "Molecule", "cvfilt" = "Coefficient of Variation", 
   # "imdanovafilt" = "iMd-ANOVA", "rmdfilt" = "Mahalanobis Distance", 
   "profilt" = "Proteomics", "fdata_customfilt" = "Custom (Sample)", 
-  "edata_customfilt" = "Custom (Biomolecule)", "TCfilt" = "Total Count",
+  "edata_customfilt" = "Custom (Biomolecule)", "totalCountFilt" = "Total Count",
   "NZfilt" = "Non-zero", "Libfilt" = "Library size",
   "impute" = "Missing observation handling"
 )
@@ -213,7 +215,7 @@ observe({
         }
         else if (inherits(filt, "totalCountFilt")) {
           
-          select_bad <- filt$Total_Counts < input[[paste0(classy, "_min_num_trans")]]
+          select_bad <- filt$Total_Counts < input[[paste0(classy, "_min_count")]]
           
           removed_mols[[fname]] <- filt[[1]][select_bad]
         }
@@ -692,59 +694,59 @@ observeEvent(omicsData$objPP, {
   
   
   # ### Total count, library, nonzero filter if in RNA-seq land ###
-  if (name %in% c("RNA-seq")) {
-    observeEvent(ignoreInit = T, input[[paste0(name, "_add_TCfilt")]], {
+  if (name %in% c("Seqdata")) {
+    observeEvent(ignoreInit = T, input[[paste0(name, "_add_totalCountFilt")]], {
       make_filter(name, 
-                  "TCfilt", 
+                  "totalCountFilt", 
                   "Something went wrong assigning your proteomics filter.", 
                   pmartR::total_count_filter,
-                  settings = list(min_count = input[[paste0(name, "_min_num_trans")]])
+                  settings = list(min_count = input[[paste0(name, "_min_count")]])
       )
       
-      removeTab("filter_previews", target = "TCfilt_plot_tab")
+      removeTab("filter_previews", target = "totalCountFilt_plot_tab")
       
-      TCfilt_exists <- !is.null(filters[[name]]$TCfilt)
+      totalCountFilt_exists <- !is.null(filters[[name]]$totalCountFilt)
       
-      if(TCfilt_exists){
+      if(totalCountFilt_exists){
         appendTab(
           "filter_previews",
           select = TRUE,
           tabPanel(
             title = "Total count filter",
-            value = "TCfilt_plot_tab",
+            value = "totalCountFilt_plot_tab",
             br(),
-            withSpinner(plotlyOutput("TCfilt_plot"))
+            withSpinner(plotlyOutput("totalCountFilt_plot"))
           )
         )
       } else {
-        removeTab("filter_previews", target = "TCfilt_plot_tab")
+        removeTab("filter_previews", target = "totalCountFilt_plot_tab")
       }
       
-      toggleState(paste0(name, "_preview_TCfilt"), condition = !input[[paste0(name, "_add_TCfilt")]])
-      toggle(paste0(name, "_TCfilt_exists"), condition = TCfilt_exists, anim = TRUE)
-      toggleState(paste0(name, "_min_num_trans"), condition = !TCfilt_exists)
-      toggleCssClass(paste0(name, "_min_num_trans"), "grey_text", condition = TCfilt_exists)
+      toggleState(paste0(name, "_preview_totalCountFilt"), condition = !input[[paste0(name, "_add_totalCountFilt")]])
+      toggle(paste0(name, "_totalCountFilt_exists"), condition = totalCountFilt_exists, anim = TRUE)
+      toggleState(paste0(name, "_min_count"), condition = !totalCountFilt_exists)
+      toggleCssClass(paste0(name, "_min_count"), "grey_text", condition = totalCountFilt_exists)
     })
     
     # ... preview
-    observeEvent(ignoreInit = T, input[[paste0(name, "_preview_TCfilt")]], {
+    observeEvent(ignoreInit = T, input[[paste0(name, "_preview_totalCountFilt")]], {
       make_filter(dataname = name,
-                  filter_tag = "TCfilt",
+                  filter_tag = "totalCountFilt",
                   message = "Something went wrong assigning your Total Count filter.",
                   func = pmartR::total_count_filter,
                   preview = TRUE,
-                  settings = list(min_count = input[[paste0(name, "_min_num_trans")]])
+                  settings = list(min_count = input[[paste0(name, "_min_count")]])
       )
       
-      removeTab("filter_previews", target = "TCfilt_plot_tab")
+      removeTab("filter_previews", target = "totalCountFilt_plot_tab")
       appendTab(
         "filter_previews",
         select = TRUE,
         tabPanel(
           title = "Total count filter",
-          value = "TCfilt_plot_tab",
+          value = "totalCountFilt_plot_tab",
           br(),
-          withSpinner(plotlyOutput("TCfilt_plot"))
+          withSpinner(plotlyOutput("totalCountFilt_plot"))
         )
       )
     })
@@ -1119,6 +1121,7 @@ observeEvent(omicsData$objPP, {
 ## Uses number prior to filtering (cv not affected by transformation step)
 observeEvent(omicsData$objMSU, {
   req(!is.null(omicsData$objMSU))
+  req(!inherits(omicsData$objMSU, "seqData"))
   
   ## Catch for this is on groups upload
   tryCatch({
@@ -1239,6 +1242,12 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         tmp <- applyFilt(filters[[name]]$edata_customfilt, tmp)
       }
       
+      ## TC filt
+      if (!is.null(filters[[name]]$totalCountFilt)) {
+        tmp <- applyFilt(filters[[name]]$totalCountFilt, tmp, 
+                         min_count = input$Seqdata_min_count)
+      }
+      
       #### SAMPLE FILTERS ####
       
       ## filter by union of all samples filtered across all datasets.
@@ -1250,6 +1259,16 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         
         tmp_customfilt <- custom_filter(tmp, f_data_remove = to_rmv)
         tmp <- applyFilt(tmp_customfilt, tmp)
+      }
+      
+      if (!is.null(filters[[name]]$Libfilt)) {
+        tmp <- applyFilt(filters[[name]]$Libfilt, tmp, 
+                         size_library = input$min_lib_size)
+      }
+      
+      if (!is.null(filters[[name]]$NZfilt)) {
+        tmp <- applyFilt(filters[[name]]$NZfilt, tmp, 
+                         min_nonzero = input$Seqdata_min_nonzero)
       }
       
       omicsData$objfilters <- tmp
@@ -1298,8 +1317,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     filters_HTML[[name]] <- "No filters applied"
   }
   
-  if("RNAfilt" %in% all_filts){
-    set_attr <- attributes(filters[[name]]$RNAfilt)
+  if("RNAFilt" %in% all_filts){
+    set_attr <- attributes(filters[[name]]$RNAFilt)
     
     add <- HTML(c("Library size", "Non-zero"))
   } else add <- NULL
@@ -1574,9 +1593,9 @@ output$missing_options_filter_UI <- renderUI({
   
   all_choices <-  c(
     "Keep data as-is" = "keep",
-    "Estimate values in samples with no biomolecule detection" = "impute",
-    "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
-    "Remove biomolecules with incomplete detection" = "remove"
+    "🟩 Estimate values in samples with no biomolecule detection" = "impute",
+    "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
+    "🟥 Remove biomolecules with incomplete detection" = "remove"
   )
   
   handles_missing <- map_lgl(
@@ -1905,7 +1924,7 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
 ## Plots for tabpanel
 map(c("imputefilt", "NZfilt", "cvfilt", "molfilt", 
       # "fdata_customfilt", "emeta_customfilt", 
-      "profilt", "TCfilt", "Libfilt", "rmdfilt"
+      "profilt", "totalCountFilt", "Libfilt", "rmdfilt"
       ), 
     function(filter_tag){
       

@@ -110,12 +110,12 @@ observe({
       ),
       is.null
     )), 
-    response_types_ag(),
     input$top_page == "Model Set-Up"
   )
   temp_omic <- omicsData$objModel
   
-  if(get_data_scale(temp_omic) == "abundance"){
+  if(get_data_scale(temp_omic) == "abundance" && 
+     !inherits(temp_omic, "seqData")){
     temp_omic <- edata_transform(temp_omic, "log2")
   }
   
@@ -150,14 +150,16 @@ observe({
   ## Change based on algorithim for holdout
   overfit <- min(get_group_table(temp_omic)) < 5
   
-  if (supervised) {
+  if (inherits(temp_omic, "seqData")) {
+    rmd <- FALSE
+  } else if (supervised) {
     rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
   } else {
-    rmd <- NULL
+    rmd <- TRUE
   }
   
   if(input$user_level_pick == "beginner"){
-      
+    
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
                               handles_regression = handles_regression,
@@ -508,8 +510,15 @@ observe({
   if(isTruthy(input$skip_ag)){
     picker <- names(models_long_name)[models_long_name == input$pick_model]
     df <- df[df$Method == picker, ]
+<<<<<<< Frontend_render_UI/Subpages/MS/MS_expert_mentor_render.R
   } else {
     df <- df[1:min(nrow(df), max(3, ifelse(is.null(input$em_model_count), 0, input$em_model_count))),]
+=======
+  } else if(input$user_level_pick == "beginner"){
+    df <- df[1:3,]
+  } else if (input$user_level_pick == "familiar"){
+    df <- df[1:min(c(nrow(df), 10)),]
+>>>>>>> Frontend_render_UI/Subpages/MS/MS_expert_mentor_render.R
   }
   # else if(input$user_level_pick == "beginner"){
   #  df <- df[1:4,]

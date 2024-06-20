@@ -142,9 +142,9 @@ missing_data <- function(){
                      "Preview biomolecule detection handling:",
                      choices = c(
                        # "Keep data as-is" = "keep",
-                       "Estimate values in samples with no biomolecule detection" = "impute",
-                       "Convert undetected biomolcule values to 0, all other values to 1" = "convert",
-                       "Remove biomolecules with incomplete detection" = "remove"
+                       "🟩 Estimate values in samples with no biomolecule detection" = "impute",
+                       "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
+                       "🟥 Remove biomolecules with incomplete detection" = "remove"
                      ),
                      multiple = T
                    ),
