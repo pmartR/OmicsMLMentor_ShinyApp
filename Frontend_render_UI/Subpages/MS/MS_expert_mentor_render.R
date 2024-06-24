@@ -110,7 +110,6 @@ observe({
       ),
       is.null
     )), 
-    response_types_ag(),
     input$top_page == "Model Set-Up"
   )
   temp_omic <- omicsData$objModel
@@ -151,10 +150,12 @@ observe({
   ## Change based on algorithim for holdout
   overfit <- min(get_group_table(temp_omic)) < 5
   
-  if(inherits(temp_omic, "seqData")){
+  if (supervised) {
+    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+  } else if(inherits(temp_omic, "seqData")){
     rmd <- F
   } else {
-    rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
+    rmd <- T
   }
   
   if(input$user_level_pick == "beginner"){
