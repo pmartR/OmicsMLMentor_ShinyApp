@@ -212,8 +212,7 @@ download_tab <- function(tabname) {
            ),
     
     column(3, 
-           checkboxInput(label = "Include model as an R object (RDS file)?", 
-                         "include_model", value = T),
+           uiOutput("include_model_UI"),
            
            conditionalPanel("input.include_model == true", {
              textInput("RDS_name", "RDS file name:", 
