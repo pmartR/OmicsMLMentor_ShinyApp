@@ -68,7 +68,7 @@ observe({
     })
   } else if (length(names(query)) > 0) {
     showNotification(
-      sprintf("No valid header parameters found in query string.  Found parameters: (%s).  Valid header parameters: (%s).  Presenting manual upload dialog.", paste(names(query), collapse = ", "), paste(VALID_MINIO_HEADER_PARAMS, collapse = ", ")),
+      sprintf("No valid header parameters found in query string.  Found parameters: (%s).  Valid header parameters: (%s).  Presenting manual upload dialog.", paste(names(query), collapse = ", "), paste(VALID_HEADER_PARAMS, collapse = ", ")),
       duration = NULL,
       type = 'error'
     ) 
@@ -111,6 +111,41 @@ store_minio_data <- function(uri) {
   return(list(minio_upload_success, modalmessage))
 }
 
+#'@details Disable/modify all inputs on the Upload tab that are pre-determined if a user comes in with data from map:
+#' - e_data file input 'e_data_file'
+#' - e_meta file input 'e_meta_file'
+#' - PickerInput 'data_type' (if DataType is present)
+#' - Prettyswitch 'have_emeta' (if e_meta file is present)
+observeEvent(c(input$top_page, input$e_data_file, input$e_meta_file), {
+  req(input$top_page == "Upload", !is.null(minio_upload_data$project_omic))
+  
+  map_dtype = minio_upload_data$project_omic$Project$DataType
+  
+  if (isTruthy(map_dtype)) {
+    updatePickerInput(session, 'data_type', selected = ALL_DATATYPE_NAMES[map_dtype])
+    togglestate_add_tooltip(session, 'data_type_js', condition = FALSE, tooltip_text = ttext[['DATA_IMPORTED']])
+  }
+  
+  if (!is.null(minio_upload_data$project_omic)) {
+    edata_placeholder_content = minio_upload_data$project_omic$Data$e_data_filename
+    emeta_placeholder_content = minio_upload_data$project_omic$Data$e_meta_filename
+    
+    if (!is.null(minio_upload_data$project_omic$Data$e_data)) {
+      mimic_fileinput_upload(id = "e_data_file", progress_content="Uploaded from MAP", placeholder_content = edata_placeholder_content) 
+    }
+    
+    if (!is.null(minio_upload_data$project_omic$Data$e_meta)) {
+      
+      updatePrettySwitch(session, "have_emeta", value = TRUE)
+      togglestate_add_tooltip(session, 'have_emeta_js', tooltip_text = ttext[['EMETA_FROM_MAP']])
+      
+      mimic_fileinput_upload(id = "e_meta_file", progress_content="Uploaded from MAP", placeholder_content = emeta_placeholder_content) 
+    }
+    
+    togglestate_add_tooltip(session, 'use_example_js', condition = FALSE, tooltip_text = ttext[['DATA_IMPORTED']])
+  }
+}, ignoreNULL = FALSE)
+
 
 #' @details Modal indicating minio data was successfully uploaded
 minio_upload_success_modal <- function(modal_message) {
@@ -122,6 +157,7 @@ minio_upload_success_modal <- function(modal_message) {
     )
   )
 }
+
 ## UI function for upload
 fileinput_UI <- function(id, label = "e_data", is_RNA) {
   
@@ -136,7 +172,10 @@ fileinput_UI <- function(id, label = "e_data", is_RNA) {
   tagList(
     # wellPanel(
     splitLayout(cellWidths = c("75%", "25%"),
-                fileInput(paste0(label, "_file"), label = tablabel),
+                div(
+                  id = sprintf("js_%s_file", label),
+                  fileInput(paste0(label, "_file"), label = tablabel) 
+                ),
                 div(br(), actionButton(paste0(label, "_clear_file"), 
                                        label = "Clear file"))
     )
