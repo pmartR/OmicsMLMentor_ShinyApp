@@ -1375,7 +1375,9 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                          strong("After"),
                          DTOutput("after_filter_summary")
                        )
-                    )
+                    ),
+                    br(),
+                    textOutput("rollup_note_text")
               )
           )
       )
@@ -1587,6 +1589,13 @@ missingHandleSliderValsFilter <- reactive({
   
   # none, [remove]
   return(thresholds)
+})
+
+
+output$rollup_note_text <- renderText({
+  if(inherits(omicsData$objMSU, "pepData")){
+    "Value estimation (imputation) will occur at the protein level."
+  } else ""
 })
 
 output$missing_options_filter_UI <- renderUI({

@@ -107,6 +107,12 @@ output$f_data_response_picker_UI <- renderUI({
   
   subtext <- apply(omicsData$objMSU$f_data[
     colnames(omicsData$objMSU$f_data) != input$f_data_id_col], 2, unique)
+  subtext <- map(subtext, function(sb){
+    if(length(sb) > 5){
+      sb <- c(sb[1:5], "...")
+    }
+    sb
+  })
   subtext <- sapply(subtext, toString)
   
   selected <- isolate(if(is.null(input$f_data_response_picker)) logical(0) else {
@@ -122,7 +128,7 @@ output$f_data_response_picker_UI <- renderUI({
       choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
       multiple = T,
       selected = selected,
-      choicesOpt = list(subtext = subtext)
+      choicesOpt = list(subtext = subtext),
       options = list( `live-search` = TRUE, "max-options" = 1),
       width = "60%"
     )
@@ -143,6 +149,12 @@ output$pick_model_group_pick_UI <- renderUI({
   
   subtext <- apply(omicsData$objMSU$f_data[
     colnames(omicsData$objMSU$f_data) != input$f_data_id_col], 2, unique)
+  subtext <- map(subtext, function(sb){
+    if(length(sb) > 5){
+      sb <- c(sb[1:5], "...")
+    }
+    sb
+  })
   subtext <- sapply(subtext, toString)
   
   selected <- isolate(if(is.null(input$pick_model_group_pick)) logical(0) else {

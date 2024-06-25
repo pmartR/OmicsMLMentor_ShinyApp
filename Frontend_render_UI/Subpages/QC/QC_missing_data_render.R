@@ -148,7 +148,7 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   
   p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
     geom_histogram() + theme_bw() + 
-    labs(y = paste0("Count of ", text_ylab)) +
+    labs(y = paste0("Count of ", text_ylab)) + xlim(c(-1,100)) +
     scale_fill_manual(values = 
                         c("Convert" = "#c87619", 
                           "Estimate" = "#238551", 
