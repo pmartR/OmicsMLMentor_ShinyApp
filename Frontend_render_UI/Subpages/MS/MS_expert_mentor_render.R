@@ -102,23 +102,38 @@ tbl <- function(data, index, namecol)  {
 observeEvent(
   c(
     input$skip_ag,
-    omicsData$objMSU,
     omicsData$objModel,
     input$feature_selection,
-    input$top_page
-  ), {
+    input$handles_missingness,
+    input$explainability,
+    input$high_dimensional_data,
+    input$equation,
+    input$correlation,
+    input$handles_outliers,
+    input$samples_per_feature,
+    input$prone_to_overfit
+  ), ignoreInit = TRUE, {
   req(
     !any(map_lgl(
       list(
         input$skip_ag,
         omicsData$objMSU,
         omicsData$objModel,
-        input$feature_selection
+        input$feature_selection,
+        input$handles_missingness,
+        input$explainability,
+        input$high_dimensional_data,
+        input$equation,
+        input$correlation,
+        input$handles_outliers,
+        input$samples_per_feature,
+        input$prone_to_overfit
       ),
       is.null
     )), 
     input$top_page == "Model Set-Up"
   )
+  
   temp_omic <- omicsData$objModel
   
   if(get_data_scale(temp_omic) == "abundance" && 
@@ -514,12 +529,10 @@ observeEvent(
     ) # "Model handles outliers robustly? "
   )
   
-  if(isTruthy(input$skip_ag)){
-    picker <- names(models_long_name)[models_long_name == input$pick_model]
-    df <- df[df$Method == picker, ]
-  } else {
-    df <- df[1:min(nrow(df), max(3, ifelse(is.null(input$em_model_count), 0, input$em_model_count))),]
-  }
+  ## Add Rank column
+  df$Rank <- 1:nrow(df)
+  df <- df[c(ncol(df), 1:(ncol(df) - 1))]
+  
   # else if(input$user_level_pick == "beginner"){
   #  df <- df[1:4,]
   #} else if (input$user_level_pick == "familiar"){
@@ -690,6 +703,24 @@ output$EM_dashboard <- renderUI({
   # fluidPage(
   #   
   #   br(),
+  
+  req(length(dashboard()) > 0)
+  
+  df <- as.data.frame(dashboard())
+  
+  if(isTruthy(input$skip_ag)){
+    picker <- names(models_long_name)[models_long_name == input$pick_model]
+    df <- df[df$Method == picker, ]
+  } else {
+    df <- df[1:min(
+      nrow(df), 
+      max(
+        3, 
+        ifelse(is.null(input$em_model_count), 
+               0, input$em_model_count)
+      )
+    ),]
+  }
     
     fluidRow(
       
@@ -706,7 +737,7 @@ output$EM_dashboard <- renderUI({
         ),
         div(
           id = "top",
-          tbl(as.data.frame(dashboard()), "Method", NULL),
+          tbl(df, "Method", NULL),
           style = 'height:600px; overflow-y: scroll; overflow-x: scroll; width = 90%',
         )
       )))
