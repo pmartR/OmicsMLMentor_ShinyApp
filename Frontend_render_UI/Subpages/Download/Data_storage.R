@@ -809,6 +809,19 @@ output$download_table_table_RM <- renderDT(height = "450px",{
   escape = FALSE
 )
 
+output$include_model_UI <- renderUI({
+  req(!is.null(omicsData$objPP))
+  
+  if(!is.null(attr(omicsData$objPP,"data_info")) && attr(omicsData$objPP,"data_info")$norm_info$norm_fn != "zero_to_one"){
+    include_mod <- disabled(checkboxInput(label = "Include model as an R object (RDS file)?", 
+                  "include_model", value = F))
+  } else {
+    include_mod <- checkboxInput(label = "Include model as an R object (RDS file)?", 
+                  "include_model", value = T)
+  }
+  
+  include_mod
+})
 
 
 

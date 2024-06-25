@@ -12,6 +12,8 @@ output$vs_cols_addint_UI <- renderUI(AddInteractionModule())
 ## Previews
 output$preview_all_data_UI <- renderUI({
   
+  req(!is.null(input$data_type))
+  
   ## Get valid names
   gen_tab_names <- unlist(map(names(reactive_dataholder), function(x) 
     if(!is.null(reactive_dataholder[[x]]$file)) return(x) else NULL))

@@ -84,26 +84,41 @@ output$data_select_UI <- renderUI({
   label_emeta <- ifelse(input$data_type == "RNA-seq", 
                         "Transcript information", "Biomolecule information")
   relevant_examples <- ifelse(input$data_type == "RNA-seq", 
-                              "Optional (E.g., KEGG pathways, genes, proteins)",
-                              "Optional (E.g., KEGG pathways, lipid class, molecular activity)"
+                              "(E.g., KEGG pathways, genes, proteins)",
+                              "(E.g., KEGG pathways, lipid class, molecular activity)"
   )
   
   
   choices <- c("e_data","e_meta")
   names(choices) <- c(label_edata, label_emeta)
   
-  disabled(pickerInput(
-    "data_select",
-    "What experimental files do you have?",
-    multiple = T,
-    choices = choices,
-    choicesOpt = list(
-      disabled = c(1,0),
-      subtext = c("Required",
-                  relevant_examples
-      )),
-    selected = if(!is.null(AWSobj$e_meta)) c("e_data", "e_meta") else "e_data"
-  ))
+  div(
+    p(tags$b("What experimental files do you have?")),
+    
+    disabled(prettySwitch("have_edata", label_edata, value = T, fill = T, status = "primary")),
+    p("Required", style = "margin-top: -10px;"),
+    br(),
+    if (input$data_type %in% c("Label-free", "Isobaric")) {
+      tagList(
+        disabled(prettySwitch("have_emeta", label_emeta, value = T, fill = T, status = "primary")),
+        div("Required", relevant_examples, style = "margin-top: -10px;")
+      )
+    } else if (!is.null(AWSobj$e_meta)){
+      tagList(
+        disabled(prettySwitch("have_emeta", label_emeta, 
+                              value = T, fill = T, status = "primary")),
+        div("Optional", relevant_examples, style = "margin-top: -10px;")
+      )
+    } else {
+      tagList(
+        disabled(prettySwitch("have_emeta", label_emeta, 
+                              value = F, fill = T, status = "primary")),
+        div("Optional", relevant_examples, style = "margin-top: -10px;")
+      )
+    },
+    br()
+  )
+  
 })
 
 observeEvent(input$use_example, {

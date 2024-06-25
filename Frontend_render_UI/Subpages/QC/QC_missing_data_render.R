@@ -1,4 +1,14 @@
 
+## Prevent stupid
+observeEvent(input$missing_value_thresh, {
+  req(!is.null(input$missing_value_thresh) && !is.na(input$missing_value_thresh))
+  if(input$missing_value_thresh > 100){
+    updateNumericInput(session, "missing_value_thresh", value = 100)
+  } else if (input$missing_value_thresh < 0){
+    updateNumericInput(session, "missing_value_thresh", value = 0)
+  }
+})
+
 # change individual slider values into individual thresholds
 missingHandleSliderVals <- reactive({
   thresholds <- list(
@@ -402,6 +412,8 @@ observeEvent(input$done_sample_miss, {
     
     
     temp_dat <- omicsData$objQC
+    thresh <- input$missing_value_thresh
+    if(is.na(thresh)) thresh <- 0
     
     if(is.null(temp_dat$f_data)){
       temp_dat$f_data <- data.frame(
@@ -413,10 +425,11 @@ observeEvent(input$done_sample_miss, {
     
     if(inherits(temp_dat, "seqData")){
       res <- missingval_result(temp_dat)$zeros.by.sample
+      rmv_fdata <- 1 - res$num_zeros/nrow(temp_dat$e_data) < thresh/100
     } else {
       res <- missingval_result(temp_dat)$na.by.sample
+      rmv_fdata <- 1 - res$num_NA/nrow(temp_dat$e_data) < thresh/100
     }
-    rmv_fdata <- 1 - res$num_NA/nrow(temp_dat$e_data) < input$missing_value_thresh/100
     rmv <- res[rmv_fdata, 1]
     
     tryCatch({
@@ -468,7 +481,9 @@ observeEvent(input$done_sample_miss, {
 })
 
 observeEvent(input$qc_apply_rollup, {
-  req(input$qc_apply_rollup > 0)
+  req(input$qc_apply_rollup > 0 && 
+        !is.null(input$qc_which_rollup) && 
+        !is.null(input$qc_which_combine_fn))
   
   shinyjs::show("qc_rollup_busy")
   if (input$qc_which_rollup == "zrollup") {

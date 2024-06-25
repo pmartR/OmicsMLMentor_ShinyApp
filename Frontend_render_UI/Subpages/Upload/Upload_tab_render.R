@@ -47,6 +47,7 @@ output$data_select_UI <- renderUI({
 output$e_data_upload_UI <- renderUI({
   
   req(!input$use_example && input$data_type_done > 0 && !AWS)
+  req(!is.null(input$data_type))
   
   label <- ifelse(input$data_type == "RNA-seq", 
                   "Upload Expression File", "Upload Abundance File")
@@ -123,6 +124,18 @@ output$e_data_spec_UI <- renderUI({
   title <- ifelse(input$data_type == "RNA-seq", "Specify Expression Data Properties",
                   "Specify Abundance Data Properties")
   
+  edat <- reactive_dataholder[["e_data"]]$file
+  selector <- apply(is.na(apply(edat, 2, as.numeric)), 2, all)
+  
+  if(any(selector)){
+    disabled <- !selector
+    selected <- colnames(edat)[min(which(selector))]
+  } else {
+    disabled <- NULL
+    selected <- isolate(if(!is.null(input$e_data_id_col)) 
+      input$e_data_id_col else character(0))
+  }
+  
   div(
     collapseBox(
       title,
@@ -134,8 +147,9 @@ output$e_data_spec_UI <- renderUI({
       pickerInput(
         "e_data_id_col",
         "Which column identifies unique biomolecules?",
-        choices = colnames(reactive_dataholder[["e_data"]]$file),
-        selected = isolate(if(!is.null(input$e_data_id_col)) input$e_data_id_col else character(0))
+        choices = colnames(edat),
+        selected = selected,
+        choicesOpt = list(disabled = disabled)
       ),
       
       pickerInput("datascale",

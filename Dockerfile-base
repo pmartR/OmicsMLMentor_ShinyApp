@@ -1,9 +1,15 @@
 ## slope 'base' container.  Installs system and R libraries.
+## SLOPER base dependencies image.  Installs system libraries, R libraries, and others.
+## Top image extends this image and copies the source code for the app
+
+## Must provide a secret file for access to private github repos with the build argument:
+## docker build --secret id=github_pat,src=.mysecret ...
 
 # Install latest version of rocker image
 FROM rocker/shiny:4.2.0
 
 # Load general use libraries
+# Keep gettext-base for MultiProbe
 RUN apt-get update && apt-get install -y \
     sudo \
     gettext-base \
@@ -15,60 +21,56 @@ RUN apt-get update && apt-get install -y \
     libxt-dev \
     libssh2-1-dev \
     libhiredis-dev \
+    libgsl-dev \
+    cmake \
     libzmq3-dev \
     libxml2-dev \
-    libgsl-dev \
     libharfbuzz-dev \
-    libfribidi-dev \
     libfreetype6-dev \
     libpng-dev \
     libtiff5-dev \
     libjpeg-dev \
-    cmake \
+    libfribidi-dev \
     libcurl3-gnutls \
-	vim python3-venv
+	  vim python3-venv \
+	  automake
 
+USER root
+
+# Keep for MultiProbe, direct to correct url
 WORKDIR /srv/shiny-server/slope
 
 # only need this to restore
-COPY renv/local .
-COPY renv.lock .
 COPY requirements.txt .
 
+# pre-install renv
+ENV RENV_VERSION 1.0.3
+ENV RENV_WATCHDOG_ENABLED FALSE
+
+RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org'))"
+RUN R -e "options('repos'=c(CRAN = 'https://cloud.r-project.org'));remotes::install_version('renv', version = '${RENV_VERSION}')"
+RUN R -e "options(renv.config.connect.timeout = 1000L)"
+RUN R -e "options(renv.config.connect.retry = 3L)"
+
 # The following 3 lines are needed to successfully install pmartR.
+# Need to set linker flags to install pmartR in linux environment
 RUN mkdir $HOME/.R
 COPY Makevars-docker .
 RUN cp Makevars-docker $HOME/.R/Makevars
 
-# pre-install renv
-RUN R -e "install.packages('renv', repos = 'https://cran.rstudio.com')"
+# Keep for MultiProbe, local DT use due to issue in download
+COPY renv ./renv
+COPY renv.lock .
 
 # install all packages listed in renv.lock
-# RUN --mount=type=secret,id=gitlab_pat export GITLAB_PAT="$(cat /run/secrets/gitlab_pat)" \
-# && R -e 'renv::restore()'
-
 RUN R -e 'renv::restore()'
 
-RUN R -e 'message(getwd())'
-RUN R -e 'message(list.files())'
-
-RUN R -e "install.packages('future')"
-RUN R -e "install.packages('markdown')"
-RUN R -e "install.packages('DT')"
-RUN R -e "install.packages('estimability')"
-RUN R -e "install.packages('FactoMineR')"
-RUN R -e "install.packages('emmeans')"
-RUN R -e "install.packages('lme4')"
-RUN R -e "install.packages('factoextra')"
-RUN R -e "install.packages('gh')"
-RUN R -e "install.packages('future.apply')"
-RUN R -e "install.packages('pmart')"
-RUN R -e "devtools::install_github('pmartR/pmartRdata')"
-
+## Keep for MultiProbe AWS
 RUN R -e "install.packages('aws.s3')"
 RUN R -e "install.packages('aws.ec2metadata')"
 
-
-
-
-RUN R -e 'devtools::install_local(paste0("./sloper.zip"), repos = NULL, type="source", upgrade = c("never"))'
+# python and requirements
+COPY requirements.txt .
+RUN python3 -m venv /venv
+RUN /venv/bin/pip install --upgrade pip
+RUN /venv/bin/pip install -r requirements.txt

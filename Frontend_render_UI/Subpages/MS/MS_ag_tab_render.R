@@ -117,7 +117,7 @@ output$f_data_response_picker_UI <- renderUI({
       choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
       multiple = T,
       selected = selected,
-      options = list( `live-search` = TRUE, "max-options" = 2),
+      options = list( `live-search` = TRUE, "max-options" = 1),
       width = "60%"
     )
   )
@@ -145,7 +145,7 @@ output$pick_model_group_pick_UI <- renderUI({
     choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
     multiple = T,
     selected = selected,
-    options = list( `live-search` = TRUE, "max-options" = 2),
+    options = list( `live-search` = TRUE, "max-options" = 1),
     width = "60%"
   )
 })

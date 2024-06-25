@@ -104,7 +104,7 @@ observe({
     !any(map_lgl(
       list(
         input$skip_ag,
-        omicsData$objMSU,
+        # omicsData$objMSU,
         omicsData$objModel,
         input$feature_selection
       ),
@@ -340,7 +340,7 @@ observe({
     df[(nrow(df) + 1):5,] <- ""
   }
 
-  dashboard(df)
+  isolate(dashboard(df))
   
 })
 
