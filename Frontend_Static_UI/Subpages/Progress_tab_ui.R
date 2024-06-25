@@ -5,7 +5,7 @@ progress_tab <- function(tabset, ..., plot_choices = c(
                            "Sample Correlation Heatmap",
                            "Missing Value Sample Bar Plots",
                            "Missing Value Biomolecule Histogram"
-                         )) {
+                         ), done_btn = "", reset_btn = "") {
   div(
     fluidRow( # begin fluidrow
 
@@ -13,37 +13,26 @@ progress_tab <- function(tabset, ..., plot_choices = c(
         5,
 
         # Upload edata
-        collapseBoxGroup(
-          id = paste0(tabset, "_collapse_left"),
-
-          collapseBox(
-            "Data Summaries",
-            collapsed = F,
-            value = paste0(tabset, "_progress_summ"),
-            uiOutput(paste0(tabset, "_progress_summ"))
-          ),
-
-          collapseBox(
-            value = "datselect",
-            collapsed = F,
-            div(
-              "Vizualization Selection",
-              hidden(
-                div(
-                  id = paste0("_ok_datselect", tabset),
-                  style = "color:orange;float:right",
-                  icon("ok", lib = "glyphicon")
-                )
-              )
+        div(
+          collapseBoxGroup(
+            id = paste0(tabset, "_collapse_left"),
+  
+            collapseBox(
+              "Data Summary",
+              collapsed = F,
+              value = paste0(tabset, "_progress_summ"),
+              uiOutput(paste0(tabset, "_progress_summary"))
             ),
-
-            pickerInput(paste0(tabset, "_progress_plot_view"),
-              "Select summary visualization to view",
-              choices = plot_choices
+            collapseBox(
+              "Next Steps",
+              collapsed = F,
+              value = paste0(tabset, "_progress_next"),
+              uiOutput(paste0(tabset, "_progress_next_steps")),
+              done_btn,
+              reset_btn
             )
-          )
-        ), # parent collapse
-        uiOutput(paste0(tabset, "_progress_engage_UI"))
+          ) # parent collapse
+        )
       ), # column 4
 
       column(
@@ -55,14 +44,20 @@ progress_tab <- function(tabset, ..., plot_choices = c(
           collapseBox(
             "Summary Visualization",
             collapsed = F,
-            value = paste0(tabset, "_progress_plot"),
-            uiOutput(paste0(tabset, "_progress_plot"))
+            value = paste0(tabset, "_progress_vis"),
+            div(
+              style = "width: 100%;",
+              uiOutput(paste0(tabset, "_progress_plot")),
+              pickerInput(paste0(tabset, "_progress_plot_view"),
+                          "Select summary visualization to view",
+                          choices = plot_choices)
+            )
           ),
 
           collapseBox(
             "User Inputs",
             value = paste0(tabset, "_progress_inputs"),
-            uiOutput(paste0(tabset, "_progress_inputs"))
+            uiOutput(paste0(tabset, "_progress_inputs_list"))
           )
         ) # Collapse parent
       ) # main_column

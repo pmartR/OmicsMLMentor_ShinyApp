@@ -241,10 +241,17 @@ QC_tab_overlord <- function(){
           id = "QC_review_selection_box",
           
           br(),
-          progress_tab("QC"),
-          
-          actionButton("qc_review_done", "Done")
-          
+          progress_tab(
+            "QC",
+            plot_choices = c(
+              "Single Observations" = "QC__single_obs",
+              "RMD Overall" = "QC__rmd_overall",
+              "RMD Outliers" = "QC__rmd_outliers",
+              "Missingness by Sample" = "QC__missing_samples",
+              "Missingness by Feature" = "QC__missing_features"
+            ),
+            done_btn = actionButton("qc_review_done", "Continue to Model Set-Up")
+          )
         )
         
       )

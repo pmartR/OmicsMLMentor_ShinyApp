@@ -136,9 +136,17 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
               id = "PP_review_selection_box",
               
               br(),
-              progress_tab("preprocessing"),
-              
-              actionButton("complete_ppreview", "Done")
+              progress_tab(
+                "preprocessing",
+                plot_choices = c(
+                  "Transformed Boxplots" = "PP__transform",
+                  "Molecule Filter Preview" = "PP__filters__molfilt",
+                  "Missingness Handling Preview" = "PP__filters__imputefilt",
+                  "CV Filter Preview" = "PP__filters__cvfilt",
+                  "Normalized Data Boxplots" = "PP__normalization__post"
+                ),
+                done_btn = actionButton("complete_ppreview", "Done")
+              ),
               
             )
             
@@ -251,9 +259,17 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
               id = "PP_review_selection_box",
               
               br(),
-              progress_tab("preprocessing"),
-              
-              actionButton("complete_ppreview", "Done")
+              progress_tab(
+                "preprocessing",
+                plot_choices = c(
+                  "Transformed Boxplots" = "PP__transform",
+                  "Molecule Filter Preview" = "PP__filters__molfilt",
+                  "Missingness Handling Preview" = "PP__filters__imputefilt",
+                  "CV Filter Preview" = "PP__filters__cvfilt",
+                  "Normalized Data Boxplots" = "PP__normalization__post"
+                ),
+                done_btn = actionButton("complete_ppreview", "Done")
+              ),
               
             )
             

@@ -142,9 +142,27 @@ output$RM_ui <- renderUI({
             
             
             br(),
-            progress_tab("results_review"),
-            
-            actionButton("complete_results_review", "Done")
+            progress_tab(
+              "RM",
+              plot_choices = c(
+                "Recommended Folds" = "RM__rec_folds",
+                "Parameter Optimization" = "RM__param_optim",
+                "Training Structure" = "RM__training_structure",
+                "Model Evaluation: ROC Curve (full)" = "RM__model_eval__full__roc_curve",
+                "Model Evaluation: Confidence Bar (full)" = "RM__model_eval__full__confidence_bar",
+                "Model Evaluation: Prediction Bar (full)" = "RM__model_eval__full__prediction_bar",
+                "Model Evaluation: Confusion Heatmap (full)" = "RM__model_eval__full__confusion_heatmap",
+                "Model Evaluation: Confidence Scatter (full)" = "RM__model_eval__full__confidence_scatter",
+                "Model Evaluation: ROC Curve (reduced)" = "RM__model_eval__reduced__roc_curve",
+                "Model Evaluation: Confidence Bar (reduced)" = "RM__model_eval__reduced__confidence_bar",
+                "Model Evaluation: Prediction Bar (reduced)" = "RM__model_eval__reduced__prediction_bar",
+                "Model Evaluation: Confusion Heatmap (reduced)" = "RM__model_eval__reduced__confusion_heatmap",
+                "Model Evaluation: Confidence Scatter (reduced)" = "RM__model_eval__reduced__confidence_scatter",
+                "Variable Importance (full)" = "RM__variable_importance__full",
+                "Variable Importance (reduced) " = "RM__variable_importance__reduced"
+              ),
+              done_btn = actionButton("complete_results_review", "Done")
+            ),
             
           ))
           
@@ -261,9 +279,10 @@ output$RM_ui <- renderUI({
             id = "RM_result_box",
             
             br(),
-            progress_tab("results_review"),
-            
-            actionButton("complete_results_review", "Done")
+            progress_tab(
+              "RM",
+              done_btn = actionButton("complete_results_review", "Done")
+            ),
             
           ))
           
