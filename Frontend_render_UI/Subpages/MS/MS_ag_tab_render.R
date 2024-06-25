@@ -105,9 +105,14 @@ output$f_data_response_picker_UI <- renderUI({
   
   req(!is.null(omicsData$objMSU$f_data))
   
+  subtext <- apply(omicsData$objMSU$f_data[
+    colnames(omicsData$objMSU$f_data) != input$f_data_id_col], 2, unique)
+  subtext <- sapply(subtext, toString)
+  
   selected <- isolate(if(is.null(input$f_data_response_picker)) logical(0) else {
     input$f_data_response_picker
   })
+  
   div(
     strong("Which sample column(s) would you like to predict?"),
     br(), br(),
@@ -117,6 +122,7 @@ output$f_data_response_picker_UI <- renderUI({
       choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
       multiple = T,
       selected = selected,
+      choicesOpt = list(subtext = subtext)
       options = list( `live-search` = TRUE, "max-options" = 1),
       width = "60%"
     )
@@ -135,6 +141,10 @@ output$pick_model_group_pick_UI <- renderUI({
         input$pick_model %in% models_supervised
         )
   
+  subtext <- apply(omicsData$objMSU$f_data[
+    colnames(omicsData$objMSU$f_data) != input$f_data_id_col], 2, unique)
+  subtext <- sapply(subtext, toString)
+  
   selected <- isolate(if(is.null(input$pick_model_group_pick)) logical(0) else {
     input$pick_model_group_pick
   })
@@ -143,6 +153,7 @@ output$pick_model_group_pick_UI <- renderUI({
     "pick_model_group_pick",
     "Which sample column(s) would you like to predict?",
     choices = colnames(omicsData$objMSU$f_data)[colnames(omicsData$objMSU$f_data) != input$f_data_id_col],
+    choicesOpt = list(subtext = subtext),
     multiple = T,
     selected = selected,
     options = list( `live-search` = TRUE, "max-options" = 1),

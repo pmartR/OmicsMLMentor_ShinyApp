@@ -108,9 +108,9 @@ output$e_data_spec_UI <- renderUI({
   if(input$data_type == "RNA-seq"){
     choices <- list(
       "Counts" = "counts",
-      "Natural log counts per million" = "lcpm_log",
-      "Log base 2 counts per million" = "lcpm_log2",
-      "Log base 10 counts per million" = "lcpm_log10"
+      "Log2 counts per million" = "lcpm",
+      "Upper-quantile transformed counts" = "upper",
+      "Median counts" = "median"
     )
   } else {
     choices <- list(

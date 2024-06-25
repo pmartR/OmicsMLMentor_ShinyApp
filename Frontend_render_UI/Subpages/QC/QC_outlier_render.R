@@ -316,7 +316,7 @@ observeEvent(input$outliers_done, {
       temp_dat$f_data <- NULL
     }
     
-    omicsData$objQC <- temp_dat
+    omicsData$objQC <- auto_remove_na(temp_dat)
   }
   
 })

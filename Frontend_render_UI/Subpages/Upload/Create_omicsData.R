@@ -37,6 +37,11 @@ observeEvent(input$check_group_cols, {
   
   object_fn <- get(fn_use)
   
+  if(input$data_type == "RNA-seq" && data_scale != "counts"){
+    data_scale_hold <- data_scale
+    data_scale <- "counts"
+  } else data_scale_hold <- NULL
+  
   # create first object
   od <- tryCatch(
     {
@@ -46,7 +51,11 @@ observeEvent(input$check_group_cols, {
         data_scale = data_scale, is_normalized = is_normalized
       )
       
-      if(input$data_type != "RNA-seq") res <- res %>% edata_replace(na_replace, NA)
+      if(input$data_type != "RNA-seq"){
+        res <- res %>% edata_replace(na_replace, NA)
+      } else if(!is.null(data_scale_hold)){
+        attr(res, "data_info")$data_scale <- data_scale_hold
+      }
       res
     },
     error = function(e) {

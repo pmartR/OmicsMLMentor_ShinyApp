@@ -43,6 +43,7 @@ load_rollup_observers <- function(tab) {
         pep$e_data[[cname]] <- as.character(pep$e_data[[cname]]) #### Weird thing with numerics?
         pep$e_meta[[cname]] <- as.character(pep$e_meta[[cname]])
         
+        norm_attr <- attr(pep,"data_info")$norm_info$norm_fn 
         omicsData$objPP <- protein_quant(pep,
                                                   method = input$qc_which_rollup,
                                                   qrollup_thresh = input$qc_qrollup_thresh / 100,
@@ -51,6 +52,8 @@ load_rollup_observers <- function(tab) {
                                                   combine_fn = input$qc_which_combine_fn,
                                                   parallel = TRUE
         )
+        
+        attr(omicsData$objPP,"data_info")$norm_info$norm_fn <- norm_attr
         
         if (input$keep_missing != "Yes") {
           # Remove proteins which got filtered out
@@ -115,32 +118,42 @@ assign_rollup_output <- function(tab) {
   output[[paste0(tab, "_rollup_res")]] <- renderPlotly({
     req(!inherits(omicsData$objPP, "pepData"))
     
-    e_data <- omicsData$objPP$e_data
-    e_data_cname <- pmartR::get_edata_cname(omicsData$objPP)
-    plot_data <- melt(e_data, id = e_data_cname, na.rm = TRUE)
-    group_df <- get_group_DF(omicsData$objPP)
-    plot_data <- left_join(plot_data, group_df, by = c("variable" = colnames(group_df)[1]))
-    title <- paste0("Protein Roll-up: ", tab, " Data")
+    # e_data <- omicsData$objPP$e_data
+    # e_data_cname <- pmartR::get_edata_cname(omicsData$objPP)
+    # plot_data <- melt(e_data, id = e_data_cname, na.rm = TRUE)
+    # group_df <- get_group_DF(omicsData$objPP)
+    # plot_data <- left_join(plot_data, group_df, by = c("variable" = colnames(group_df)[1]))
+    # title <- paste0("Protein Roll-up: ", tab, " Data")
+    # 
+    # plot_data <- arrange(plot_data, !!rlang::sym(colnames(group_df)[2]))
+    # plot_data$variable <- factor(plot_data$variable, levels = unique(plot_data$variable))
+    # 
+    # p <- plot_ly(
+    #   data = plot_data,
+    #   x = plot_data$variable,
+    #   y = plot_data$value,
+    #   color = plot_data[[colnames(group_df)[2]]],
+    #   type = "box"
+    # ) %>%
+    #   layout(
+    #     title = title,
+    #     xaxis = list(title = "Samples"),
+    #     yaxis = list(title = "Values")
+    #   )
     
-    plot_data <- arrange(plot_data, !!rlang::sym(colnames(group_df)[2]))
-    plot_data$variable <- factor(plot_data$variable, levels = unique(plot_data$variable))
+    if(!is.null(get_group_df(omicsData$objPP))){
+      p <- plot(omicsData$objPP, 
+                color_by = "Group", 
+                order_by = "Group")
+    } else {
+      p <- plot(omicsData$objPP)
+    }
     
-    p <- plot_ly(
-      data = plot_data,
-      x = plot_data$variable,
-      y = plot_data$value,
-      color = plot_data[[colnames(group_df)[2]]],
-      type = "box"
-    ) %>%
-      layout(
-        title = title,
-        xaxis = list(title = "Samples"),
-        yaxis = list(title = "Values")
-      )
+    isolate(plot_table_current$table$PP__rollup <- p)
+    isolate(plot_table_current$names$PP__rollup <- "Protein roll-up")
     
-    isolate(plot_table_current$PP$rollup <- p)
-    
-    p
+    ggplotly(p)
+
   })
   
   output[[paste0(tab, "_rollup_data_summary_UI")]] <- renderUI({

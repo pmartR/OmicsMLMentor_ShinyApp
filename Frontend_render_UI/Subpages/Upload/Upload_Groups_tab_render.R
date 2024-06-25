@@ -152,8 +152,10 @@ observeEvent(input$fdata_upload_done, {
 })
 
 observeEvent(c(input$use_fdata, input$use_example_fdata, input$how_make_fdata), {
-  if (!is.null(input$use_fdata) && 
-      (AWS || isTruthy(input$use_example_fdata) || !is.null(input$how_make_fdata))) {
+  if (!is.null(input$use_fdata) &&
+      (input$use_fdata == ""  || AWS || 
+       isTruthy(input$use_example_fdata) || 
+       !is.null(input$how_make_fdata))) {
     shinyjs::enable("fdata_options_done")
   } else {
     shinyjs::disable("fdata_options_done")

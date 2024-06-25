@@ -460,7 +460,7 @@ observeEvent(input$done_sample_miss, {
       temp_dat$f_data <- NULL
     }
     
-    omicsData$objQC <- temp_dat
+    omicsData$objQC <- auto_remove_na(temp_dat)
     
     updateBoxCollapse(session, "missing_data_box", 
                       close = "missing_data_sample_box", 

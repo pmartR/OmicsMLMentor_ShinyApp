@@ -1957,7 +1957,8 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       tmp <- filter
       
       if(!is.null(isolate(get_group_DF(omicsData$objPP)))){
-        p1 <- plot(isolate(omicsData$objPP), color_by = "Group", order_by = "Group") +
+        p1 <- plot(isolate(omicsData$objPP), 
+                   color_by = "Group", order_by = "Group") +
           labs(title = "Before handling missingness")
         
         if(all(unlist(tmp$e_data[-1]) %in% c(0, 1))){

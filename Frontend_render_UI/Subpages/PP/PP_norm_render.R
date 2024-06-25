@@ -1752,6 +1752,8 @@ assign_norm_output <- function(tab) {
           !is.null(omicsData$objPP$f_data)) {
         
         out <- list(
+          "Statistical Procedure for the Analyses of peptide abundance Normalization Strategies (SPANS)",
+          br(), br(),
           cl_inputs,
           ld_dft,
           hr(),
@@ -1775,7 +1777,7 @@ assign_norm_output <- function(tab) {
       } else {
         ### This should never happen given the req for loading this UI, but just in case
         return(
-          strong("SPANS is only available for proteomic data types and requires Sample Information file.")
+          strong("Statistical Procedure for the Analyses of peptide abundance Normalization Strategies (SPANS) is only available for proteomic data types and requires Sample Information file.")
         )
       }
     }),
@@ -2230,7 +2232,7 @@ assign_norm_output <- function(tab) {
     output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
       
       req(!all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))
-      
+
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
         return(isolate(plot_table_current$table$PP__normalization__pre))
@@ -2247,6 +2249,17 @@ assign_norm_output <- function(tab) {
             x = "",
           ) + 
           theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+        
+      } else if(inherits(omicsData$objPP, "seqData")){
+        x <- omicsData$objPP
+        p <- plot(x)
+        
+        yaxis <- switch(attr(x, "data_info")$data_scale_actual,
+                        lcpm = "Log counts per million",
+                        upper = "Upper-quantile transformed counts",
+                        median = "Median counts")
+        p <- p + labs(y = yaxis, 
+                      title = paste0("Un-Normalized: ", tab, " Data"))
       
       } else if(!is.null(get_group_DF(omicsData$objPP))){
         
