@@ -145,7 +145,12 @@ observe({
   samples_per_feature <- nrow(temp_omic$e_data)/
     min(get_group_table(temp_omic)) > 300
   
-  correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+  # Avoid out of memory crash with large data object
+  if (dim(temp_omic$e_data)[1] > 50000) {
+    correlation <- TRUE
+  } else {
+    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+  }
   
   ## Change based on algorithim for holdout
   overfit <- min(get_group_table(temp_omic)) < 5

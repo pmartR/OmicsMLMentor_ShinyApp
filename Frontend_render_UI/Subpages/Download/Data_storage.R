@@ -559,7 +559,7 @@ output$download_plot_table_Upload <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_plot_table_Upload")
     pg <- "Upload"
     plot_table <- tibble(
-      rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))], \(x) plot_table_current$names[[x]]),
       list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -584,7 +584,7 @@ output$download_table_table_Upload <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_Upload")
     pg <- "Upload"
     table_table <- tibble(
-      rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(table_table_current$table)[which(startsWith(names(table_table_current$table), paste0(pg, "__")))], \(x) table_table_current$names[[x]]),
       list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -610,7 +610,7 @@ output$download_plot_table_QC <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_plot_table_QC")
     pg <- "QC"
     plot_table <- tibble(
-      rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))], \(x) plot_table_current$names[[x]]),
       list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -636,7 +636,7 @@ output$download_table_table_QC <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_QC")
     pg <- "QC"
     table_table <- tibble(
-      rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(table_table_current$table)[which(startsWith(names(table_table_current$table), paste0(pg, "__")))], \(x) table_table_current$names[[x]]),
       list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -661,7 +661,7 @@ output$download_plot_table_MSU <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_plot_table_MSU")
     pg <- "MSU"
     plot_table <- tibble(
-      rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))], \(x) plot_table_current$names[[x]]),
       list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -687,7 +687,7 @@ output$download_table_table_MSU <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_MSU")
     pg <- "MSU"
     table_table <- tibble(
-      rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(table_table_current$table)[which(startsWith(names(table_table_current$table), paste0(pg, "__")))], \(x) table_table_current$names[[x]]),
       list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -712,7 +712,7 @@ output$download_plot_table_PP <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_plot_table_PP")
     pg <- "PP"
     plot_table <- tibble(
-      rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))], \(x) plot_table_current$names[[x]]),
       list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -738,7 +738,7 @@ output$download_table_table_PP <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_PP")
     pg <- "PP"
     table_table <- tibble(
-      rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(table_table_current$table)[which(startsWith(names(table_table_current$table), paste0(pg, "__")))], \(x) table_table_current$names[[x]]),
       list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -764,7 +764,7 @@ output$download_plot_table_RM <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_plot_table_RM")
     pg <- "RM"
     plot_table <- tibble(
-      rows = plot_table_current$names[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))], \(x) plot_table_current$names[[x]]),
       list_el = plot_table_current$table[which(startsWith(names(plot_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     
@@ -789,7 +789,7 @@ output$download_table_table_RM <- renderDT(height = "450px",{
     session$sendCustomMessage("unbind-DT-RR", "download_table_table_RM")
     pg <- "RM"
     table_table <- tibble(
-      rows = table_table_current$names[which(startsWith(names(table_table_current$table), paste0(pg, "__")))],
+      rows = sapply(names(table_table_current$table)[which(startsWith(names(table_table_current$table), paste0(pg, "__")))], \(x) table_table_current$names[[x]]),
       list_el = table_table_current$table[which(startsWith(names(table_table_current$table), paste0(pg, "__")))] 
     ) %>% filter(!map_lgl(list_el, is.null))
     

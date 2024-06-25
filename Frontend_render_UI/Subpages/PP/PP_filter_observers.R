@@ -644,7 +644,7 @@ observeEvent(omicsData$objPP, {
           title = "Missingness handling filter",
           value = "imputefilt_plot_tab",
           br(),
-          withSpinner(plotlyOutput("imputefilt_plot"))
+          uiOutput("imputefilt_plot_render")
         )
       )
     } else {
@@ -1916,6 +1916,17 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
       return(tmp_tooltip)
     } else {
       return(hidden(tmp_tooltip))
+    }
+  })
+  
+  output$imputefilt_plot_render <- renderUI({
+    if (isTruthy(input$imputefilt_plot_load) || dim(omicsData$objPP$e_data)[1] < 50000) {
+      withSpinner(plotlyOutput("imputefilt_plot"))
+    } else {
+      div(
+        "This plot is large and may take a while to render.",
+        actionButton("imputefilt_plot_load", "Show plot")
+      )
     }
   })
   

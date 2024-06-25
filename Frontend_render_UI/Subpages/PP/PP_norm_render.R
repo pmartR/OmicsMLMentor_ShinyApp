@@ -2215,6 +2215,18 @@ assign_norm_output <- function(tab) {
       )
     }),
     
+    output[[paste0(tab, "_normalized_boxplots_pre_render")]] <- renderUI({
+      if (isTruthy(input[[paste0(tab, "_normalized_boxplots_pre_load")]]) || dim(omicsData$objPP$e_data)[1] < 50000) {
+        withSpinner(plotlyOutput(paste0(tab, "_normalized_boxplots_pre")))
+      } else {
+        div(
+          "This plot is large and may take a while to render.",
+          actionButton(paste0(tab, "_normalized_boxplots_pre_load"), "Show plot")
+        )
+      }
+      
+    }),
+    
     output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
       
       req(!all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))
@@ -2267,7 +2279,15 @@ assign_norm_output <- function(tab) {
       if (
         !is.null(omicsData$objNorm)
       ) {
-        return(plotlyOutput(paste0(tab, "_normalized_boxplots_post")))
+        if (isTruthy(input[[paste0(tab, "_normalized_boxplots_post_load")]]) || dim(omicsData$objPP$e_data)[1] < 50000) {
+          return(plotlyOutput(paste0(tab, "_normalized_boxplots_post")))
+        } else {
+          div(
+            "This plot is large and may take a while to render.",
+            actionButton(paste0(tab, "_normalized_boxplots_post_load"), "Show plot")
+          )
+        }
+        
       } else {
         return(textOutput(paste0(tab, "_normalized_boxplots_post_null")))
       }
