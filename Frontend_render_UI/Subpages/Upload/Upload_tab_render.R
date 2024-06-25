@@ -35,7 +35,10 @@ output$data_select_UI <- renderUI({
       )
     } else {
       tagList(
-        prettySwitch("have_emeta", label_emeta, value = F, fill = T, status = "primary"),
+        div(
+          id = 'have_emeta_js',
+          prettySwitch("have_emeta", label_emeta, value = F, fill = T, status = "primary")
+        ),
         div("Optional", relevant_examples, style = "margin-top: -10px;")
       )
     },
