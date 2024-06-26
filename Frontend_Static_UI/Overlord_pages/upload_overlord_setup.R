@@ -86,7 +86,8 @@ upload_tab_overlord <- function(){
               "Data Boxplots" = "Upload__boxplot",
               "Sample Groups" = "Upload__grouping__*"
             ),
-            done_btn = actionButton("review_upload_done", "Continue to Quality Control")
+            done_btn = actionButton("review_upload_done", "Continue to Quality Control"),
+            reset_btn = actionButton("reset_upload", "Revert to start of Upload")
           ),
           
         )

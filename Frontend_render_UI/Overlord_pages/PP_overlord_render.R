@@ -145,7 +145,8 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
                   "CV Filter Preview" = "PP__filters__cvfilt",
                   "Normalized Data Boxplots" = "PP__normalization__post"
                 ),
-                done_btn = actionButton("complete_ppreview", "Done")
+                done_btn = actionButton("complete_ppreview", "Done"),
+                reset_btn = actionButton("reset_pp", "Revert to start of Postprocessing")
               ),
               
             )
@@ -268,7 +269,8 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
                   "CV Filter Preview" = "PP__filters__cvfilt",
                   "Normalized Data Boxplots" = "PP__normalization__post"
                 ),
-                done_btn = actionButton("complete_ppreview", "Done")
+                done_btn = actionButton("complete_ppreview", "Done"),
+                reset_btn = actionButton("reset_pp", "Revert to start of Postprocessing")
               ),
               
             )

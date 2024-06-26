@@ -3,6 +3,7 @@ output$Upload_progress_summary <- renderUI({
 })
 
 output$Upload_progress_summary_table <- renderDT({
+  req(!is.null(omicsData$obj))
   summary(omicsData$obj)
 })
 
@@ -16,6 +17,8 @@ output$Upload_progress_next_steps <- renderUI({
 })
 
 output$Upload_progress_plot <- renderUI({
+  req(!is.null(reactive_dataholder$e_data))
+  
   if (input$Upload_progress_plot_view == "Upload__boxplot") {
     if (isTruthy(input$boxplot_UI_load_button) || dim(reactive_dataholder$e_data$file)[1] < 50000) {
       plotlyOutput("Upload_progress_plot_render")

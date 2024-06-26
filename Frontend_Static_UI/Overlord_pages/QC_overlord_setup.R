@@ -250,7 +250,8 @@ QC_tab_overlord <- function(){
               "Missingness by Sample" = "QC__missing_samples",
               "Missingness by Feature" = "QC__missing_features"
             ),
-            done_btn = actionButton("qc_review_done", "Continue to Model Set-Up")
+            done_btn = actionButton("qc_review_done", "Continue to Model Set-Up"),
+            reset_btn = actionButton("reset_qc", "Revert to start of Quality Control")
           )
         )
         

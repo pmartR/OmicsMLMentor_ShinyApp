@@ -161,7 +161,8 @@ output$RM_ui <- renderUI({
                 "Variable Importance (full)" = "RM__variable_importance__full",
                 "Variable Importance (reduced) " = "RM__variable_importance__reduced"
               ),
-              done_btn = actionButton("complete_results_review", "Done")
+              done_btn = actionButton("complete_results_review", "Done"),
+              reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
             ),
             
           ))
@@ -281,7 +282,8 @@ output$RM_ui <- renderUI({
             br(),
             progress_tab(
               "RM",
-              done_btn = actionButton("complete_results_review", "Done")
+              done_btn = actionButton("complete_results_review", "Done"),
+              reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
             ),
             
           ))
