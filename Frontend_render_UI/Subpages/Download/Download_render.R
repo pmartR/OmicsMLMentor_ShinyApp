@@ -77,15 +77,19 @@ reset_qc <- function() {
     table_table_current$table[[name]] <- NULL
   }
   
-  shinyjs::show(id = "low_ob_box")
+  shinyjs::show(id = "refnorm_box")
+  shinyjs::hide(id = "low_ob_box")
   shinyjs::hide(id = "remove_outlier_box")
   shinyjs::hide(id = "missing_data_box")
   shinyjs::hide(id = "QC_review_selection_box")
   
-  shinyjs::addClass("show_low_obs", "blueoutline")
+  shinyjs::addClass("show_refnorm", "blueoutline")
+  shinyjs::removeClass("show_low_obs", "blueoutline")
   shinyjs::removeClass("show_outlier_detect", "blueoutline")
   shinyjs::removeClass("show_missing_data", "blueoutline")
   shinyjs::removeClass("review_QC", "blueoutline")
+  
+  updateBoxCollapse(session, "references_collapse_left", open = "columnids")
   
   shinyjs::disable("show_outlier_detect")
   
@@ -96,6 +100,7 @@ reset_qc <- function() {
   
   shinyjs::disable("review_QC")
   
+  updateProgressBar(session, "QC_refnorm_done", value = 0)
   updateProgressBar(session, "QC_lo_done", value = 0)
   updateProgressBar(session, "QC_outlier_done", value = 0)
   updateProgressBar(session, "missing_data_done", value = 0)
