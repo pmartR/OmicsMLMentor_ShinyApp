@@ -1,8 +1,11 @@
 
 QC_rmd <- reactiveValues(res = NULL)
 
-outlier_collapse_UI <- renderUI({
-  if(!inherits(omicData$obj, "seqData")){
+output$outlier_collapse_UI <- renderUI({
+  
+  tabname <- "QC"
+  
+  if(!inherits(omicsData$obj, "seqData")){
     collapseBoxGroup(
       id = "QC_outlier_sidebar",
       # biomolecule filters
@@ -78,8 +81,7 @@ outlier_collapse_UI <- renderUI({
           column(
             12,
             br(),
-            br(),
-            "Currently not supported for RNA-seq data, please click 'Confirm Selections to continue.'",
+            "Currently not supported for RNA-seq data, please click 'Confirm Selections' to continue.",
             br(), br()
               )
             )
@@ -316,7 +318,7 @@ observeEvent(input$outliers_done, {
       temp_dat$f_data <- NULL
     }
     
-    omicsData$objQC <- temp_dat
+    omicsData$objQC <- auto_remove_na(temp_dat)
   }
   
 })

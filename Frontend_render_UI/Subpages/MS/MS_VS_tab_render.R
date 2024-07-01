@@ -114,7 +114,13 @@ output$VS_column_examine <- renderUI({
 output$vs_tab_plots <-  renderPlotly({
   
   if(input$VS_data_picker == "e_data"){
-    plot(omicsData$objMSU)
+    
+    if(!is.null(get_group_DF(omicsData$objMSU))){
+      p <- plot(omicsData$objMSU, color_by = "Group", order_by = "Group")
+    } else {
+      p <- plot(omicsData$objMSU)
+    }
+    
   } else if(input$VS_data_picker == "f_data"){
     
     df <- omicsData$objMSU$f_data

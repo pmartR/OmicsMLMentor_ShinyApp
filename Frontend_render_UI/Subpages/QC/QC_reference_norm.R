@@ -144,6 +144,6 @@ observeEvent(
 observeEvent(input$refnorm_complete, {
   req(str_to_title(class(omicsData$objQC)[[1]]) == "Isobaricpepdata" ||
         (str_to_title(class(omicsData$objQC)[[1]]) == "Nmrdata" && input$Nmrdata_reference_choice == "Yes"))
-  omicsData$objQC <- omicsData$objRefnorm
+  omicsData$objQC <- auto_remove_na(omicsData$objRefnorm)
   
 })
