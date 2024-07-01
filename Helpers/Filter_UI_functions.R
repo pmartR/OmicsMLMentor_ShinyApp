@@ -1,4 +1,4 @@
-filter_tab_temp <- function(tabname, keep_missing, user_level) {
+filter_tab_temp <- function(tabname, keep_missing, user_level, datascale) {
   
   # if(!is.null(input$keep_missing)){
   #   # no_mol_filt <- T
@@ -13,24 +13,33 @@ filter_tab_temp <- function(tabname, keep_missing, user_level) {
   
   ## Determine which filters are needed
   if(tabname == "Seqdata"){
-    biofilt_UI <- c(
-      # "lowvar_mol",
-      "molfilt", 
-      # "imputefilt",
-      # "cvfilt", 
-      # "imdanovafilt",
-      "customfilt",
-      # "profilt" # default excluded
-      "totalCountFilt" # default excluded
-    )
-    sampfilt_UI <- c(
-      # "corr_mol",
-      # "lowvar_samp",
-      # "rmdfilt",
-      "Libfilt",
-      # "NZfilt",
-      "customfilt"
-    )
+    
+    if(datascale != "counts"){
+      biofilt_UI <-c(
+        "customfilt"
+      )
+      
+      sampfilt_UI <- c()
+    } else {
+      biofilt_UI <- c(
+        # "lowvar_mol",
+        "molfilt", 
+        # "imputefilt",
+        # "cvfilt", 
+        # "imdanovafilt",
+        "customfilt",
+        # "profilt" # default excluded
+        "totalCountFilt" # default excluded
+      )
+      sampfilt_UI <- c(
+        # "corr_mol",
+        # "lowvar_samp",
+        # "rmdfilt",
+        "Libfilt",
+        # "NZfilt",
+        "customfilt"
+      )
+    }
   } else {
     
     biofilt_UI <- c(

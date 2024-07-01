@@ -812,11 +812,43 @@ output$download_table_table_RM <- renderDT(height = "450px",{
 output$include_model_UI <- renderUI({
   req(!is.null(omicsData$objPP))
   
-  if(!is.null(attr(omicsData$objPP,"data_info")) && attr(omicsData$objPP,"data_info")$norm_info$norm_fn != "zero_to_one"){
-    include_mod <- disabled(checkboxInput(label = "Include model as an R object (RDS file)?", 
-                  "include_model", value = F))
+  norm_fn <- attr(omicsData$objPP,"data_info")$norm_info$norm_fn
+  trans_fn <- attr(omicsData$objPP,"data_info")$data_scale_actual
+  
+  if(inherits(omicsData$objPP, "seqData") && 
+     (is.null(trans_fn) || trans_fn != "lcpm")){
+    
+    include_mod <- disabled(
+      checkboxInput(
+        label = div(
+          "Include model as an R object (RDS file)?",
+          strong("   "),
+          tipify(icon("circle-info"),
+                 paste0("Disabled, as log2 counts per million",
+                        " transformation was not applied.")
+          )
+        ),
+        inputId = "include_model", value = F)
+    )
+    
+  } else if(!inherits(omicsData$objPP, "seqData") && 
+            (is.null(norm_fn) || norm_fn != "zero_to_one")){
+    
+    include_mod <- disabled(
+      checkboxInput(
+        label = div(
+          "Include model as an R object (RDS file)?",
+          strong("   "),
+          tipify(icon("circle-info"),
+                 paste0("Disabled, as 0-1 normalization was not applied.")
+          )
+        ),
+        inputId = "include_model", value = F)
+    )
+
   } else {
-    include_mod <- checkboxInput(label = "Include model as an R object (RDS file)?", 
+
+    include_mod <- checkboxInput(label = "Include model as an R object (RDS file)?",
                   "include_model", value = T)
   }
   
