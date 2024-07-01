@@ -1378,7 +1378,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                     )
               )
           )
-      )
+      ),
       # fluidRow(
       #   column(10,
       #          align = "center", offset = 1,
@@ -1386,7 +1386,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       #          actionButton("goto_norm", "Continue to normalization", style = "margin-top:5px;width:75%")
       #   )
       # )#,
-      # footer = NULL
+      footer = actionButton("dismiss_modal",label = "Dismiss")
     )
   )
   
@@ -1398,6 +1398,10 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   #   export_filters[[export_obj]] <- attr(omicsData$objPP[[export_obj]], "filters")
   # }
   # exportTestValues(filters = export_filters)
+})
+
+observeEvent(input$dismiss_modal, {
+  removeModal()
 })
 
 
