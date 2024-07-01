@@ -49,7 +49,7 @@ observeEvent(input$LQ_done, {
     omicsData$objQC <- applyFilt(molecule_filter(omicsData$objQC), 
                                omicsData$objQC, min_num = 2)
   } else {
-    omicsData$objQC <- omicsData$objQC
+    omicsData$objQC <- auto_remove_na(omicsData$objQC)
   }
   
 })

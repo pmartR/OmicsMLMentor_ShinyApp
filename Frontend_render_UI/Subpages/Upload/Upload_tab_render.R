@@ -108,9 +108,9 @@ output$e_data_spec_UI <- renderUI({
   if(input$data_type == "RNA-seq"){
     choices <- list(
       "Counts" = "counts",
-      "Natural log counts per million" = "lcpm_log",
-      "Log base 2 counts per million" = "lcpm_log2",
-      "Log base 10 counts per million" = "lcpm_log10"
+      "Log2 counts per million" = "lcpm",
+      "Upper-quantile transformed counts" = "upper",
+      "Median counts" = "median"
     )
   } else {
     choices <- list(
@@ -159,6 +159,7 @@ output$e_data_spec_UI <- renderUI({
                   options = pickerOptions(maxOptions = 1),
                   selected = isolate(if(!is.null(input$datascale)) input$datascale else character(0))
       ),
+      uiOutput("RNA_text_warn"),
       
       radioGroupButtons( ## Hide for isobaric non-instrument normalized
         "normalized",
@@ -180,6 +181,26 @@ output$e_data_spec_UI <- renderUI({
       )
     )
   )
+})
+
+output$RNA_text_warn <- renderUI({
+  
+  req(!is.null(input$data_type) && 
+        input$data_type == "RNA-seq" &&
+        !is.null(input$datascale) &&
+        !(input$datascale %in% c("counts", "lcpm")))
+  
+  text_warn <- paste0("Note: If the intent of the model is to",
+                      " be used with new data, data must be imported as",
+                      " counts or log2 counts per million. If neither of",
+                      " these are selected, users will not ",
+                      "be able to export to an RDS object.")
+  
+  div(
+    text_warn,
+    br(), br()
+  )
+  
 })
 
 output$e_meta_spec_UI <- renderUI({
@@ -261,7 +282,7 @@ output$detected_box_upload <- renderUI({
 })
 
 output$boxplot_UI_render <- renderUI({
-  if (isTruthy(input$boxplot_UI_load_button) || dim(reactive_dataholder$e_data$file)[1] < 50000) {
+  if (isTruthy(input$boxplot_UI_load_button) || dim(reactive_dataholder$e_data$file)[1] < 20000) {
     withSpinner(plotlyOutput("boxplot_UI"))
   } else {
     div(

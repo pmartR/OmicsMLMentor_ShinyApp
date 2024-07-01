@@ -54,6 +54,7 @@ suppressPackageStartupMessages({
   library(parsnip)
   library(tune)
   library(yardstick)
+  library(glmnetUtils)
   library(glmnet)
   library(plsmod)
   
@@ -62,6 +63,7 @@ suppressPackageStartupMessages({
   library(purrr)
   library(slopeR) ## Must be installed manually
 })
+
 
 options(renv.config.sandbox.enabled = FALSE)
 

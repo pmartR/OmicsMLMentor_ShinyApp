@@ -32,17 +32,29 @@ supervised <- reactive({
 
 popup <- reactiveValues()
 
+## Feed forward population
+
+## Auto-remove baddies through filtering steps
+auto_remove_na <- function(omicsData){
+  id_col <- which(colnames(omicsData$e_data) == get_edata_cname(omicsData))
+  remove_edata <- omicsData$e_data[[id_col]][
+    apply(is.na(omicsData$e_data[-id_col]), 1, all)]
+  if(length(remove_edata) > 0){
+    filt <- custom_filter(omicsData, e_data_remove = remove_edata)
+    return(applyFilt(filt, omicsData))
+  } else return(omicsData)
+}
+
 observeEvent(omicsData$obj, {
-  
-  omicsData$objQC <- omicsData$obj
+  omicsData$objQC <- auto_remove_na(omicsData$obj)
 })
 
 observeEvent(omicsData$objQC, {
-  omicsData$objMSU <- omicsData$objQC
+  omicsData$objMSU <- auto_remove_na(omicsData$objQC)
 })
 
 observeEvent(omicsData$objMSU, {
-  omicsData$objPP <- omicsData$objMSU
+  omicsData$objPP <- auto_remove_na(omicsData$objMSU)
 })
 
 ## Track selected model and response
