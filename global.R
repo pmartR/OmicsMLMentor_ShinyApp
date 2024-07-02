@@ -254,6 +254,8 @@ ttext <- list(
   IMDANOVA_VALUES_LIMITS = "<br/> Minimum g-test must be >= 3.  Minimum ANOVA must be >=2.",
   INTEGRATION_LOW_SAMPLES = "Warning: Though SPLS claims to be able to handle low numbers of samples, our independent experiments show instability under 30 samples, proceed with caution.",
   ISOBARIC_NO_GTEST_COMBINED = "Combined and g-test options are disabled for isobaric labeled peptide data",
+  MINIO_IMPORT_SUCCESS = "Your data has been successfully imported from the Multi-Omics Analysis Portal, certain widgets and inputs will be pre-populated and disabled.",
+  MINIO_IMPORT_ERROR = "An error occurred while importing data from the Multi-Omics Analysis Portal:  %s",
   NEWCOL_NO_SPLIT_CHOSEN = "In the field above this one, pick a value that each entry in the chosen column will be split by, then choose which parts of the result to keep",
   NO_BOGEY_COVARIATES = "No samples were removed due exclusively to a missing covariate.",
   PAIRING_INFO = "If your samples are paired, three pieces of information are needed:  The column specifying which pairs of samples go together, the column specifying which group or side of the pairing each sample is in, and which group is to be subtracted from the other.",

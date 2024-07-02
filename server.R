@@ -55,8 +55,11 @@ shinyServer(function(session, input, output) {
     # # Specify file type and disable input
     # updatePickerInput(session, "data_type", selected = "Label-free")
     # 
+    launch_tutorial()
   } else {
-    hide(id = "loading-gray-overlay")
+    # Here the app is checking if it needs to upload from MAP, launch_tutorial() will
+    # be called either from a modal dismiss or if no MAP data is found.
+    invisible()
   }
   
   # Observe any collapsible panels
@@ -64,8 +67,4 @@ shinyServer(function(session, input, output) {
     req(input$collapseTitleClick)
     updateBoxCollapse(session, input$collapseTitleClick$p, toggle = input$collapseTitleClick$id)
   })
-  
-  launch_tutorial()
- 
-  
 })
