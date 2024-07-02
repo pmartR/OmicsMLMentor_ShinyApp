@@ -54,6 +54,7 @@ output$e_data_upload_UI <- renderUI({
   
   label <- ifelse(input$data_type == "RNA-seq", 
                   "Upload Expression File", "Upload Abundance File")
+  
   div(
     collapseBox(
       label,
@@ -105,7 +106,7 @@ output$e_data_spec_UI <- renderUI({
   
   req(input$data_type_done > 0 && !is.null(input$data_type))
   
-  req((input$edata_upload_done > 0 || input$use_example || AWS) &&
+  req((input$edata_upload_done > 0 || input$use_example || AWS || data_from_map()) &&
         !is.null(input$data_type) && 
         !is.null(reactive_dataholder[["e_data"]]$file))
   
