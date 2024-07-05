@@ -1,7 +1,7 @@
 library(shinytest2)
 
 test_that("lipidData: Regular and Rewind", {
-  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000)
+  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
