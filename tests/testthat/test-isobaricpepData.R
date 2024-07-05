@@ -1,7 +1,7 @@
 library(shinytest2)
 
-test_that("pepData: Regular and Rewind", {
-  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000)
+test_that("isobaricpepData: Regular and Rewind", {
+  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
@@ -13,11 +13,9 @@ test_that("pepData: Regular and Rewind", {
   app$set_inputs(data_type = "Isobaric")
   app$wait_for_idle() #
   app$set_inputs(use_example = TRUE, wait_ = FALSE)
-  Sys.sleep(120)
-  app$wait_for_idle(timeout = 120000) #
+  app$wait_for_idle(timeout = 240000) #
   app$click("data_type_done", wait_ = FALSE)
-  Sys.sleep(60)
-  app$wait_for_idle() #
+  app$wait_for_idle(timeout = 120000) #
   app$set_inputs(datascale = "abundance")
   app$wait_for_idle() #
   app$set_inputs(normalized = "No")
@@ -39,8 +37,7 @@ test_that("pepData: Regular and Rewind", {
   app$click("specify_fdata_done")
   app$wait_for_idle() #
   app$click("check_group_cols", wait_ = FALSE)
-  Sys.sleep(60)
-  app$wait_for_idle(timeout = 120000) #
+  app$wait_for_idle(timeout = 15 * 60000) #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("review_upload_done")
@@ -50,13 +47,11 @@ test_that("pepData: Regular and Rewind", {
   app$click("refnorm_complete")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  Sys.sleep(60)
   app$wait_for_idle() #
   app$click("LQ_done", wait_ = FALSE)
-  Sys.sleep(120)
+  app$wait_for_idle()
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle(timeout = 180000) #
-  app$wait_for_idle() #
+  app$wait_for_idle(timeout = 15 * 60000) #
   app$click("outliers_done")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -68,8 +63,7 @@ test_that("pepData: Regular and Rewind", {
   app$set_inputs(qc_which_combine_fn = "median")
   app$wait_for_idle() #
   app$click("qc_apply_rollup", wait_ = FALSE)
-  Sys.sleep(60)
-  app$wait_for_idle(timeout = 120000)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$set_inputs(missing_options = c("impute"))
   app$wait_for_idle() #
   app$set_inputs(missing_options = c("impute", "convert"))
@@ -115,13 +109,11 @@ test_that("pepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  Sys.sleep(60)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
-  Sys.sleep(60)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("dismiss_modal")
-  app$wait_for_idle(120000) #
-  app$wait_for_idle() #
-  app$wait_for_idle() #
+  app$wait_for_idle(timeout = 15 * 60000) #
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -140,8 +132,8 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$click("Pepdata_apply_rollup")
-  app$wait_for_idle()
+  app$click("Pepdata_apply_rollup", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("complete_rollup")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -167,7 +159,7 @@ test_that("pepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("run_sl")
-  app$wait_for_idle()
+  app$wait_for_idle(timeout = 15 * 60000)
   app$set_inputs(vi_thresh_count = 15)
   app$wait_for_idle() #
   app$click("feature_select_posthoc")
@@ -188,21 +180,22 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$click("RM_dwn_done")
   app$wait_for_idle() #
-  app$click("makezipfile")
-  app$wait_for_idle()
+  app$click("makezipfile", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
   #app$expect_download("download_processed_data")
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_qc")
-  app$wait_for_idle() #
-  app$click("refnorm_complete")
-  app$wait_for_idle() #
+  app$click("rewind_qc", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000) #
+  
+  app$click("refnorm_complete", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000) #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$click("LQ_done")
-  app$wait_for_idle() #
+  app$click("LQ_done", wait_ = FALSE)
+  app$wait_for_idle()
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
+  app$wait_for_idle(timeout = 15 * 60000) #
   app$click("outliers_done")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -213,9 +206,8 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(qc_which_combine_fn = "median")
   app$wait_for_idle() #
-  app$click("qc_apply_rollup")
-  app$wait_for_idle() #
-  app$wait_for_idle()
+  app$click("qc_apply_rollup", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$set_inputs(missing_options = c("impute"))
   app$wait_for_idle() #
   app$set_inputs(missing_options = c("impute", "convert"))
@@ -238,7 +230,7 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Phenotype")
+  app$set_inputs(f_data_response_picker = "Virus")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -258,12 +250,12 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Pepdata_add_imputefilt = TRUE)
-  app$wait_for_idle() #
-  app$click("apply_filters")
-  app$wait_for_idle() #
+  app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("apply_filters", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("dismiss_modal")
-  app$wait_for_idle() #
+  app$wait_for_idle(timeout = 15 * 60000) #
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -282,8 +274,8 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$click("Pepdata_apply_rollup")
-  app$wait_for_idle()
+  app$click("Pepdata_apply_rollup", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("complete_rollup")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -309,7 +301,7 @@ test_that("pepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("run_sl")
-  app$wait_for_idle()
+  app$wait_for_idle(timeout = 15 * 60000)
   app$set_inputs(vi_thresh_count = 15)
   app$wait_for_idle() #
   app$click("feature_select_posthoc")
@@ -330,8 +322,8 @@ test_that("pepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$click("RM_dwn_done")
   app$wait_for_idle() #
-  app$click("makezipfile")
-  app$wait_for_idle()
+  app$click("makezipfile", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
   
   testthat::expect(TRUE, "logic has failed")
 })

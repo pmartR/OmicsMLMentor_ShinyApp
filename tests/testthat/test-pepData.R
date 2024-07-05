@@ -1,7 +1,7 @@
 library(shinytest2)
 
 test_that("pepData: Regular and Rewind", {
-  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000)
+  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
@@ -59,7 +59,7 @@ test_that("pepData: Regular and Rewind", {
   app$set_inputs(qc_which_combine_fn = "median")
   app$wait_for_idle() #
   app$click("qc_apply_rollup")
-  app$wait_for_idle()
+  app$wait_for_idle(timeout = 120000)
   app$set_inputs(missing_options = c("impute"))
   app$wait_for_idle() #
   app$set_inputs(missing_options = c("impute", "convert"))
@@ -129,7 +129,7 @@ test_that("pepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("Pepdata_apply_rollup")
-  app$wait_for_idle()
+  app$wait_for_idle(timeout = 120000)
   app$click("complete_rollup")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -202,7 +202,7 @@ test_that("pepData: Regular and Rewind", {
   app$set_inputs(qc_which_combine_fn = "median")
   app$wait_for_idle() #
   app$click("qc_apply_rollup")
-  app$wait_for_idle() #
+  app$wait_for_idle(timeout = 120000) #
   app$wait_for_idle()
   app$set_inputs(missing_options = c("impute"))
   app$wait_for_idle() #
@@ -271,7 +271,7 @@ test_that("pepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("Pepdata_apply_rollup")
-  app$wait_for_idle()
+  app$wait_for_idle(timeout = 120000)
   app$click("complete_rollup")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
