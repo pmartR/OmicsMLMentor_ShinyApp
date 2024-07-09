@@ -8,11 +8,14 @@ output$Upload_progress_summary_table <- renderDT({
 })
 
 output$Upload_progress_next_steps <- renderUI({
-  tags$ul(
-    tags$li("Reference Normalization"),
-    tags$li("Single Observation Biomolecule Removal"),
-    tags$li("Outlier Detection"),
-    tags$li("Data Missingness Handling")
+  tagList(
+    tags$b("Quality Control"),
+    tags$ul(
+      tags$li("Reference Normalization"),
+      tags$li("Single Observation Biomolecule Removal"),
+      tags$li("Outlier Detection"),
+      tags$li("Data Missingness Handling")
+    )
   )
 })
 

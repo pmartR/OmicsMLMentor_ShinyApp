@@ -7,10 +7,13 @@ output$MSetup_progress_summary_table <- renderDT({
 })
 
 output$MSetup_progress_next_steps <- renderUI({
-  tags$ul(
-    tags$li("Scaling and Transformation"),
-    tags$li("Data Filtering"),
-    tags$li("Data Normalization")
+  tagList(
+    tags$b("Pre-processing"),
+    tags$ul(
+      tags$li("Scaling and Transformation"),
+      tags$li("Data Filtering"),
+      tags$li("Data Normalization")
+    )
   )
 })
 
@@ -41,7 +44,7 @@ output$MSetup_progress_inputs_table <- renderTable({
         str_to_title(input$ag_prompts_unsupervised),
         str_to_title(input$ag_prompts_supervised)
       ),
-      input$pick_model_EM
+      models_long_name[input$pick_model_EM]
     )
   )
   

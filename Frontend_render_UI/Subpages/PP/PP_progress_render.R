@@ -7,11 +7,14 @@ output$preprocessing_progress_summary_table <- renderDT({
 })
 
 output$preprocessing_progress_next_steps <- renderUI({
-  tags$ul(
-    tags$li("Model Options"),
-    tags$li("Training Structure"),
-    tags$li("Parameter Optimization"),
-    tags$li("Model Evaluation")
+  tagList(
+    tags$b("Run Model"),
+    tags$ul(
+      tags$li("Model Options"),
+      tags$li("Training Structure"),
+      tags$li("Parameter Optimization"),
+      tags$li("Model Evaluation")
+    )
   )
 })
 

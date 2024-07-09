@@ -7,10 +7,13 @@ output$QC_progress_summary_table <- renderDT({
 })
 
 output$QC_progress_next_steps <- renderUI({
-  tags$ul(
-    tags$li("Variable Specification"),
-    tags$li("Analysis Goal Selection"),
-    tags$li("Expert Mentor")
+  tagList(
+    tags$b("Model Set-Up"),
+    tags$ul(
+      tags$li("Variable Specification"),
+      tags$li("Analysis Goal Selection"),
+      tags$li("Expert Mentor")
+    )
   )
 })
 
