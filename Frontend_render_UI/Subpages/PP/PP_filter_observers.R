@@ -2,10 +2,12 @@
 ## Top page of filters
 observeEvent(input$em_select, once = T, {
   output$filter_page <- renderUI({
-    filter_tab_temp(isolate(get_omicsData_type(omicsData$objPP)),
+    isolate(filter_tab_temp(get_omicsData_type(omicsData$objPP),
                     # F,
                     input$keep_missing == "Yes",
-                    input$user_level_pick)
+                    input$user_level_pick,
+                    attr(omicsData$obj, "data_info")$data_scale_actual
+                    ))
   })
 })
 
@@ -242,13 +244,13 @@ observe({
           }
           
           # will be the intersect if both are selected, otherwise just the molecules for the selected method (ANOVA/gtest)
-          if (!is.null(min_nonmiss_anova) & !is.null(min_nonmiss_gtest)) {
+          if (!is.null(min_nonmiss_anova) &&!is.null(min_nonmiss_gtest)) {
             removed_mols[[fname]] <- intersect(filtered_anova, filtered_gtest)
           } else {
-            if (!is.null(min_nonmiss_anova) & is.null(min_nonmiss_gtest)) {
+            if (!is.null(min_nonmiss_anova) &&is.null(min_nonmiss_gtest)) {
               removed_mols[[fname]] <- filtered_anova
             } else {
-              if (is.null(min_nonmiss_anova) & !is.null(min_nonmiss_gtest)) {
+              if (is.null(min_nonmiss_anova) &&!is.null(min_nonmiss_gtest)) {
                 removed_mols[[fname]] <- filtered_gtest
               }
             }
@@ -1162,15 +1164,15 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       before <- tmp
       
       # molecule filter
-      if (!is.null(filters[[name]]$molfilt) & 
-          is.null(attributes(tmp)$filters$moleculeFilt) & 
+      if (!is.null(filters[[name]]$molfilt) && 
+          is.null(attributes(tmp)$filters$moleculeFilt) && 
           input[[paste0(name, "_add_molfilt")]]) {
         tmp <- applyFilt(filters[[name]]$molfilt, tmp, min_num = input[[paste0(name, "_mol_min_num")]])
       }
       # proteomics filter
       if (inherits(tmp, "pepData")) {
-        if (isTRUE(!is.null(filters[[name]]$profilt) & 
-                   is.null(attributes(tmp)$filters$proteomicsFilt) & 
+        if (isTRUE(!is.null(filters[[name]]$profilt) &&
+                   is.null(attributes(tmp)$filters$proteomicsFilt) &&
                    input[[paste0(name, "_add_profilt")]])) {
           tmp <- applyFilt(filters[[name]]$profilt, tmp, min_num_peps = input[[paste0(name, "_min_num_peps")]], 
                            redundancy = input[[paste0(name, "_degen_peps")]])
@@ -1594,7 +1596,9 @@ missingHandleSliderValsFilter <- reactive({
 
 output$rollup_note_text <- renderText({
   if(inherits(omicsData$objMSU, "pepData")){
-    "Value estimation (imputation) will occur at the protein level."
+
+    "Note: Value estimation (imputation) will occur at the protein level."
+
   } else ""
 })
 
@@ -1929,7 +1933,7 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
   })
   
   output$imputefilt_plot_render <- renderUI({
-    if (isTruthy(input$imputefilt_plot_load) || dim(omicsData$objPP$e_data)[1] < 50000) {
+    if (isTruthy(input$imputefilt_plot_load) || dim(omicsData$objPP$e_data)[1] < 20000) {
       withSpinner(plotlyOutput("imputefilt_plot"))
     } else {
       div(

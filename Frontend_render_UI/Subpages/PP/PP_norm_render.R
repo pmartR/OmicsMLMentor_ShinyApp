@@ -1103,6 +1103,14 @@ load_norm_observers <- function(tab) {
                  ignoreNULL = FALSE,
                  ignoreInit = FALSE
     )
+    
+    observeEvent(input[[paste0(tab, "_normalize_option")]], {
+      req((!is.null(omicsData$objPP)) && (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn)))
+      if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization","SPANS - Proteomics only","No Normalization")) {
+        # Display an alert when the value is "triggerValue"
+        shinyalert("Note", "Using this normalization method, users will not be able export the model as an RDS object to run on new data. To do that, please use 'Zero-to-one Scaling'.", type = "info")
+      }
+    })
 
     # Tab tool tip for normalization sidebar
     # observeEvent(c(
@@ -2218,7 +2226,8 @@ assign_norm_output <- function(tab) {
     }),
     
     output[[paste0(tab, "_normalized_boxplots_pre_render")]] <- renderUI({
-      if (isTruthy(input[[paste0(tab, "_normalized_boxplots_pre_load")]]) || dim(omicsData$objPP$e_data)[1] < 50000) {
+      if (isTruthy(input[[paste0(tab, "_normalized_boxplots_pre_load")]]) || 
+          dim(omicsData$objPP$e_data)[1] < 20000) {
         withSpinner(plotlyOutput(paste0(tab, "_normalized_boxplots_pre")))
       } else {
         div(
@@ -2292,7 +2301,8 @@ assign_norm_output <- function(tab) {
       if (
         !is.null(omicsData$objNorm)
       ) {
-        if (isTruthy(input[[paste0(tab, "_normalized_boxplots_post_load")]]) || dim(omicsData$objPP$e_data)[1] < 50000) {
+        if (isTruthy(input[[paste0(tab, "_normalized_boxplots_post_load")]]) || 
+            dim(omicsData$objPP$e_data)[1] < 20000) {
           return(plotlyOutput(paste0(tab, "_normalized_boxplots_post")))
         } else {
           div(
@@ -2359,5 +2369,3 @@ assign_norm_output <- function(tab) {
   outputOptions(output, paste0(tab, "_normalize_sidepanel"), suspendWhenHidden = FALSE)
   outputOptions(output, paste0(tab, "_normalize_option_UI"), suspendWhenHidden = FALSE)
 }
-
-

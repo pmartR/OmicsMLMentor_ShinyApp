@@ -375,6 +375,9 @@ output$VI_tabset_UI <- renderUI({
 
 output$Variable_importance_plot <- renderPlotly({
   
+  req(!is.null(attr(omicsData$objRM, "feature_info")) &&
+        !is.null(attr(omicsData$objRM, "vi_info")))
+  
   plotting_df <- left_join(attr(omicsData$objRM, "feature_info"), 
                            attr(omicsData$objRM, "vi_info"), 
                            by = c(names_compact = "var_name"))

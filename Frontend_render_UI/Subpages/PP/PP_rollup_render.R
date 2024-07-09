@@ -103,7 +103,7 @@ assign_rollup_output <- function(tab) {
   })
   
   output[[paste0(tab, "_which_combine_fn")]] <- renderText({
-    input$qc_which_combine_fn
+    str_to_title(input$qc_which_combine_fn)
   })
   
   output[[paste0(tab, "_rollup_res_UI")]] <- renderUI({
@@ -141,7 +141,7 @@ assign_rollup_output <- function(tab) {
     #     yaxis = list(title = "Values")
     #   )
     
-    if(!is.null(get_group_df(omicsData$objPP))){
+    if(!is.null(get_group_DF(omicsData$objPP))){
       p <- plot(omicsData$objPP, 
                 color_by = "Group", 
                 order_by = "Group")

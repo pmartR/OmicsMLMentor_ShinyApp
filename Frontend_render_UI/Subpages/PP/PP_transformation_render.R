@@ -12,13 +12,27 @@ output$transform_picker_UI <- renderUI({
     #   )
     #   )
     
-    if(get_data_scale(omicsData$objQC) == "counts"){
+    if(attr(omicsData$obj, "data_info")$data_scale_actual == "counts"){
       choices <- list("Log2 counts per million" = "lcpm",
                       "Upper-quantile transformed counts" = "upper",
                       "Median counts" = "median")
-    } else choices <- NULL
+      text_warn <- paste0("Note: If the intent of the model is to",
+                          " be used with new data, users must use ",
+                          "the Log2 counts per million method, in order to",
+                          " minimize the impact of batch effects. If ",
+                          "this method is not selected, users will not ",
+                          "be able to export to an RDS object.")
+      
+    } else{
+      choices <- NULL
+      text_warn <- paste0("Transformation for RNA-seq data",
+                          " is only available for counts.")
+    }
+    
     
   } else {
+    
+    text_warn <- NULL
     
     choices <- list("Raw intensity" = "abundance", 
                     "Log base 2" = "log2", 
@@ -30,10 +44,14 @@ output$transform_picker_UI <- renderUI({
 
   if(input$user_level_pick == "beginner"){
     
-    set <- if(get_data_scale(omicsData$objQC) %in% c(
-      "log2", "upper", "median", "lcpm")){
+    rna_ds <- attr(omicsData$obj, "data_info")$data_scale_actual
+    
+    set <-  if(!is.null(rna_ds) && 
+               rna_ds %in% c("upper", "median", "lcpm")){
       "No transformation"
-    } else if (get_data_scale(omicsData$objQC) == "counts"){
+    } else if(get_data_scale(omicsData$objQC) == "log2"){
+      "No transformation"
+    } else if (!is.null(rna_ds) && rna_ds == "counts"){
       "lcpm"
     } else "log2"
     
@@ -47,12 +65,17 @@ output$transform_picker_UI <- renderUI({
                        choices = c(choices, "No transformation"))
   }
   
-  out
+  div(
+    out,
+    text_warn,
+    br(),
+    br()
+  )
   
 })
 
 output$transform_preview_plot_render <- renderUI({
-  if (isTruthy(input$transform_preview_plot_load_button) || dim(omicsData$objPP$e_data)[1] < 50000) {
+  if (isTruthy(input$transform_preview_plot_load_button) || dim(omicsData$objPP$e_data)[1] < 20000) {
     withSpinner(plotlyOutput("transform_preview_plot"))
   } else {
     div(
@@ -165,7 +188,25 @@ observeEvent(input$complete_transform, {
   if(!inherits(omicsData$objMSU, "seqData")){
     omicsData$objPP <- edata_transform(omicsData$objMSU, input$transform)
   } else {
-    omicsData$objPP <- edata_transform_seq(omicsData$objMSU, input$transform)
+
+    # This has to happen after filters
+    # omicsData$objPP <- edata_transform_seq(omicsData$objMSU, input$transform)
   }
   
 })
+
+observeEvent(input$complete_filters, {
+  
+  req(!is.null(omicsData$objMSU) &&
+        input$complete_transform > 0 && 
+        !is.null(input$transform) && 
+        input$transform != "No transformation" &&
+        input$transform != get_data_scale(omicsData$objMSU))
+  
+  if(inherits(omicsData$objMSU, "seqData")){
+    # This has to happen after filters
+    omicsData$objPP <- edata_transform_seq(omicsData$objPP, input$transform)
+  }
+  
+})
+
