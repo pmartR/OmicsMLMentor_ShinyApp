@@ -350,8 +350,10 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
       NULL
     }
     
+    select_tab = if(label %in% c("e_data", "f_data")) TRUE else FALSE
+    
     appendTab(preview_tabset, 
-              select = T,
+              select = select_tab,
               tabPanel(tablabel,
                        br(),
                        DTOutput(paste0("DT_", label)),
