@@ -4,7 +4,7 @@ output$f_data_upload_UI <- renderUI({
   
   req(!is.null(input$use_fdata) && input$use_fdata == "f_data" && 
         !input$use_example_fdata && input$fdata_options_done > 0 &&
-        input$how_make_fdata == "upload" && !AWS)
+        input$how_make_fdata == "upload" && !AWS && !data_from_map())
   req(!is.null(input$data_type))
   
   div(
@@ -30,6 +30,7 @@ output$f_data_upload_UI <- renderUI({
 output$how_make_fdata_UI <- renderUI({
   
   req(input$use_fdata == 'f_data' && !input$use_example_fdata && !AWS)
+  validate(need(!data_from_map(), "Data has been uploaded from MAP"))
   
   div(
     br(),
@@ -57,8 +58,8 @@ output$f_meta_spec_UI <- renderUI({
         ## Upload, example, or generated fdata
         ((!is.null(input$fdata_upload_done) && input$fdata_upload_done > 0) || 
            input$fdata_options_done > 0 && 
-           (input$use_example_fdata || AWS || input$how_make_fdata == "colnames"))
-  )
+           (input$use_example_fdata || AWS || data_from_map() || input$how_make_fdata == "colnames"))
+      )
   
   check_cols <- colnames(reactive_dataholder[["e_data"]]$file)
   f_data <- reactive_dataholder[["f_data"]]$file
@@ -157,7 +158,10 @@ observeEvent(c(input$use_fdata, input$use_example_fdata, input$how_make_fdata), 
        isTruthy(input$use_example_fdata) || 
        !is.null(input$how_make_fdata))) {
     shinyjs::enable("fdata_options_done")
-  } else {
+  } else if (!is.null(input$use_fdata) && data_from_map()) {
+    shinyjs::enable("fdata_options_done")
+  }
+  else {
     shinyjs::disable("fdata_options_done")
   }
 }, ignoreNULL = FALSE)

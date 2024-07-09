@@ -105,21 +105,3 @@ observeEvent(input$dismiss_minio_success, {
 data_from_map <- reactive({
   !is.null(minio_upload_data$project_omic)
 })
-
-### Groups Tab ###
-#'@details Disable/modify all inputs on the Upload tab that are pre-determined if a user comes in with data from map:
-#' - e_data file input 'e_data_file'
-#' - e_meta file input 'e_meta_file'
-#' - PickerInput 'data_type' (if DataType is present)
-#' - Prettyswitch 'have_emeta' (if e_meta file is present)
-observeEvent(c(input$top_page, input$f_data_file, input$use_fdata, input$how_make_fdata), {
-  req(input$top_page == "Upload", data_from_map())
-  
-  updateRadioGroupButtons(session, "use_fdata", selected = "f_data")
-  togglestate_add_tooltip(session, "use_fdata_js", condition = FALSE, tooltip_text = "Uploaded from map")
-  
-  updateRadioGroupButtons(session, "how_make_fdata", selected = "upload")
-  togglestate_add_tooltip(session, "how_make_fdata_js", condition = FALSE, tooltip_text = "Uploaded_from_map")
-  
-}, ignoreNULL = FALSE)
-
