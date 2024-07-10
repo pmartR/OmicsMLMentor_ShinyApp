@@ -60,10 +60,13 @@ observeEvent(input$makezipfile, {
   
   plots_export <- plots_chk[plot_idx][plots_keep]
   tables_export <- tables_chk[tbl_idx][tables_keep]
-  model_export <- FALSE
+  model_export <- list()
   # if we have include model set to be TRUE then we include the model
   if((!is.null(input$include_model)) && (input$include_model == TRUE)){
-    model_export = TRUE
+    model_export = list(full_model = omicsData$objRM)
+    if(!is.null(omicsData$objRM_reduced)){
+      model_export = list(full_model = omicsData$objRM,reduced_model = omicsData$objRM_reduced)
+    }
   }
   
   # Write plots
@@ -113,17 +116,21 @@ observeEvent(input$makezipfile, {
   } else file_names_tables <- NULL
   
   # Write .Rdata
-  if(model_export == TRUE){
+  if(length(model_export) > 0){
     
     withProgress(message = "Writing model RDS object...",{
       
-      file_names_models <- 
-        saveRDS(omicsData$objRM,
-                file = paste0("slope_model",".RDS"))
-      incProgress(1 / length(model_export), 
-                  detail = paste0(paste0("slope_model", ".RDS"), " done"))
-      file_names_models <- paste0("slope_model", ".RDS")
-      
+      file_names_models <- map2(model_export,
+                                names(model_export),function(model,handle){
+                                  
+                                  saveRDS(model,
+                                          file = paste0(handle,".RDS"))
+                                  
+                                  incProgress(1 / length(model_export), 
+                                              detail = paste0(paste0(handle, ".RDS"), " done"))
+                                  
+                                  paste0(handle,".RDS")
+                                })
     })
   } else file_names_models <- NULL
   
