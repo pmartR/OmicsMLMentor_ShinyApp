@@ -20,9 +20,11 @@ observeEvent(input$makezipfile, {
   fname <- file.path(temp_dir, 
                      paste0("SLOPE_", method, 
                             "_", gsub("( |:|-)", "_", Sys.time())))
-
+  
   plots_chk <- reactiveValuesToList(plot_table_current)$table
   tables_chk <- reactiveValuesToList(table_table_current)$table
+  # true/false for if model has been actually ran
+  model_chk <- !is.null(omicsData$objRM)
   
   plots_keep <- getShinyInput(input, "checkplot")
   tables_keep <- getShinyInput(input, "checktable")
@@ -58,6 +60,11 @@ observeEvent(input$makezipfile, {
   
   plots_export <- plots_chk[plot_idx][plots_keep]
   tables_export <- tables_chk[tbl_idx][tables_keep]
+  model_export <- FALSE
+  # if we have include model set to be TRUE then we include the model
+  if((!is.null(input$include_model)) && (input$include_model == TRUE)){
+    model_export = TRUE
+  }
   
   # Write plots
   if (length(plots_export) > 0) {
@@ -76,7 +83,7 @@ observeEvent(input$makezipfile, {
                  # height = save_options$height, 
                  # scale = save_options$scale, 
                  # units="px"
-                 )
+          )
         }
         incProgress(1 / length(plots_export), 
                     detail = paste0(fname, " done"))
@@ -93,24 +100,37 @@ observeEvent(input$makezipfile, {
       
       file_names_tables <- map2(tables_export, 
                                 names(tables_export), function(table, handle){
-        
-        write.csv(table, 
-                  file = paste0(handle, ".csv"), 
-                  row.names = FALSE)
-        
-        incProgress(1 / length(tables_export), 
-                    detail = paste0(paste0(handle, ".csv"), " done"))
-        paste0(handle, ".csv")
-      })
+                                  
+                                  write.csv(table, 
+                                            file = paste0(handle, ".csv"), 
+                                            row.names = FALSE)
+                                  
+                                  incProgress(1 / length(tables_export), 
+                                              detail = paste0(paste0(handle, ".csv"), " done"))
+                                  paste0(handle, ".csv")
+                                })
     })
   } else file_names_tables <- NULL
   
   # Write .Rdata
+  if(model_export == TRUE){
+    
+    withProgress(message = "Writing model RDS object...",{
+      
+      file_names_models <- 
+        saveRDS(omicsData$objRM,
+                file = paste0("slope_model",".RDS"))
+      incProgress(1 / length(model_export), 
+                  detail = paste0(paste0("slope_model", ".RDS"), " done"))
+      file_names_models <- paste0("slope_model", ".RDS")
+      
+    })
+  } else file_names_models <- NULL
   
   # Write report
   
   zip(zipfile = paste0(fname, ".zip"), 
-      files = c(file_names_tables, file_names_plots), 
+      files = c(file_names_tables, file_names_plots, file_names_models), 
       flags = "-r")
   
   zipped_file$fs <- c(zipped_file$fs, paste0(fname, ".zip"))
