@@ -3,7 +3,31 @@ output$RM_progress_summary <- renderUI({
 })
 
 output$RM_progress_summary_table <- renderDT({
-  summary(omicsData$objRM)
+  req(supervised())
+  
+  pred_df <- attr(omicsData$objRM, "prediction_train")
+  
+  if (!is.null(omicsData$objRM_reduced)) {
+    pred_df <- attr(omicsData$objRM_reduced, "prediction_train")
+  }
+  
+  if (length(unique(pred_df$response)) == 2) {
+    pos_class <- names(pred_df)[3]
+  } else {
+    pos_class <- names(pred_df)[3:(2+length(unique(pred_df$response)))]
+  }
+  
+  p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))      
+  
+  auc_by_level = p %>%
+    dplyr::group_by(.level) %>%
+    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity), sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
+    dplyr::summarise(sum(spc_diff*sens_avg, na.rm=T))
+  
+  names(auc_by_level)[1] <- "Group"
+  names(auc_by_level)[2] <- "AUC of ROC"
+  
+  auc_by_level
 })
 
 output$RM_progress_next_steps <- renderUI({
