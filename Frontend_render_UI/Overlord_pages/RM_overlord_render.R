@@ -280,11 +280,7 @@ output$RM_ui <- renderUI({
             id = "RM_result_box",
             
             br(),
-            progress_tab(
-              "RM",
-              done_btn = actionButton("complete_results_review", "Continue to Download"),
-              reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
-            ),
+            uiOutput("RM_unsupervised_progress"),
             
           ))
           
@@ -298,6 +294,19 @@ output$RM_ui <- renderUI({
   
   
   
+})
+
+output$RM_unsupervised_progress <- renderUI({
+  progress_tab(
+    "RM",
+    plot_choices = {
+      plots <- names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__model_eval__"))]
+      names(plots) <- sapply(plots, \(x) plot_table_current$names[[x]])
+      plots
+    },
+    done_btn = actionButton("complete_results_review", "Continue to Download"),
+    reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
+  )
 })
 
 ## upload overlord observers
