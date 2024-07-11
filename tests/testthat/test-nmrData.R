@@ -1505,4 +1505,6 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
   app$wait_for_idle() #
+  
+  testthat::expect(TRUE, "logic has failed")
 })
