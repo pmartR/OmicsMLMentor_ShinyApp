@@ -627,6 +627,326 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$click("makezipfile")
   app$wait_for_idle() #
   
+  # HClust
+  app$click("new_model")
+  app$wait_for_idle() #
+  app$click("rewind_msu")
+  app$wait_for_idle() #
+  app$click("vscols_options_done")
+  app$wait_for_idle() #
+  app$click("vscols_cats_done")
+  app$wait_for_idle() #
+  app$click("done_VS")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$wait_for_idle() #
+  app$click("ag_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "hclust")
+  app$wait_for_idle() #
+  app$click("em_select")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("msu_review_done")
+  app$wait_for_idle() #
+  app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$click("complete_transform")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("apply_filters")
+  app$wait_for_idle() #
+  app$click("dismiss_modal")
+  app$wait_for_idle() #
+  app$click("complete_filters")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_norm")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_ppreview")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
+  app$wait_for_idle() #
+  app$click("complete_RM_prompts")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_param")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("run_sl")
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("complete_RM")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_results_review")
+  app$wait_for_idle() #
+  app$click("upload_dwn_done")
+  app$wait_for_idle() #
+  app$click("QC_dwn_done")
+  app$wait_for_idle() #
+  app$click("MSU_dwn_done")
+  app$wait_for_idle() #
+  app$click("PP_dwn_done")
+  app$wait_for_idle() #
+  app$click("RM_dwn_done")
+  app$wait_for_idle() #
+  app$click("makezipfile")
+  app$wait_for_idle() #
+  
+  # KMeans
+  app$click("new_model")
+  app$wait_for_idle() #
+  app$click("rewind_msu")
+  app$wait_for_idle() #
+  app$click("vscols_options_done")
+  app$wait_for_idle() #
+  app$click("vscols_cats_done")
+  app$wait_for_idle() #
+  app$click("done_VS")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$wait_for_idle() #
+  app$click("ag_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "kmeans")
+  app$wait_for_idle() #
+  app$click("em_select")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("msu_review_done")
+  app$wait_for_idle() #
+  app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$click("complete_transform")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("apply_filters")
+  app$wait_for_idle() #
+  app$click("dismiss_modal")
+  app$wait_for_idle() #
+  app$click("complete_filters")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_norm")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_ppreview")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
+  app$wait_for_idle() #
+  app$click("complete_RM_prompts")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_param")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("run_sl")
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("complete_RM")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_results_review")
+  app$wait_for_idle() #
+  app$click("upload_dwn_done")
+  app$wait_for_idle() #
+  app$click("QC_dwn_done")
+  app$wait_for_idle() #
+  app$click("MSU_dwn_done")
+  app$wait_for_idle() #
+  app$click("PP_dwn_done")
+  app$wait_for_idle() #
+  app$click("RM_dwn_done")
+  app$wait_for_idle() #
+  app$click("makezipfile")
+  app$wait_for_idle() #
+  
+  # PCA
+  app$click("new_model")
+  app$wait_for_idle() #
+  app$click("rewind_msu")
+  app$wait_for_idle() #
+  app$click("vscols_options_done")
+  app$wait_for_idle() #
+  app$click("vscols_cats_done")
+  app$wait_for_idle() #
+  app$click("done_VS")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$wait_for_idle() #
+  app$click("ag_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "pca")
+  app$wait_for_idle() #
+  app$click("em_select")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("msu_review_done")
+  app$wait_for_idle() #
+  app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$click("complete_transform")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("apply_filters")
+  app$wait_for_idle() #
+  app$click("dismiss_modal")
+  app$wait_for_idle() #
+  app$click("complete_filters")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_norm")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_ppreview")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
+  app$wait_for_idle() #
+  app$click("complete_RM_prompts")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_param")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("run_sl")
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("complete_RM")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_results_review")
+  app$wait_for_idle() #
+  app$click("upload_dwn_done")
+  app$wait_for_idle() #
+  app$click("QC_dwn_done")
+  app$wait_for_idle() #
+  app$click("MSU_dwn_done")
+  app$wait_for_idle() #
+  app$click("PP_dwn_done")
+  app$wait_for_idle() #
+  app$click("RM_dwn_done")
+  app$wait_for_idle() #
+  app$click("makezipfile")
+  app$wait_for_idle() #
+  
+  # PPCA
+  app$click("new_model")
+  app$wait_for_idle() #
+  app$click("rewind_msu")
+  app$wait_for_idle() #
+  app$click("vscols_options_done")
+  app$wait_for_idle() #
+  app$click("vscols_cats_done")
+  app$wait_for_idle() #
+  app$click("done_VS")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$wait_for_idle() #
+  app$click("ag_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "ppca")
+  app$wait_for_idle() #
+  app$click("em_select")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("msu_review_done")
+  app$wait_for_idle() #
+  app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$click("complete_transform")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("apply_filters")
+  app$wait_for_idle() #
+  app$click("dismiss_modal")
+  app$wait_for_idle() #
+  app$click("complete_filters")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_norm")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_ppreview")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
+  app$wait_for_idle() #
+  app$click("complete_RM_prompts")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_param")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("run_sl")
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("complete_RM")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_results_review")
+  app$wait_for_idle() #
+  app$click("upload_dwn_done")
+  app$wait_for_idle() #
+  app$click("QC_dwn_done")
+  app$wait_for_idle() #
+  app$click("MSU_dwn_done")
+  app$wait_for_idle() #
+  app$click("PP_dwn_done")
+  app$wait_for_idle() #
+  app$click("RM_dwn_done")
+  app$wait_for_idle() #
+  app$click("makezipfile")
+  app$wait_for_idle() #
+  
   testthat::expect(TRUE, "logic has failed")
 })
 
