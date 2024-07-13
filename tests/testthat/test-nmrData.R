@@ -1281,7 +1281,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
-  app$set_inputs(rm_prompts_hp = "panerm")
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$click("complete_RM_prompts")
   app$wait_for_idle() #
