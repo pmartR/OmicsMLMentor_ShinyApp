@@ -194,6 +194,19 @@ observeEvent(reactive_dataholder$f_data$file, {
   }
 })
 
+## Warn for 
+observeEvent(input$use_fdata, {
+  req(!is.null(input$use_fdata) && input$use_fdata == "")
+  shinyalert("Warning: predictive models will not be available",
+             paste0("Models that can predict experimental groups",
+                   " or sample conditions based on biomolecule data",
+                   " are not available without a Sample Information file.",
+                   " Please make sure this is appropriate for your goals ",
+                   "before clicking the 'Confirm selections' button."),
+             type = "warning"
+  )
+  
+})
 
 ## completion button show
 observe({

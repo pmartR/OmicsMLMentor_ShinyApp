@@ -1,4 +1,31 @@
 
+output$missing_options_UI <- renderUI({
+  
+  if(inherits(omicsData$objQC, "proData")){
+    subtext <- c(
+      "Estimation of values must be at peptide level data for proteomics data.", 
+      "", "")
+    disabled <- c(T, F, F)
+  } else {
+    disabled <- NULL
+    subtext <- NULL
+  }
+  
+  pickerInput(
+    "missing_options",
+    "Preview biomolecule detection handling:",
+    choices = c(
+      # "Keep data as-is" = "keep",
+      "🟩 Estimate values in samples with no biomolecule detection" = "impute",
+      "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
+      "🟥 Remove biomolecules with incomplete detection" = "remove"
+    ),
+    choicesOpt = list(subtext = subtext, disabled = disabled),
+    multiple = T
+  )
+  
+})
+
 ## Prevent stupid
 observeEvent(input$missing_value_thresh, {
   req(!is.null(input$missing_value_thresh) && !is.na(input$missing_value_thresh))

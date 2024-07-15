@@ -1,4 +1,5 @@
-filter_tab_temp <- function(tabname, keep_missing, user_level, datascale) {
+
+filter_tab_temp <- function(tabname, keep_missing, user_level, datascale, no_cv) {
   
   # if(!is.null(input$keep_missing)){
   #   # no_mol_filt <- T
@@ -60,9 +61,9 @@ filter_tab_temp <- function(tabname, keep_missing, user_level, datascale) {
       biofilt_UI <- grep("imputefilt", biofilt_UI, invert = T, value = T)
     }
     
-    # if(no_mol_filt){
-    #   biofilt_UI <- grep("molfilt", biofilt_UI, invert = T, value = T)
-    # }
+    if(no_cv){ ## No CV if already normalized
+      biofilt_UI <- grep("cvfilt", biofilt_UI, invert = T, value = T)
+    }
     
     
     sampfilt_UI <- c(

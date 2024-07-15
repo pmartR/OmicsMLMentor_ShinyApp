@@ -2117,7 +2117,7 @@ assign_norm_output <- function(tab) {
       # preview <- actionButton(paste0(tab, "_preview_normalization"), "Preview")
       bias <- if(input$pick_model_EM %in% models_supervised){
         actionButton(paste0(tab, "_inspect_norm"), "Evaluate Normalization Bias")
-      } else NULL
+      } else div()
       
       
       tooltip <- div(
@@ -2141,13 +2141,17 @@ assign_norm_output <- function(tab) {
         !is.null(input[[paste0(tab, "_norm_fn")]]) &&
         !is.null(input[[paste0(tab, "_backtransform")]])
       
+      cond_bias <- !is.null(plot_table_current$table$PP__bias__scale) ||
+      !is.null(plot_table_current$table$PP__bias__location)
+      
       if ( # !cond_loess &&
-        !cond_zero_one &&
-        !cond_global) {
+        (!cond_zero_one && !cond_global)) {
         lock <- disabled(lock)
         # preview <- disabled(preview)
         if(!is.null(bias))
           bias <- disabled(bias)
+      } else if(!cond_bias){
+        bias <- disabled(bias)
       } else {
         tooltip <- hidden(tooltip)
       }

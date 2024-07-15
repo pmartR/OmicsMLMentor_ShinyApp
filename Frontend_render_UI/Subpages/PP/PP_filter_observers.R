@@ -1,13 +1,19 @@
 
 ## Top page of filters
 observeEvent(input$em_select, once = T, {
+  
   output$filter_page <- renderUI({
-    isolate(filter_tab_temp(get_omicsData_type(omicsData$objPP),
-                    # F,
-                    input$keep_missing == "Yes",
-                    input$user_level_pick,
-                    attr(omicsData$obj, "data_info")$data_scale_actual
-                    ))
+    
+    isolate(
+      filter_tab_temp(
+        tabname = get_omicsData_type(omicsData$objPP),
+        no_cv = get_data_norm(omicsData$objPP),
+        keep_missing = input$keep_missing == "Yes",
+        user_level = input$user_level_pick,
+        datascale = attr(omicsData$obj, "data_info")$data_scale_actual
+        )
+      )
+    
   })
 })
 
@@ -1142,7 +1148,38 @@ priority = 10
 ### Apply filters ###
 observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   
+  
   name <- get_omicsData_type(omicsData$objPP)
+  
+  if(
+    ## no seq
+    !inherits(omicsData$objPP, "seqData") &&
+    
+    ## Model doesn't support missingness
+    input$pick_model_EM %in% models_long_name[!missing_designation] &&
+    
+    ## no impute detected
+     (is.null(filters[[name]]$imputefilt) ||
+     is.null(input[[paste0(name, "_add_imputefilt")]]) ||
+     !input[[paste0(name, "_add_imputefilt")]]) &&
+    
+    ## Missingness
+    !all(missingval_result(omicsData$objPP)$na.by.molecule$num_NA == 0)
+    
+  ){
+    
+    shinyalert(
+      title = "Please select a missingness handling strategy",
+      text = paste0("The selected model, '", 
+                    names(models_long_name)[models_long_name == input$pick_model_EM], 
+                    "', does not allow for missing values.",
+                    " Please select a missingness handling strategy using",
+                    " the designated filter in the sidebar."),
+      type = "error"
+    )
+    return()
+    
+  }
   
   # gather indices in f_data of removed samples from all sample filters
   if (!is.null(omicsData$objPP$f_data)) {
@@ -1605,33 +1642,26 @@ output$rollup_note_text <- renderText({
 output$missing_options_filter_UI <- renderUI({
   
   all_choices <-  c(
-    "Keep data as-is" = "keep",
     "🟩 Estimate values in samples with no biomolecule detection" = "impute",
     "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
     "🟥 Remove biomolecules with incomplete detection" = "remove"
   )
   
-  handles_missing <- map_lgl(
-    map(
-      algo_rules, 
-      function(x) {
-        if (is.null(x$hard$any_is_na)) {
-          return(TRUE)
-        }
-        x$hard$any_is_na[[1]]
-      }
-    ), 
-    1
-  )
-  
-  if(!(handles_missing[input$pick_model_EM])){
-    all_choices <- all_choices[-1]
+  if(inherits(omicsData$objMSU, "proData")){
+    subtext <- c(
+      "Estimation of values must be at peptide level data for proteomics data.", 
+      "", "")
+    disabled <- c(T, F, F)
+  } else {
+    disabled <- NULL
+    subtext <- NULL
   }
   
   pickerInput(
     "missing_options_filter",
     "Handling method:",
     choices = all_choices,
+    choicesOpt = list(subtext = subtext, disabled = disabled),
     selected = input$missing_options,
     multiple = T
   )

@@ -161,6 +161,15 @@ sup_designation <-
           }
   )
 
+missing_designation <- 
+  map_lgl(models_long_name, 
+          function(x){
+            if(is.null(algo_rules[[x]]$hard$any_is_na)){
+              F
+            } else algo_rules[[x]]$hard$any_is_na[[1]]
+          }
+  )
+
 models_supervised <- models_long_name[sup_designation]
 
 models_unsupervised <- models_long_name[!sup_designation]
