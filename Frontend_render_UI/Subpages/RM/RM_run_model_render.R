@@ -1300,7 +1300,10 @@ output$structure_plot <- renderPlotly({
   
   isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
   isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
-  isolate(table_table_current$table$RM__model_eval <- p$data)
+  
+  if (!inherits(p$data, "waiver")) {
+    isolate(table_table_current$table$RM__model_eval <- p$data)
+  }
 
   p
 })

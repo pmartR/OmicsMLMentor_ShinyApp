@@ -165,6 +165,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$click("new_model")
   app$wait_for_idle() #
   app$click("rewind_qc")
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_reference_choice = "No")
   app$wait_for_idle() #
   app$click("refnorm_complete")
