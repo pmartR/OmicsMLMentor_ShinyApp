@@ -1,6 +1,6 @@
 library(shinytest2)
 
-test_that("metabData: Regular, Rewind, All Models", {
+test_that("nmrData: Regular, Rewind, All Models", {
   app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
   app$view()
   app$wait_for_idle() #
@@ -160,6 +160,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # RF
   app$click("new_model")
@@ -198,9 +199,13 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -246,7 +251,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -288,7 +297,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_rf.zip")
   app$wait_for_idle() #
-  
+  app$run_js('$(".cancel").click()')
   
   # PSVM
   app$click("new_model")
@@ -303,9 +312,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -353,7 +367,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -395,6 +413,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_psvm.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # LSVM
   app$click("new_model")
@@ -409,9 +428,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -457,7 +481,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -499,6 +527,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_lsvm.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # RSVM
   app$click("new_model")
@@ -513,9 +542,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -561,7 +595,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -603,6 +641,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_rsvm.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # GBTree
   app$click("new_model")
@@ -617,9 +656,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -665,7 +709,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -705,6 +753,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_gbtree.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # PLS
   app$click("new_model")
@@ -719,9 +768,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -767,7 +821,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -807,6 +865,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_pls.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # Logistic
   app$click("new_model")
@@ -821,9 +880,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -869,7 +933,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -909,6 +977,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_logistic.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # Loglasso
   app$click("new_model")
@@ -923,9 +992,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Condition")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -971,7 +1045,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -1013,6 +1091,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_loglasso.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # Multi
   app$click("new_model")
@@ -1027,9 +1106,14 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Stage")
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -1075,7 +1159,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -1117,6 +1205,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multi.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # MultiLASSO
   app$click("new_model")
@@ -1131,9 +1220,13 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
   app$set_inputs(f_data_response_picker = "Stage")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -1179,7 +1272,11 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_train = "train")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_train = "notrain")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "default")
   app$wait_for_idle() #
@@ -1221,6 +1318,7 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # HClust
   app$click("new_model")
@@ -1282,6 +1380,8 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "custom")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$click("complete_RM_prompts")
@@ -1314,8 +1414,9 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
+  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_hclust.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # KMeans
   app$click("new_model")
@@ -1330,9 +1431,13 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "supervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "clusters")
   app$wait_for_idle() #
   app$click("ag_done")
   app$wait_for_idle() #
@@ -1377,6 +1482,8 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "custom")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$click("complete_RM_prompts")
@@ -1409,8 +1516,9 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
+  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_kmeans.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # PCA
   app$click("new_model")
@@ -1425,9 +1533,13 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "supervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "clusters")
   app$wait_for_idle() #
   app$click("ag_done")
   app$wait_for_idle() #
@@ -1472,6 +1584,8 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "custom")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$click("complete_RM_prompts")
@@ -1504,8 +1618,9 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
+  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_pca.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # PPCA
   app$click("new_model")
@@ -1520,9 +1635,13 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "supervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "clusters")
   app$wait_for_idle() #
   app$click("ag_done")
   app$wait_for_idle() #
@@ -1567,6 +1686,8 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("complete_ppreview")
   app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "custom")
+  app$wait_for_idle() #
   app$set_inputs(rm_prompts_hp = "tuned")
   app$wait_for_idle() #
   app$click("complete_RM_prompts")
@@ -1599,103 +1720,111 @@ test_that("metabData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
+  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_ppca.zip")
   app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
   
   # UMAP
-  app$click("new_model")
-  app$wait_for_idle() #
-  app$click("rewind_msu")
-  app$wait_for_idle() #
-  app$click("vscols_options_done")
-  app$wait_for_idle() #
-  app$click("vscols_cats_done")
-  app$wait_for_idle() #
-  app$click("done_VS")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(ag_prompts = "unsupervised")
-  app$wait_for_idle() #
-  app$set_inputs(ag_prompts_unsupervised = "clusters")
-  app$wait_for_idle() #
-  app$click("ag_done")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(pick_model_EM = "umap", wait_ = FALSE)
-  app$run_js('$(".filter-option").click()')
-  app$wait_for_idle() #
-  app$click("em_select")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$click("msu_review_done")
-  app$wait_for_idle() #
-  app$click("done_tr_box")
-  app$wait_for_idle() #
-  app$click("complete_transform")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$click("apply_filters")
-  app$wait_for_idle() #
-  app$click("dismiss_modal")
-  app$wait_for_idle() #
-  app$click("complete_filters")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
-  app$wait_for_idle() #
-  app$click("complete_norm")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$click("complete_ppreview")
-  app$wait_for_idle() #
-  app$set_inputs(rm_prompts_hp = "tuned")
-  app$wait_for_idle() #
-  app$click("complete_RM_prompts")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$click("done_param_option")
-  app$wait_for_idle() #
-  app$click("complete_param")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$click("run_sl")
-  app$wait_for_idle()
-  app$click("complete_RM")
-  app$wait_for_idle() #
-  app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$click("complete_results_review")
-  app$wait_for_idle() #
-  app$click("upload_dwn_done")
-  app$wait_for_idle() #
-  app$click("QC_dwn_done")
-  app$wait_for_idle() #
-  app$click("MSU_dwn_done")
-  app$wait_for_idle() #
-  app$click("PP_dwn_done")
-  app$wait_for_idle() #
-  app$click("RM_dwn_done")
-  app$wait_for_idle() #
-  app$click("makezipfile")
-  app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
-  app$wait_for_idle() #
+  # app$click("new_model")
+  # app$wait_for_idle() #
+  # app$click("rewind_msu")
+  # app$wait_for_idle() #
+  # app$click("vscols_options_done")
+  # app$wait_for_idle() #
+  # app$click("vscols_cats_done")
+  # app$wait_for_idle() #
+  # app$click("done_VS")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$set_inputs(ag_prompts = "supervised")
+  # app$wait_for_idle() #
+  # app$set_inputs(ag_prompts = "unsupervised")
+  # app$wait_for_idle() #
+  # app$set_inputs(ag_prompts_supervised = "variation source")
+  # app$wait_for_idle() #
+  # app$set_inputs(ag_prompts_supervised = "clusters")
+  # app$wait_for_idle() #
+  # app$click("ag_done")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$set_inputs(pick_model_EM = "umap", wait_ = FALSE)
+  # app$run_js('$(".filter-option").click()')
+  # app$wait_for_idle() #
+  # app$click("em_select")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$click("msu_review_done")
+  # app$wait_for_idle() #
+  # app$click("done_tr_box")
+  # app$wait_for_idle() #
+  # app$click("complete_transform")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$click("apply_filters")
+  # app$wait_for_idle() #
+  # app$click("dismiss_modal")
+  # app$wait_for_idle() #
+  # app$click("complete_filters")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  # app$wait_for_idle() #
+  # app$set_inputs(Nmrdata_norm_fn = "mean")
+  # app$wait_for_idle() #
+  # app$set_inputs(Nmrdata_subset_fn = "los")
+  # app$wait_for_idle() #
+  # app$set_inputs(Nmrdata_backtransform = "FALSE")
+  # app$wait_for_idle() #
+  # app$set_inputs(Nmrdata_lock_norm = TRUE)
+  # app$wait_for_idle() #
+  # app$click("complete_norm")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$click("complete_ppreview")
+  # app$wait_for_idle() #
+  # app$set_inputs(rm_prompts_hp = "custom")
+  # app$wait_for_idle() #
+  # app$set_inputs(rm_prompts_hp = "tuned")
+  # app$wait_for_idle() #
+  # app$click("complete_RM_prompts")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$click("done_param_option")
+  # app$wait_for_idle() #
+  # app$click("complete_param")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$click("run_sl")
+  # app$wait_for_idle()
+  # app$click("complete_RM")
+  # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')
+  # app$wait_for_idle() #
+  # app$click("complete_results_review")
+  # app$wait_for_idle() #
+  # app$click("upload_dwn_done")
+  # app$wait_for_idle() #
+  # app$click("QC_dwn_done")
+  # app$wait_for_idle() #
+  # app$click("MSU_dwn_done")
+  # app$wait_for_idle() #
+  # app$click("PP_dwn_done")
+  # app$wait_for_idle() #
+  # app$click("RM_dwn_done")
+  # app$wait_for_idle() #
+  # app$click("makezipfile")
+  # app$wait_for_idle() #
+  # #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
+  # app$wait_for_idle() #
+  # app$run_js('$(".cancel").click()')
   
   testthat::expect(TRUE, "logic has failed")
 })
