@@ -1,6 +1,6 @@
 library(shinytest2)
 
-test_that("nmrData: Regular, Rewind, All Models", {
+test_that("proData: Regular, Rewind, All Models", {
   app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
   app$view()
   app$wait_for_idle() #
@@ -8,22 +8,22 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("welcome_confirm")
   app$wait_for_idle() #
-  app$set_inputs(data_type = "NMR")
+  app$set_inputs(data_type = "Protein")
   app$wait_for_idle() #
-  app$set_inputs(have_emeta = TRUE)
-  app$wait_for_idle() #
+  #app$set_inputs(have_emeta = TRUE)
+  #app$wait_for_idle() #
   app$set_inputs(use_example = TRUE)
   app$wait_for_idle() #
   app$click("data_type_done")
   app$wait_for_idle() #
-  app$set_inputs(datascale = "abundance")
+  app$set_inputs(datascale = "log2")
   app$wait_for_idle() #
-  app$set_inputs(normalized = "No")
+  app$set_inputs(normalized = "Yes")
   app$wait_for_idle() #
   app$click("specify_edata_done")
   app$wait_for_idle() #
-  app$click("specify_emeta_done")
-  app$wait_for_idle() #
+  #app$click("specify_emeta_done")
+  #app$wait_for_idle() #
   app$click("upload_done")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -40,8 +40,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("review_upload_done")
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_reference_choice = "No")
-  app$wait_for_idle() #
   app$click("refnorm_complete")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -55,6 +53,12 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$set_inputs(missing_options = c("impute"))
+  app$wait_for_idle() #
+  app$set_inputs(missing_options = c("impute", "convert"))
+  app$wait_for_idle() #
+  app$set_inputs(missing_options = c("impute", "convert", "remove"))
   app$wait_for_idle() #
   app$click("done_biom_miss")
   app$wait_for_idle() #
@@ -74,7 +78,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "accuracy")
   app$wait_for_idle() #
@@ -94,6 +98,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -101,16 +107,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -161,13 +157,11 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("makezipfile")
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
-  
+
   # RF
   app$click("new_model")
   app$wait_for_idle() #
   app$click("rewind_qc")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_reference_choice = "No")
   app$wait_for_idle() #
   app$click("refnorm_complete")
   app$wait_for_idle() #
@@ -203,7 +197,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -213,6 +207,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("ag_done")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "rf")
   app$wait_for_idle() #
   app$click("em_select")
   app$wait_for_idle() #
@@ -226,7 +222,9 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_add_cvfilt = TRUE)
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
   app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
@@ -235,16 +233,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -296,14 +284,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_rf.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
-  
+
   # PSVM
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -317,7 +325,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -342,7 +350,9 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_add_cvfilt = FALSE)
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
   app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
@@ -351,16 +361,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -412,14 +412,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_psvm.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # LSVM
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -433,7 +453,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -458,6 +478,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -465,16 +489,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -526,14 +540,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_lsvm.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # RSVM
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -547,7 +581,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -572,6 +606,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -579,16 +617,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -640,14 +668,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_rsvm.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # GBTree
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -661,7 +709,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -686,6 +734,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -693,16 +745,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -733,7 +775,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("run_sl")
-  app$wait_for_idle()
+  app$wait_for_idle() #
   app$click("complete_RM")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -752,14 +794,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_gbtree.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # PLS
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -773,7 +835,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -798,6 +860,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -805,16 +871,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -864,14 +920,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_pls.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # Logistic
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -885,7 +961,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "SecondPhenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -910,6 +986,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -917,16 +997,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -976,14 +1046,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_logistic.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
-  # Loglasso
+  # LogLASSO
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -997,7 +1087,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Condition")
+  app$set_inputs(f_data_response_picker = "SecondPhenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -1022,6 +1112,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -1029,16 +1123,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -1070,8 +1154,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("run_sl")
   app$wait_for_idle() #
-  app$click("feature_select_posthoc")
-  app$wait_for_idle() #
   app$click("complete_RM")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1090,14 +1172,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_loglasso.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # Multi
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -1111,7 +1213,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Stage")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
   app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
@@ -1136,6 +1238,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -1143,16 +1249,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -1184,8 +1280,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("run_sl")
   app$wait_for_idle() #
-  app$click("feature_select_posthoc")
-  app$wait_for_idle() #
   app$click("complete_RM")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1204,14 +1298,34 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multi.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # MultiLASSO
   app$click("new_model")
   app$wait_for_idle() #
-  app$click("rewind_msu")
+  app$click("rewind_qc")
+  app$wait_for_idle() #
+  app$click("refnorm_complete")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("LQ_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("outliers_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_sample_miss")
+  app$wait_for_idle() #
+  app$click("done_biom_miss")
+  app$wait_for_idle() #
+  app$click("done_md")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("qc_review_done")
   app$wait_for_idle() #
   app$click("vscols_options_done")
   app$wait_for_idle() #
@@ -1225,7 +1339,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "supervised")
   app$wait_for_idle() #
-  app$set_inputs(f_data_response_picker = "Stage")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
+  app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_supervised = "variable importance")
   app$wait_for_idle() #
@@ -1249,6 +1364,10 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = FALSE)
+  app$wait_for_idle() #
+  app$set_inputs(Prodata_add_imputefilt = TRUE)
+  app$wait_for_idle() #
   app$click("apply_filters")
   app$wait_for_idle() #
   app$click("dismiss_modal")
@@ -1256,16 +1375,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("complete_filters")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -1297,8 +1406,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("run_sl")
   app$wait_for_idle() #
-  app$click("feature_select_posthoc")
-  app$wait_for_idle() #
   app$click("complete_RM")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1317,8 +1424,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # HClust
@@ -1334,7 +1439,11 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "supervised")
+  app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "variation source")
   app$wait_for_idle() #
   app$set_inputs(ag_prompts_unsupervised = "clusters")
   app$wait_for_idle() #
@@ -1365,16 +1474,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
-  app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1396,7 +1495,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("run_sl")
-  app$wait_for_idle()
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("complete_RM")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1414,8 +1513,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$click("RM_dwn_done")
   app$wait_for_idle() #
   app$click("makezipfile")
-  app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_hclust.zip")
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
@@ -1436,9 +1533,9 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$set_inputs(ag_prompts_unsupervised = "variation source")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_supervised = "clusters")
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
   app$wait_for_idle() #
   app$click("ag_done")
   app$wait_for_idle() #
@@ -1467,16 +1564,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
-  app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1517,8 +1604,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_kmeans.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # PCA
@@ -1538,9 +1623,12 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
+  app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_supervised = "clusters")
+  app$set_inputs(ag_prompts_unsupervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
   app$wait_for_idle() #
   app$click("ag_done")
   app$wait_for_idle() #
@@ -1569,16 +1657,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
-  app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1619,8 +1697,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_pca.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # PPCA
@@ -1640,9 +1716,12 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(ag_prompts = "unsupervised")
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
+  app$run_js('$(".filter-option").click()')
   app$wait_for_idle() #
-  app$set_inputs(ag_prompts_supervised = "clusters")
+  app$set_inputs(ag_prompts_unsupervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
   app$wait_for_idle() #
   app$click("ag_done")
   app$wait_for_idle() #
@@ -1671,16 +1750,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
-  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_norm_fn = "mean")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_subset_fn = "los")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_backtransform = "FALSE")
-  app$wait_for_idle() #
-  app$set_inputs(Nmrdata_lock_norm = TRUE)
-  app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -1721,8 +1790,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_ppca.zip")
-  app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
   # UMAP
@@ -1742,9 +1809,12 @@ test_that("nmrData: Regular, Rewind, All Models", {
   # app$wait_for_idle() #
   # app$set_inputs(ag_prompts = "unsupervised")
   # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts_supervised = "variation source")
+  # app$set_inputs(f_data_response_picker = "Phenotype", wait_ = FALSE)
+  # app$run_js('$(".filter-option").click()')
   # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts_supervised = "clusters")
+  # app$set_inputs(ag_prompts_unsupervised = "variation source")
+  # app$wait_for_idle() #
+  # app$set_inputs(ag_prompts_unsupervised = "clusters")
   # app$wait_for_idle() #
   # app$click("ag_done")
   # app$wait_for_idle() #
@@ -1772,16 +1842,6 @@ test_that("nmrData: Regular, Rewind, All Models", {
   # app$click("complete_filters")
   # app$wait_for_idle() #
   # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_norm_fn = "mean")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_subset_fn = "los")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_backtransform = "FALSE")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_lock_norm = TRUE)
   # app$wait_for_idle() #
   # app$click("complete_norm")
   # app$wait_for_idle() #
@@ -1823,9 +1883,7 @@ test_that("nmrData: Regular, Rewind, All Models", {
   # app$wait_for_idle() #
   # app$click("makezipfile")
   # app$wait_for_idle() #
-  # #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
-  # app$wait_for_idle() #
-  # app$run_js('$(".cancel").click()')
   
   testthat::expect(TRUE, "logic has failed")
 })
+
