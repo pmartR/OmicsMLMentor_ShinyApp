@@ -622,6 +622,7 @@ div.box-body .shiny-input-container:not(.shiny-input-container-inline) {
 
 .ui-tooltip {
   display: none !important;
+}
 
 .shiny-split-layout > div {
   overflow: visible;
