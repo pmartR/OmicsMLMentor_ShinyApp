@@ -69,6 +69,10 @@ observeEvent(input$new_model, {
 reset_qc <- function() {
   omicsData$objQC <- omicsData$obj
   
+  pepQCData$pepQCData <- NULL
+  pepQCData$pepQCData$keep <- FALSE
+  pepQCData$transforms_df <- NULL
+  
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "QC__"))]) {
     plot_table_current$table[[name]] <- NULL
   }
@@ -189,7 +193,7 @@ reset_pp <- function() {
 }
 
 reset_rm <- function () {
-  omicsData$objRM <- omicsData$objPP
+  omicsData$objRM <- NULL
   
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__"))]) {
     plot_table_current$table[[name]] <- NULL
