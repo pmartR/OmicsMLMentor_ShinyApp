@@ -67,7 +67,7 @@ observeEvent(input$new_model, {
 })
 
 reset_qc <- function() {
-  omicsData$objQC <- omicsData$obj
+  omicsData$objQC <- auto_remove_na(omicsData$obj)
   
   pepQCData$pepQCData <- NULL
   pepQCData$pepQCData$keep <- FALSE
@@ -94,14 +94,21 @@ reset_qc <- function() {
   shinyjs::removeClass("review_QC", "blueoutline")
   
   omicsData$objRefnorm <- NULL
-  shinyjs::hide("refnorm_complete")
+  if (inherits(omicsData$objQC, "pepData")) {
+    shinyjs::hide("refnorm_complete")
+  }
   updateBoxCollapse(session, "references_collapse_left", open = "columnids")
   
   shinyjs::disable("show_outlier_detect")
   
   shinyjs::disable("show_missing_data")
-  updateBoxCollapse(session, "missing_data_box", open = "missing_by_biomolecule")
-  updateBoxCollapse(session, "qc_missing_plots", open = "missing_data_biomolecule_plot")
+  updateBoxCollapse(session, "missing_data_box", 
+                    open = "missing_data_sample_box", 
+                    close = "missing_by_biomolecule")
+  if (inherits(omicsData$objQC, "pepData")) {
+    shinyjs::hide("qc_biomolecule_detect")
+    shinyjs::hide("qc_biomolecule_detect_plot")
+  }
   shinyjs::hide("done_md")
   
   shinyjs::disable("review_QC")
@@ -113,7 +120,7 @@ reset_qc <- function() {
 }
 
 reset_msu <- function() {
-  omicsData$objMSU <- omicsData$objQC
+  omicsData$objMSU <- auto_remove_na(omicsData$objQC)
   
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "MSU__"))]) {
     plot_table_current$table[[name]] <- NULL
@@ -150,7 +157,7 @@ reset_msu <- function() {
 }
 
 reset_pp <- function() {
-  omicsData$objPP <- omicsData$objMSU
+  omicsData$objPP <- auto_remove_na(omicsData$objMSU)
   omicsData$objNorm <- NULL
 
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "PP__"))]) {
@@ -183,6 +190,8 @@ reset_pp <- function() {
   
   shinyjs::disable("show_normalization")
   updateBoxCollapse(session, id = "normalization_picker", open = "picker")
+  
+  shinyjs::hide("complete_rollup")
   
   shinyjs::disable("review_PP")
   
@@ -236,15 +245,23 @@ reset_rm <- function () {
   updateBoxCollapse(session = session, id = "download_collapse_pages", open = "download_tabset_QC")
 }
 
+qc_fix <- reactiveVal()
+
 observeEvent(input$rewind_qc, {
-  reset_qc()
   reset_rm()
   reset_pp()
   reset_msu()
+  reset_qc()
   
   updateNavbarPage(session, "top_page", "Quality Control")
   removeModal()
+  
+  qc_fix(runif(1))
 })
+
+observeEvent(qc_fix(), {
+  reset_qc()
+}, priority = -1)
 
 observeEvent(input$rewind_msu, {
   reset_rm()
