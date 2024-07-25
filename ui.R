@@ -82,7 +82,7 @@ ui <- function(request) {
       
       # #### Download Tab #####
       download_tab(),
-
+      
       tabPanel(uiOutput("notify_which_data"), value = "nav_which_datatype")
       # tabPanel(uiOutput('plots_summary'), value = 'nav_plot_review'),
       # tabPanel(uiOutput('current_data_summary'), value = 'nav_data_review')
