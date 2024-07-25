@@ -2,8 +2,8 @@ suppressPackageStartupMessages({
   
   ## R stuff
   library(pmartR)
-  # devtools::install_github("pmartR/pmartRdata")
   library(pmartRdata)
+  # devtools::install_github("pmartR/pmartRdata")
   library(readr)
   library(reshape2)
   library(stringr)
@@ -25,6 +25,7 @@ suppressPackageStartupMessages({
   
   ## Reporting
   library(yaml)
+  library(devtools)
   library(markdown)
   
   ## Shiny stuff
@@ -36,12 +37,16 @@ suppressPackageStartupMessages({
   library(shinyalert)
   library(prompter)
   library(shinydashboardPlus)
+  library(shinyFiles)
+  library(shinyjqui)
   library(rintrojs)
   library(shinybusy)
   library(shiny.blueprint)
   
   ## Model stuff
   library(mixOmics)
+  # BiocManager::install('mixOmics')
+  library(factoextra)
   library(xgboost)
   library(kernlab)
   library(tidyclust)
@@ -57,7 +62,6 @@ suppressPackageStartupMessages({
   ## Don't let these get masked by other functions
   library(dplyr)
   library(purrr)
-  library(pcaMethods)
   library(slopeR) ## Must be installed manually
 })
 
@@ -151,9 +155,9 @@ models_long_name <- c(
   `Probabilistic Principal Components Analysis` = "ppca",
   `Uniform Manifold Approximation and Projection` = "umap",
   `Gradient boosted tree` = "gbtree",
-  # `Partial least squares` = "pls",
+  `Partial least squares` = "pls",
   `K-nearest neighbors` = "knn",
-  # `Linear Regression` = "lr",
+  `Linear Regression` = "lr",
   `Linear Discriminant Analysis` = "lda",
   `Quadratic Discriminant Analysis` = "qda",
   `Naive Bayes Classifier` = "nb"
@@ -292,5 +296,3 @@ ttext <- list(
   NORM_BUTTON_DISABLED = "Select all applicable fields for normalization.",
   STATS_BUTTON_DISABLED = "Requires group comparison and test method selections to apply."
 )
-
-omicsData <- list()
