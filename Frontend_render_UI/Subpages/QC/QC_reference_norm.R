@@ -26,47 +26,35 @@ observeEvent(
         on.exit(shinyjs::hide("Isobaricpepdata_ref_busy"))
         
         if (is.null(omicsData$objQC$f_data)) {
-          col1 <- colnames(omicsData$objQC$e_data)
-          rmv_col <- which(
-            colnames(omicsData$objQC$e_data) == omicsData$objQC$e_data_cname
-          )
-          col1 <- col1[-rmv_col]
           
-          temp_fdata <- data.frame(
-            "Sample" = col1,
-            "placeholder",
-            check.names = F
-          )
-          
-          applied_norm <- as.nmrData(
-            e_data = omicsData$objQC$e_data,
-            f_data = temp_fdata,
-            e_meta = omicsData$objQC$e_meta,
-            edata_cname = get_edata_cname(omicsData$objQC),
-            fdata_cname = get_fdata_cname(omicsData$objQC),
-            emeta_cname = get_emeta_cname(omicsData$objQC),
-            data_scale = get_data_scale(omicsData$objQC),
-            is_normalized = get_data_norm(omicsData$objQC),
-            check.names = FALSE
-          )
-        } else {
-          
+          ## Cannot do the isobaric norm
           applied_norm <- omicsData$objQC
-        }
+        } else {
         
-        if(get_data_scale(omicsData$objQC) == "abundance"){
-          applied_norm <- edata_transform(applied_norm, "log2")
-        }
-        
-        applied_norm <- normalize_isobaric(applied_norm,
-                                           exp_cname = input[[paste0(tab, "_ref_group")]],
-                                           refpool_cname = input[[paste0(tab, "_ref_col")]],
-                                           refpool_notation = input[[paste0(tab, "_ref_notation")]],
-                                           apply_norm = TRUE
-        )
-        
-        if(get_data_scale(omicsData$objQC) == "abundance"){
-          applied_norm <- edata_transform(applied_norm, "abundance")
+          if(get_data_scale(omicsData$objQC) == "abundance"){
+            applied_norm <- edata_transform(omicsData$objQC, "log2")
+          }
+          
+          applied_norm <- normalize_isobaric(applied_norm,
+                                             exp_cname = input[[paste0(tab, "_ref_group")]],
+                                             refpool_cname = input[[paste0(tab, "_ref_col")]],
+                                             refpool_notation = input[[paste0(tab, "_ref_notation")]],
+                                             apply_norm = TRUE
+          )
+          
+          ## Relevel post isobaric norm
+          ## This might be useful as a part of isobaric/nmr norm in the future
+          convert_cols <- which(lapply(applied_norm$f_data, class) == "factor")
+          for(i in convert_cols){
+            str_convert <- as.character(applied_norm$f_data[[i]])
+            lvls_old <- levels(applied_norm$f_data[[i]])
+            lvls_new <- lvls_old[lvls_old %in% str_convert]
+            applied_norm$f_data[[i]] <- factor(str_convert, levels = lvls_new)
+          }
+          
+          if(get_data_scale(omicsData$objQC) == "abundance"){
+            applied_norm <- edata_transform(applied_norm, "abundance")
+          }
         }
         
         omicsData$objRefnorm <- applied_norm

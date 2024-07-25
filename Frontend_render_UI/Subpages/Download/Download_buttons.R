@@ -113,7 +113,7 @@ observeEvent(input$makezipfile, {
       files = c(file_names_tables, file_names_plots), 
       flags = "-r")
   
-  zipped_file$fs <- c(zipped_file$fs, paste0(fname, ".zip"))
+  zipped_file$fs <- paste0(fname, ".zip")
 })
 
 
