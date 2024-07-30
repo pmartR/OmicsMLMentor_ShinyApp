@@ -3,7 +3,9 @@ output$RM_progress_summary <- renderUI({
 })
 
 output$RM_progress_summary_table <- renderDT({
-  req(supervised())
+  if (!supervised()) {
+    return(data.frame(Value = c("No data summary available for unsupervised models.", "Please see the plots available to the right.")))
+  }
   
   pred_df <- attr(omicsData$objRM, "prediction_train")
   
