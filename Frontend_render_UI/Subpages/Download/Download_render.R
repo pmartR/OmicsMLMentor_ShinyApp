@@ -67,7 +67,7 @@ observeEvent(input$new_model, {
 })
 
 reset_qc <- function() {
-  omicsData$objQC <- auto_remove_na(omicsData$obj)
+  omicsData$objQC <- omicsData$obj
   
   pepQCData$pepQCData <- NULL
   pepQCData$pepQCData$keep <- FALSE
@@ -120,7 +120,7 @@ reset_qc <- function() {
 }
 
 reset_msu <- function() {
-  omicsData$objMSU <- auto_remove_na(omicsData$objQC)
+  omicsData$objMSU <- omicsData$objQC
   
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "MSU__"))]) {
     plot_table_current$table[[name]] <- NULL
@@ -157,7 +157,7 @@ reset_msu <- function() {
 }
 
 reset_pp <- function() {
-  omicsData$objPP <- auto_remove_na(omicsData$objMSU)
+  omicsData$objPP <- omicsData$objMSU
   omicsData$objNorm <- NULL
 
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "PP__"))]) {
