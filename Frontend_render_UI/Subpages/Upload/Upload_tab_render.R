@@ -106,7 +106,7 @@ output$e_data_spec_UI <- renderUI({
   
   req(input$data_type_done > 0 && !is.null(input$data_type))
   
-  req((input$edata_upload_done > 0 || input$use_example || AWS || data_from_map()) &&
+  req((input$edata_upload_done > 0 || input$use_example || AWS || MAP_ACTIVE) &&
         !is.null(input$data_type) && 
         !is.null(reactive_dataholder[["e_data"]]$file))
   
@@ -300,10 +300,10 @@ output$boxplot_UI_render <- renderUI({
 observeEvent(input$data_type, {
   if (!is.null(input$data_type)) {
     shinyjs::enable("data_type_done")
-    shinyjs::show("use_example")
+    shinyjs::show("use_example_js")
   } else {
     shinyjs::disable("data_type_done")
-    shinyjs::hide("use_example")
+    shinyjs::hide("use_example_js")
   }
 }, ignoreNULL = FALSE)
 
