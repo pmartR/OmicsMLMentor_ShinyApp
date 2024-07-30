@@ -142,28 +142,7 @@ output$RM_ui <- renderUI({
             
             
             br(),
-            progress_tab(
-              "RM",
-              plot_choices = c(
-                "Recommended Folds" = "RM__rec_folds",
-                "Parameter Optimization" = "RM__param_optim",
-                "Training Structure" = "RM__training_structure",
-                "Model Evaluation: ROC Curve (full)" = "RM__model_eval__full__roc_curve",
-                "Model Evaluation: Confidence Bar (full)" = "RM__model_eval__full__confidence_bar",
-                "Model Evaluation: Prediction Bar (full)" = "RM__model_eval__full__prediction_bar",
-                "Model Evaluation: Confusion Heatmap (full)" = "RM__model_eval__full__confusion_heatmap",
-                "Model Evaluation: Confidence Scatter (full)" = "RM__model_eval__full__confidence_scatter",
-                "Model Evaluation: ROC Curve (reduced)" = "RM__model_eval__reduced__roc_curve",
-                "Model Evaluation: Confidence Bar (reduced)" = "RM__model_eval__reduced__confidence_bar",
-                "Model Evaluation: Prediction Bar (reduced)" = "RM__model_eval__reduced__prediction_bar",
-                "Model Evaluation: Confusion Heatmap (reduced)" = "RM__model_eval__reduced__confusion_heatmap",
-                "Model Evaluation: Confidence Scatter (reduced)" = "RM__model_eval__reduced__confidence_scatter",
-                "Variable Importance (full)" = "RM__variable_importance__full",
-                "Variable Importance (reduced) " = "RM__variable_importance__reduced"
-              ),
-              done_btn = actionButton("complete_results_review", "Continue to Download"),
-              reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
-            ),
+            uiOutput("RM_supervised_progress"),
             
           ))
           
@@ -301,9 +280,31 @@ output$RM_unsupervised_progress <- renderUI({
     "RM",
     plot_choices = {
       plots <- names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__model_eval__"))]
+      plots <- unique(plots[which(sapply(plots, \(x) !is.null(plot_table_current$table[[x]])))])
       names(plots) <- sapply(plots, \(x) plot_table_current$names[[x]])
       plots
     },
+    done_btn = actionButton("complete_results_review", "Continue to Download"),
+    reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
+  )
+})
+
+output$RM_supervised_progress <- renderUI({
+  progress_tab(
+    "RM",
+    plot_choices = c(
+      "Recommended Folds" = "RM__rec_folds",
+      "Parameter Optimization" = "RM__param_optim",
+      "Training Structure" = "RM__training_structure",
+      {
+        plots <- names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__model_eval__"))]
+        plots <- unique(plots[which(sapply(plots, \(x) !is.null(plot_table_current$table[[x]])))])
+        names(plots) <- sapply(plots, \(x) plot_table_current$names[[x]])
+        plots
+      },
+      "Variable Importance (full)" = "RM__variable_importance__full",
+      "Variable Importance (reduced) " = "RM__variable_importance__reduced"
+    ),
     done_btn = actionButton("complete_results_review", "Continue to Download"),
     reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
   )
