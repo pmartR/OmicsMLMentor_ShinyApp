@@ -44,7 +44,7 @@ output$MSetup_progress_inputs_table <- renderTable({
         str_to_title(input$ag_prompts_unsupervised),
         str_to_title(input$ag_prompts_supervised)
       ),
-      models_long_name[input$pick_model_EM]
+      names(which(models_long_name == input$pick_model_EM))[1]
     )
   )
   
