@@ -141,7 +141,7 @@ map(names(models_long_name), function(x){
                 12,
                 style = "height: 100%",
                 div(
-                  style = "overflow-y: auto",
+                  style = "height: 100%; overflow-y: auto",
                   text_get(abbr)
                 )
               )))
