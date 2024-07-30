@@ -56,11 +56,15 @@ shinyServer(function(session, input, output) {
     # updatePickerInput(session, "data_type", selected = "Label-free")
     # 
     launch_tutorial()
+  } else if (MAP_ACTIVE){
+
+    source("./MAP_Functions.R", local = TRUE)
+
   } else {
-    # Here the app is checking if it needs to upload from MAP, launch_tutorial() will
-    # be called either from a modal dismiss or if no MAP data is found.
-    invisible()
+    hide("loading-gray-overlay")
   }
+  
+  launch_tutorial()
   
   # Observe any collapsible panels
   observeEvent(input$collapseTitleClick, {

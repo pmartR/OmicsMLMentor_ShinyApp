@@ -35,35 +35,6 @@
 #' - e_meta file input 'e_meta_file'
 #' - PickerInput 'data_type' (if DataType is present)
 #' - Prettyswitch 'have_emeta' (if e_meta file is present)
-observeEvent(c(input$top_page, input$e_data_file, input$e_meta_file), {
-  req(input$top_page == "Upload", data_from_map())
-
-  map_dtype = minio_upload_data$project_omic$Project$DataType
-
-  if (isTruthy(map_dtype)) {
-    updatePickerInput(session, 'data_type', selected = ALL_DATATYPE_NAMES[map_dtype])
-    togglestate_add_tooltip(session, 'data_type_js', condition = FALSE, tooltip_text = ttext[['DATA_IMPORTED']])
-  }
-
-  if (!is.null(minio_upload_data$project_omic)) {
-    edata_placeholder_content = minio_upload_data$project_omic$Data$e_data_filename
-    emeta_placeholder_content = minio_upload_data$project_omic$Data$e_meta_filename
-
-    if (!is.null(minio_upload_data$project_omic$Data$e_data)) {
-      mimic_fileinput_upload(id = "e_data_file", progress_content="Uploaded from MAP", placeholder_content = edata_placeholder_content)
-    }
-
-    if (!is.null(minio_upload_data$project_omic$Data$e_meta)) {
-
-      updatePrettySwitch(session, "have_emeta", value = TRUE)
-      togglestate_add_tooltip(session, 'have_emeta_js', condition = FALSE, tooltip_text = ttext[['EMETA_FROM_MAP']])
-
-      mimic_fileinput_upload(id = "e_meta_file", progress_content="Uploaded from MAP", placeholder_content = emeta_placeholder_content)
-    }
-
-    togglestate_add_tooltip(session, 'use_example_js', condition = FALSE, tooltip_text = ttext[['DATA_IMPORTED']])
-  }
-}, ignoreNULL = FALSE)
 
 ## UI function for upload
 fileinput_UI <- function(id, label = "e_data", is_RNA) {
@@ -210,6 +181,13 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
       
       removeTab(preview_tabset, tablabel, session = session)
       
+      ## make sure if dt changes remove prior
+      if(tablabel == "Abundance data"){
+        removeTab(preview_tabset, "Expression data", session = session)
+      } else if(tablabel == "Expression data"){
+        removeTab(preview_tabset, "Abundance data", session = session)
+      }
+      
       if(input$use_fdata == "f_data"){
         pmartRdata_prefix <- switch(data_type_val,
                                     "ProteinTMT" = "pro_", 
@@ -276,6 +254,13 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                      
                      removeTab(preview_tabset, tablabel, session = session)
                      
+                     ## make sure if dt changes remove prior
+                     if(tablabel == "Abundance data"){
+                       removeTab(preview_tabset, "Expression data", session = session)
+                     } else if(tablabel == "Expression data"){
+                       removeTab(preview_tabset, "Abundance data", session = session)
+                     }
+                     
                      if(label %in% data_select_val){
                        pmartRdata_prefix <- switch(data_type_val,
                                                    "Protein" = "pro_", 
@@ -334,12 +319,13 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
     ## Remove prior
     removeTab(preview_tabset, tablabel, session = session)
     
-    ## make sure if dt changes remove prior
-    if(tablabel == "Abundance data"){
-      removeTab(preview_tabset, "Expression data", session = session)
-    } else if(tablabel == "Expression data"){
-      removeTab(preview_tabset, "Abundance data", session = session)
-    }
+    ## Shouldn't be needed in MAP or AWS, but for sure for example/upload
+    # ## make sure if dt changes remove prior
+    # if(tablabel == "Abundance data"){
+    #   removeTab(preview_tabset, "Expression data", session = session)
+    # } else if(tablabel == "Expression data"){
+    #   removeTab(preview_tabset, "Abundance data", session = session)
+    # }
     
     tmp_key = paste0(label, "_filename")
     reactive_dataholder[[label]]$filename <- minio_upload_data$project_omic$Data[[tmp_key]]
@@ -379,6 +365,14 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                  )
                  
                  removeTab(preview_tabset, tablabel, session = session)
+                 
+                 ## Shouldn't be needed in MAP or AWS, but for sure for example/upload
+                 # ## make sure if dt changes remove prior
+                 # if(tablabel == "Abundance data"){
+                 #   removeTab(preview_tabset, "Expression data", session = session)
+                 # } else if(tablabel == "Expression data"){
+                 #   removeTab(preview_tabset, "Abundance data", session = session)
+                 # }
                  
                  use_example_val <- input$use_example
                  data_select_val <- input_data_types()
