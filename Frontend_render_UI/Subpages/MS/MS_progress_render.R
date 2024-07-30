@@ -18,7 +18,10 @@ output$MSetup_progress_next_steps <- renderUI({
 })
 
 output$MSetup_progress_plot <- renderUI({
-  tbl(as.data.frame(dashboard()), "Method", NULL)
+  div(
+    style = "height: 50vh",
+    tbl(as.data.frame(dashboard()), "Method", NULL)
+  )
 })
 
 output$MSetup_progress_inputs_list <- renderUI({
