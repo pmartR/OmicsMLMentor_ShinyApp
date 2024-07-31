@@ -54,7 +54,7 @@ output$preprocessing_progress_inputs_table <- renderTable({
   
   df <- df %>% add_row(
     `Input` = "Molecule Filter Applied",
-    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objPP), "_add_molfilt")]], "Yes", "No")
+    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_add_molfilt")]], "Yes", "No")
   )
   
   if (input[[paste0(get_omicsData_type(omicsData$objPP), "_add_molfilt")]]) {
@@ -122,7 +122,7 @@ output$preprocessing_progress_inputs_table <- renderTable({
     )
     
     subset_name <- names(subset_names)[
-      which(subset_names == input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]])
+      which(subset_names == input[[paste0(get_omicsData_type(omicsData$objQC), "_subset_fn")]])
     ]
     
     df <- df %>% add_row(
@@ -130,32 +130,32 @@ output$preprocessing_progress_inputs_table <- renderTable({
       `Value` = subset_name
     )
     
-    if (input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]] == "los") {
+    if (input[[paste0(get_omicsData_type(omicsData$objQC), "_subset_fn")]] == "los") {
       df <- df %>% add_row(
         `Input` = "Proportion of Top Order Statistics",
-        `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_los")]] %>% as.character()
+        `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_los")]] %>% as.character()
       )
     }
     
-    if (input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]] == "ppp" ||
-        input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]] == "ppp_rip") {
+    if (input[[paste0(get_omicsData_type(omicsData$objQC), "_subset_fn")]] == "ppp" ||
+        input[[paste0(get_omicsData_type(omicsData$objQC), "_subset_fn")]] == "ppp_rip") {
       df <- df %>% add_row(
         `Input` = "Proportion of Percentage Present",
-        `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_ppp")]] %>% as.character()
+        `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_ppp")]] %>% as.character()
       )
     }
     
-    if (input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]] == "rip" ||
-        input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]] == "ppp_rip") {
+    if (input[[paste0(get_omicsData_type(omicsData$objQC), "_subset_fn")]] == "rip" ||
+        input[[paste0(get_omicsData_type(omicsData$objQC), "_subset_fn")]] == "ppp_rip") {
       df <- df %>% add_row(
         `Input` = "Rank Invariance P Value",
-        `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_rip")]] %>% as.character()
+        `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_rip")]] %>% as.character()
       )
     }
     
     df <- df %>% add_row(
       `Input` = "Backtransformation Applied",
-      `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objPP), "_backtransform")]], "Yes", "No")
+      `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_backtransform")]], "Yes", "No")
     )
   }
   
