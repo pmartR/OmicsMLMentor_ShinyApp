@@ -104,10 +104,15 @@ Model_setup_tab_overlord <- function(){
           id = "MSU_review_selection_box",
           
           br(),
-          progress_tab("MSetup"),
-          
-          actionButton("msu_review_done", "Done")
-          
+          progress_tab(
+            "MSetup",
+            plot_choices = c(
+              "Expert Mentor Table"
+            ),
+            done_btn = actionButton("msu_review_done", "Continue to Preprocessing"),
+            reset_btn = actionButton("reset_msu", "Revert to start of Model Set-Up")
+          ),
+            
         )
         
       )
