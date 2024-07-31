@@ -75,6 +75,7 @@ output$e_meta_upload_UI <- renderUI({
   req(!input$use_example && 
         input$data_type_done > 0 && 
         input$specify_edata_done > 0 && !AWS)
+  req(!is.null(input$data_type))
   req(isTruthy(input$have_emeta))
   
   div(

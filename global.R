@@ -57,6 +57,7 @@ suppressPackageStartupMessages({
   library(glmnetUtils)
   library(glmnet)
   library(plsmod)
+  library(embed)
   
   ## Don't let these get masked by other functions
   library(dplyr)

@@ -66,6 +66,49 @@ observeEvent(input$new_model, {
   ))
 })
 
+reset_upload <- function() {
+  omicsData$obj <- NULL
+  reactive_dataholder$e_data <- NULL
+  reactive_dataholder$e_meta <- NULL
+  reactive_dataholder$f_data <- NULL
+  
+  for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "Upload__"))]) {
+    plot_table_current$table[[name]] <- NULL
+  }
+  
+  for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "Upload__"))]) {
+    table_table_current$table[[name]] <- NULL
+  }
+  
+  updateBoxCollapse(session, "groups_collapse_left", open = "fdata_options")
+  updateBoxCollapse(session, "groups_collapse_left", open = "data_props_fdata")
+  updateCheckboxInput(session, "use_example_fdata", value = FALSE)
+  updateRadioGroupButtons(session, "use_fdata", selected = character(0))
+  
+  updateBoxCollapse(session, "upload_collapse_left", open = "datselect")
+  updateRadioGroupButtons(session, "normalized", selected = character(0))
+  updatePickerInput(session, "datascale", selected = character(0))
+  updatePickerInput(session, "data_type", selected = character(0))
+  updateCheckboxInput(session, "use_example", value = FALSE)
+  
+  updateBoxCollapse(session, "upload_preview_collapse", open = "summary_tables", close = "summary")
+  updateBoxCollapse(session, "groups_collapse_right", open = "data_preview_fdata", close = "fdata_plots")
+  
+  shinyjs::show("experimental_upload_box")
+  shinyjs::hide("sample_upload_box")
+  shinyjs::hide("review_upload_box")
+  
+  shinyjs::addClass("show_exp_upload", "blueoutline")
+  shinyjs::removeClass("show_sample_upload", "blueoutline")
+  shinyjs::removeClass("review_upload", "blueoutline")
+  
+  shinyjs::disable("show_sample_upload")
+  shinyjs::disable("review_upload")
+  
+  updateProgressBar(session, "upload_exp_done", value = 0)
+  updateProgressBar(session, "upload_samp_done", value = 0)
+}
+
 reset_qc <- function() {
   omicsData$objQC <- omicsData$obj
   
@@ -97,6 +140,7 @@ reset_qc <- function() {
   if (inherits(omicsData$objQC, "pepData")) {
     shinyjs::hide("refnorm_complete")
   }
+
   updateBoxCollapse(session, "references_collapse_left", open = "columnids")
   
   shinyjs::disable("show_outlier_detect")
@@ -247,7 +291,16 @@ reset_rm <- function () {
 
 qc_fix <- reactiveVal()
 
-observeEvent(input$rewind_qc, {
+observeEvent(input$reset_upload, {
+  req(isTruthy(input$reset_upload))
+  reset_upload()
+  
+  removeModal()
+})
+
+observeEvent(c(input$rewind_qc, input$reset_qc), {
+  req(isTruthy(input$rewind_qc) || isTruthy(input$reset_qc))
+  reset_qc()
   reset_rm()
   reset_pp()
   reset_msu()
@@ -263,7 +316,9 @@ observeEvent(qc_fix(), {
   reset_qc()
 }, priority = -1)
 
-observeEvent(input$rewind_msu, {
+
+observeEvent(c(input$rewind_msu, input$reset_msu), {
+  req(isTruthy(input$rewind_msu) || isTruthy(input$reset_msu))
   reset_rm()
   reset_pp()
   reset_msu()
@@ -272,7 +327,8 @@ observeEvent(input$rewind_msu, {
   removeModal()
 })
 
-observeEvent(input$rewind_pp, {
+observeEvent(c(input$rewind_pp, input$reset_pp), {
+  req(isTruthy(input$rewind_pp) || isTruthy(input$reset_pp))
   reset_rm()
   reset_pp()
   
@@ -280,7 +336,8 @@ observeEvent(input$rewind_pp, {
   removeModal()
 })
 
-observeEvent(input$rewind_rm, {
+observeEvent(c(input$rewind_rm, input$reset_rm), {
+  req(isTruthy(input$rewind_rm) || isTruthy(input$reset_rm))
   reset_rm()
   
   updateNavbarPage(session, "top_page", "Run Model")
