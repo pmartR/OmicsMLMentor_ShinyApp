@@ -290,3 +290,5 @@ ttext <- list(
   NORM_BUTTON_DISABLED = "Select all applicable fields for normalization.",
   STATS_BUTTON_DISABLED = "Requires group comparison and test method selections to apply."
 )
+
+omicsData <- list()
