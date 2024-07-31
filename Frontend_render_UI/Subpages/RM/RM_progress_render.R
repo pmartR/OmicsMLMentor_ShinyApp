@@ -73,32 +73,34 @@ output$RM_progress_inputs_table <- renderTable({
     )
   )
   
-  if (isTruthy(input$cv_perform_option)) {
-    df <- df %>% add_row(
-      `Input` = "Data Subsetting Method",
-      `Value` = ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
-    )
-  }
-  
-  if (isTruthy(input$cv_perform_option) && input$cv_perform_option == "kfcv") {
-    df <- df %>% add_row(
-      `Input` = "Number of Folds",
-      `Value` = input$nFolds_cv %>% as.character()
-    )
-  }
-  
-  if (isTruthy(input$cv_hp_option)) {
-    df <- df %>% add_row(
-      `Input` = "Data Subsetting Method",
-      `Value` = ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
-    )
-  }
-  
-  if (isTruthy(input$cv_hp_option) && input$cv_hp_option == "kfcv") {
-    df <- df %>% add_row(
-      `Input` = "Number of Folds",
-      `Value` = input$nFolds_hp %>% as.character()
-    )
+  if (input$rm_prompts_hp == "tuned") {
+    if (isTruthy(input$cv_hp_option)) {
+      df <- df %>% add_row(
+        `Input` = "Data Subsetting Method",
+        `Value` = ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
+      )
+    }
+    
+    if (isTruthy(input$cv_hp_option) && input$cv_hp_option == "kfcv") {
+      df <- df %>% add_row(
+        `Input` = "Number of Folds",
+        `Value` = input$nFolds_hp %>% as.character()
+      )
+    }
+  } else {
+    if (isTruthy(input$cv_perform_option)) {
+      df <- df %>% add_row(
+        `Input` = "Data Subsetting Method",
+        `Value` = ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
+      )
+    }
+    
+    if (isTruthy(input$cv_perform_option) && input$cv_perform_option == "kfcv") {
+      df <- df %>% add_row(
+        `Input` = "Number of Folds",
+        `Value` = input$nFolds_cv %>% as.character()
+      )
+    }
   }
   
   df
