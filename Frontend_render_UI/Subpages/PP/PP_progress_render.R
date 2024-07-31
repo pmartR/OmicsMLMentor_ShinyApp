@@ -112,9 +112,22 @@ output$preprocessing_progress_inputs_table <- renderTable({
       `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_norm_fn")]]
     )
     
+    subset_names <- c(
+      "No Subsetting" = "all",
+      "Top L order statistics (los)" = "los",
+      "Percentage present (ppp)" = "ppp",
+      "Complete" = "complete",
+      "Rank invariant (rip)" = "rip",
+      "Percentage present and rank invariant (ppp+rip)" = "ppp_rip"
+    )
+    
+    subset_name <- names(subset_names)[
+      which(subset_names == input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]])
+    ]
+    
     df <- df %>% add_row(
       `Input` = "Subsetting Function",
-      `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]]
+      `Value` = subset_name
     )
     
     if (input[[paste0(get_omicsData_type(omicsData$objPP), "_subset_fn")]] == "los") {
