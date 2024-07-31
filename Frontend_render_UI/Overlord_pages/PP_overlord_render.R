@@ -146,7 +146,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
                   "Normalized Data Boxplots" = "PP__normalization__post"
                 ),
                 done_btn = actionButton("complete_ppreview", "Continue to Run Model"),
-                reset_btn = actionButton("reset_pp", "Revert to start of Postprocessing")
+                reset_btn = actionButton("reset_pp", "Revert to start of Pre-processing")
               ),
               
             )
@@ -270,7 +270,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
                   "Normalized Data Boxplots" = "PP__normalization__post"
                 ),
                 done_btn = actionButton("complete_ppreview", "Continue to Run Model"),
-                reset_btn = actionButton("reset_pp", "Revert to start of Postprocessing")
+                reset_btn = actionButton("reset_pp", "Revert to start of Pre-processing")
               ),
               
             )
