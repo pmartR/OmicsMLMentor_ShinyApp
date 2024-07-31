@@ -60,7 +60,6 @@ plot_table_current <- reactiveValues(
     RM__param_optim = "Parameter optimization",
     RM__training_structure = "Training structure",
     RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
-    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
     RM__model_eval__full__confidence_bar = "Model evaluation: confidence bar (full)",
     RM__model_eval__full__prediction_bar = "Model evaluation: prediction bar (full)",
     RM__model_eval__full__confusion_heatmap = "Model evaluation: confusion heatmap (full)",

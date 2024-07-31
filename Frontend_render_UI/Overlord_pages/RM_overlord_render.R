@@ -142,9 +142,7 @@ output$RM_ui <- renderUI({
             
             
             br(),
-            progress_tab("results_review"),
-            
-            actionButton("complete_results_review", "Done")
+            uiOutput("RM_supervised_progress"),
             
           ))
           
@@ -261,9 +259,7 @@ output$RM_ui <- renderUI({
             id = "RM_result_box",
             
             br(),
-            progress_tab("results_review"),
-            
-            actionButton("complete_results_review", "Done")
+            uiOutput("RM_unsupervised_progress"),
             
           ))
           
@@ -277,6 +273,41 @@ output$RM_ui <- renderUI({
   
   
   
+})
+
+output$RM_unsupervised_progress <- renderUI({
+  progress_tab(
+    "RM",
+    plot_choices = {
+      plots <- names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__model_eval__"))]
+      plots <- unique(plots[which(sapply(plots, \(x) !is.null(plot_table_current$table[[x]])))])
+      names(plots) <- sapply(plots, \(x) plot_table_current$names[[x]])
+      plots
+    },
+    done_btn = actionButton("complete_results_review", "Continue to Download"),
+    reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
+  )
+})
+
+output$RM_supervised_progress <- renderUI({
+  progress_tab(
+    "RM",
+    plot_choices = c(
+      "Recommended Folds" = "RM__rec_folds",
+      "Parameter Optimization" = "RM__param_optim",
+      "Training Structure" = "RM__training_structure",
+      {
+        plots <- names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__model_eval__"))]
+        plots <- unique(plots[which(sapply(plots, \(x) !is.null(plot_table_current$table[[x]])))])
+        names(plots) <- sapply(plots, \(x) plot_table_current$names[[x]])
+        plots
+      },
+      "Variable Importance (full)" = "RM__variable_importance__full",
+      "Variable Importance (reduced) " = "RM__variable_importance__reduced"
+    ),
+    done_btn = actionButton("complete_results_review", "Continue to Download"),
+    reset_btn = actionButton("reset_rm", "Revert to start of Run Model")
+  )
 })
 
 ## upload overlord observers
