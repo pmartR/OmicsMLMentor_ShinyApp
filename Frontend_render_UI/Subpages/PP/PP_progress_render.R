@@ -34,7 +34,21 @@ output$preprocessing_progress_plot <- renderUI({
 })
 
 output$preprocessing_progress_plot_render <- renderPlotly({
-  plot_table_current$table[[which(str_detect(names(plot_table_current$table), input$preprocessing_progress_plot_view))[1]]]
+  
+  use_plot <- which(
+    str_detect(
+      names(plot_table_current$table), 
+      input$preprocessing_progress_plot_view
+      )
+    )[1]
+  
+  validate(
+    need(length(plot_table_current$table[[use_plot]]) > 0, 
+         'Plot not generated in current pipeline. Return and view on the appropriate page to see this plot.')
+  )
+  
+  plot_table_current$table[[use_plot]]
+  
 })
 
 output$preprocessing_progress_inputs_list <- renderUI({
