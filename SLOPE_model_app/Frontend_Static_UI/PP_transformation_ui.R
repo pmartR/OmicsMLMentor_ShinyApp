@@ -1,9 +1,10 @@
-transformation_UI <- function() {
+preprocess_UI <- function() {
   div(
     column(
       12,
       collapseBoxGroup(
-        id = "preprocessing_collapse", multiple = TRUE,
+        id = "preprocess_collapse", multiple = FALSE, open = c("transformation"),
+        # biomolecule filters
         collapseBox(
           div(
             "Backfilled",
@@ -49,5 +50,5 @@ transformation_UI <- function() {
         uiOutput("protein_rollup_pp_UI")
       )
     )
-  )
+)
 }

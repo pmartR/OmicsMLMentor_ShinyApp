@@ -1,6 +1,6 @@
 
 
-RM_tab_overlord <- function(){
+RM_tab <- function(){
   div(
       div(
         actionButton("run_model","Run Model")

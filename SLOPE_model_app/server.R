@@ -1,55 +1,48 @@
 options(shiny.maxRequestSize = 250 * 1024^2, 
         ch.dir = TRUE, 
         expressions = 5e5,
-        DT.TOJSON_ARGS = list(na = "string"))
+        DT.TOJSON_ARGS = list(na = "string"),
+        shiny.fullstacktrace=TRUE)
 
 shinyServer(function(session,input,output){
-  omicsData <- reactiveValues(new_edata = NULL, new_fdata = NULL, model = NULL)
-  zipped_file <- reactiveValues(fs = NULL)
-  # edata upload
-  observeEvent(input$upload_edata,ignoreInit = TRUE,{
-    req(input$upload_edata)
-    req(!is.null(input$upload_edata$name))
-    print("File upload event triggered")
-    # read in RDS object
-    new_edata <- tryCatch({
-      read.csv(input$upload_edata$datapath)
-    }, error = function(e) {
-      showNotification(paste("Error in reading CSV file:", e$message), type = "error")
-      NULL
-    })
-    omicsData$new_edata <- new_edata
-  })
   
-  # emeta upload
-  observeEvent(input$upload_emeta,ignoreInit = TRUE,{
-    req(input$upload_emeta)
-    req(!is.null(input$upload_emeta$name))
-    print("File upload event triggered")
-    # read in RDS object
-    new_emeta <- tryCatch({
-      read.csv(input$upload_emeta$datapath)
-    }, error = function(e) {
-      showNotification(paste("Error in reading CSV file:", e$message), type = "error")
-      NULL
-    })
-    omicsData$new_emeta <- new_emeta
-  })
+  source("RV_all.R")
   
-  # fdata upload
-  observeEvent(input$upload_fdata,ignoreInit = TRUE,{
-    req(input$upload_fdata)
-    req(!is.null(input$upload_fdata$name))
-    print("File upload event triggered")
-    # read in RDS object
-    new_fdata <- tryCatch({
-      read.csv(input$upload_fdata$datapath)
-    }, error = function(e) {
-      showNotification(paste("Error in reading CSV file:", e$message), type = "error")
-      NULL
-    })
-    omicsData$new_fdata <- new_fdata
-  })
+  file_loads <- c(
+    list.files("./Frontend_render_UI", recursive = T, full.names = T)
+  )
+  
+  for (f in grep(".R$", file_loads, value = T)) source(f, local = TRUE)
+  
+  # # edata upload
+  # observeEvent(input$upload_edata,ignoreInit = TRUE,{
+  #   req(input$upload_edata)
+  #   req(!is.null(input$upload_edata$name))
+  #   print("File upload event triggered")
+  #   # read in RDS object
+  #   new_edata <- tryCatch({
+  #     read.csv(input$upload_edata$datapath)
+  #   }, error = function(e) {
+  #     showNotification(paste("Error in reading CSV file:", e$message), type = "error")
+  #     NULL
+  #   })
+  #   omicsData$new_edata <- new_edata
+  # })
+  # 
+  # # fdata upload
+  # observeEvent(input$upload_fdata,ignoreInit = TRUE,{
+  #   req(input$upload_fdata)
+  #   req(!is.null(input$upload_fdata$name))
+  #   print("File upload event triggered")
+  #   # read in RDS object
+  #   new_fdata <- tryCatch({
+  #     read.csv(input$upload_fdata$datapath)
+  #   }, error = function(e) {
+  #     showNotification(paste("Error in reading CSV file:", e$message), type = "error")
+  #     NULL
+  #   })
+  #   omicsData$new_fdata <- new_fdata
+  # })
   
   # model upload
   observeEvent(input$upload_model,ignoreInit = TRUE,{
@@ -65,6 +58,8 @@ shinyServer(function(session,input,output){
     })
     omicsData$rds_model <- rds_model
   })
+  
+  
   output$e_data_spec_UI <- renderUI({
     
     req(!is.null(input$upload_edata))
