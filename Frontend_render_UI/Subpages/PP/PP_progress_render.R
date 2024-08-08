@@ -173,5 +173,30 @@ output$preprocessing_progress_inputs_table <- renderTable({
     )
   }
   
+  if (get_omicsData_type(omicsData$objQC) == "Pepdata" || get_omicsData_type(omicsData$objQC) == "Isobaricpepdata") {
+    df <- df %>% add_row(
+      `Input` = "Rollup Method",
+      `Value` = switch(
+        input$qc_which_rollup, 
+        rollup = "Centering only",
+        rrollup = "Reference",
+        qrollup = "Quantile",
+        zrollup = "Z-Score"
+      )
+    )
+    
+    if (input$qc_which_rollup == "qrollup") {
+      df <- df %>% add_row(
+        `Input` = "Quantile Cutoff",
+        `Value` = input$qc_qrollup_thresh
+      )
+    }
+    
+    df <- df %>% add_row(
+      `Input` = "Centering method",
+      `Value` = input$qc_which_combine_fn
+    )
+  }
+  
   df
 })
