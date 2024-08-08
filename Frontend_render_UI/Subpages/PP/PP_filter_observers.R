@@ -70,7 +70,7 @@ observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
            "cvfilt" = "cvFilt",
            "molfilt" = "moleculeFilt",
             "imputefilt" = "imputationFilt",
-           "customfilt" = "customFilt",
+           "_customfilt" = "customFilt",
            "totalCountFilt" = "totalCountFilt",
            "NZfilt" = "RNAFilt",
            "Libfilt" = "RNAFilt",
@@ -1747,10 +1747,9 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
   # regex filter for edata custom filter
   output[[paste0(name, "_edata_regex")]] <- renderUI({
     # req(!objs_filtered(), cancelOutput = T)
-    req(!is.null(omicsData$objPP))
+    req(!is.null(omicsData$objToFilter))
     
-    
-    mols <- as.character(omicsData$objPP$e_data[, pmartR::get_edata_cname(omicsData$objPP)])
+    mols <- as.character(omicsData$objToFilter$e_data[, pmartR::get_edata_cname(omicsData$objToFilter)])
     
     selected <- if(input$user_level_pick != "expert"){
       grep("^con|nant$|con$", tolower(mols), value = T)

@@ -187,6 +187,7 @@ observeEvent(input$complete_transform, {
   ## Call from previous so they can redo as they like
   if(!inherits(omicsData$objMSU, "seqData")){
     omicsData$objPP <- edata_transform(omicsData$objMSU, input$transform)
+    omicsData$objToFilter <- omicsData$objPP
   } else {
     # This has to happen after filters
     # omicsData$objPP <- edata_transform_seq(omicsData$objMSU, input$transform)
