@@ -290,7 +290,7 @@ output$slider_options_ui <- renderUI({
     ))
   }
   
-  div(
+  out <- div(
     column(1, "  "),
     column(9, MultiSlider.shinyInput(
       "missingness_handle_slider",
@@ -309,6 +309,14 @@ output$slider_options_ui <- renderUI({
     )
     
   )
+  
+  if(inherits(omicsData$objQC, "pepData") && !is.null(pepQCData$pepQCData)){
+    
+    out <- hidden(out)
+    
+  }
+  
+  out
   
 })
 

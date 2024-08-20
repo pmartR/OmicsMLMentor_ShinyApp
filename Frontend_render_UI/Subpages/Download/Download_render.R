@@ -203,6 +203,17 @@ reset_msu <- function() {
 reset_pp <- function() {
   omicsData$objPP <- omicsData$objMSU
   omicsData$objNorm <- NULL
+  filter_settings_stored$stored <- NULL
+  filter_effects$removed_mols <- NULL
+  filter_effects$removed_samples <- NULL
+  
+  purrr::map(names(filters), function(nm) filters[[nm]] <- NULL)
+  purrr::map(names(filter_flags), function(nm) filter_flags[[nm]] <- NULL)
+  purrr::map(names(filter_settings), function(nm) filter_settings[[nm]] <- NULL)
+  
+  purrr::map(grep("_add_", names(input), value = T), function(id) {
+    updatePrettySwitch(session = session, id, value = F)
+  })
 
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "PP__"))]) {
     plot_table_current$table[[name]] <- NULL
@@ -211,6 +222,9 @@ reset_pp <- function() {
   for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "PP__"))]) {
     table_table_current$table[[name]] <- NULL
   }
+  
+  nm <- get_omicsData_type(omicsData$objPP)
+  updatePrettySwitch(session = session, inputId = paste0(nm, "_lock_norm"), value = FALSE)
   
   shinyjs::show(id = "transform_box")
   shinyjs::hide(id = "filter_box")
@@ -247,6 +261,7 @@ reset_pp <- function() {
 
 reset_rm <- function () {
   omicsData$objRM <- NULL
+  omicsData$objRM_reduced <- NULL
   
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__"))]) {
     plot_table_current$table[[name]] <- NULL

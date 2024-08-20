@@ -11,9 +11,6 @@ observeEvent(input$em_select, once = T, {
   })
 })
 
-# # only show the loading screen once on initial load
-filter_status <- reactiveValues(loaded = FALSE)
-
 #  filter storage
 filters <- reactiveValues()
 
@@ -140,7 +137,7 @@ make_filter <- function(dataname, filter_tag, message, func, settings, preview =
         do.call(func, c(list(omicsData$objPP), args))
       },
       error = function(e) {
-        shinyalert(message, paste0("System error: ", e))
+        shinyalert(message, paste0("System error: ", e$message))
         updatePrettySwitch(session, paste0(dataname, "_add_", filter_tag), value = FALSE)
         return(NULL)
       }
@@ -1186,6 +1183,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         
         thresholds <- filter_settings[[name]]$imputefilt
         
+        tmp <- auto_remove_na(tmp)
+        
         # Only apply impute 
         if (get_omicsData_type(tmp) == "Pepdata") {
           # Impute all of e_data
@@ -1543,6 +1542,8 @@ missingHandleSliderValsFilter <- reactive({
     md_convert = NULL,
     md_remove = NULL
   )
+  
+  req(length(input$missingness_handle_filter_slider) != 0)
   
   if ("keep" %in% input$missing_options_filter) {
     thresholds$md_keep <- c(0, 100)

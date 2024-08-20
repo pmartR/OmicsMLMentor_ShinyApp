@@ -951,6 +951,7 @@ load_norm_observers <- function(tab) {
     observeEvent(input[[paste0(tab, "_lock_norm")]], {
 
       req(!is.null(input[[paste0(tab, "_normalize_option")]]))
+      req(input$top_page == "Pre-processing")
 
       UI_elements <- paste0(tab, c(
         "_normalize_option",
@@ -1105,10 +1106,19 @@ load_norm_observers <- function(tab) {
     )
     
     observeEvent(input[[paste0(tab, "_normalize_option")]], {
-      req((!is.null(omicsData$objPP)) && (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn)))
-      if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization","SPANS - Proteomics only","No Normalization")) {
+      req(
+        (!is.null(omicsData$objPP)) && 
+            (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn)) &&
+          !get_data_norm(omicsData$objPP)
+        )
+      if (input[[paste0(tab, "_normalize_option")]] %in% c(
+        "Global Normalization","SPANS - Proteomics only","No Normalization")) {
         # Display an alert when the value is "triggerValue"
-        shinyalert("Note", "Using this normalization method, users will not be able export the model as an RDS object to run on new data. To do that, please use 'Zero-to-one Scaling'.", type = "info")
+        shinyalert(
+          "Note", 
+          paste0("Using this normalization method, users will not be",
+                 " able export the model as an RDS object to run on new data.",
+                 " To do that, please use 'Zero-to-one Scaling'."), type = "info")
       }
     })
 

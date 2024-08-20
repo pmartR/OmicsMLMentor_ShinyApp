@@ -2,6 +2,9 @@ library(shinytest2)
 
 test_that("nmrData: Regular, Rewind, All Models", {
   app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
+  
+  tryCatch({
+  
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
@@ -103,6 +106,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -238,6 +243,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
@@ -354,6 +361,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
@@ -467,6 +476,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -582,6 +593,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
@@ -696,6 +709,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
@@ -807,6 +822,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -920,6 +937,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "ppp_rip")
@@ -1031,6 +1050,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -1146,6 +1167,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "los")
@@ -1259,6 +1282,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "los")
@@ -1367,6 +1392,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "los")
@@ -1468,6 +1495,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -1571,6 +1600,8 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "los")
@@ -1673,6 +1704,107 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
+  app$set_inputs(Nmrdata_norm_fn = "mean")
+  app$wait_for_idle() #
+  app$set_inputs(Nmrdata_subset_fn = "los")
+  app$wait_for_idle() #
+  app$set_inputs(Nmrdata_backtransform = "FALSE")
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_ppreview")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "custom")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
+  app$wait_for_idle() #
+  app$click("complete_RM_prompts")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_param_option")
+  app$wait_for_idle() #
+  app$click("complete_param")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("run_sl")
+  app$wait_for_idle()
+  app$click("complete_RM")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_results_review")
+  app$wait_for_idle() #
+  app$click("upload_dwn_done")
+  app$wait_for_idle() #
+  app$click("QC_dwn_done")
+  app$wait_for_idle() #
+  app$click("MSU_dwn_done")
+  app$wait_for_idle() #
+  app$click("PP_dwn_done")
+  app$wait_for_idle() #
+  app$click("RM_dwn_done")
+  app$wait_for_idle() #
+  app$click("makezipfile")
+  app$wait_for_idle() #
+  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_ppca.zip")
+  app$wait_for_idle() #
+  app$run_js('$(".cancel").click()')
+  
+  # UMAP
+  app$click("new_model")
+  app$wait_for_idle() #
+  app$click("rewind_msu")
+  app$wait_for_idle() #
+  app$click("vscols_options_done")
+  app$wait_for_idle() #
+  app$click("vscols_cats_done")
+  app$wait_for_idle() #
+  app$click("done_VS")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "supervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_supervised = "clusters")
+  app$wait_for_idle() #
+  app$click("ag_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "umap", wait_ = FALSE)
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$click("em_select")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("msu_review_done")
+  app$wait_for_idle() #
+  app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$click("complete_transform")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("apply_filters")
+  app$wait_for_idle() #
+  app$click("dismiss_modal")
+  app$wait_for_idle() #
+  app$click("complete_filters")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Nmrdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Nmrdata_subset_fn = "los")
@@ -1721,111 +1853,16 @@ test_that("nmrData: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle() #
-  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_ppca.zip")
+  #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
   
-  # UMAP
-  # app$click("new_model")
-  # app$wait_for_idle() #
-  # app$click("rewind_msu")
-  # app$wait_for_idle() #
-  # app$click("vscols_options_done")
-  # app$wait_for_idle() #
-  # app$click("vscols_cats_done")
-  # app$wait_for_idle() #
-  # app$click("done_VS")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts = "supervised")
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts = "unsupervised")
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts_supervised = "variation source")
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts_supervised = "clusters")
-  # app$wait_for_idle() #
-  # app$click("ag_done")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(pick_model_EM = "umap", wait_ = FALSE)
-  # app$run_js('$(".filter-option").click()')
-  # app$wait_for_idle() #
-  # app$click("em_select")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("msu_review_done")
-  # app$wait_for_idle() #
-  # app$click("done_tr_box")
-  # app$wait_for_idle() #
-  # app$click("complete_transform")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("apply_filters")
-  # app$wait_for_idle() #
-  # app$click("dismiss_modal")
-  # app$wait_for_idle() #
-  # app$click("complete_filters")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_normalize_option = "Global Normalization")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_norm_fn = "mean")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_subset_fn = "los")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_backtransform = "FALSE")
-  # app$wait_for_idle() #
-  # app$set_inputs(Nmrdata_lock_norm = TRUE)
-  # app$wait_for_idle() #
-  # app$click("complete_norm")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("complete_ppreview")
-  # app$wait_for_idle() #
-  # app$set_inputs(rm_prompts_hp = "custom")
-  # app$wait_for_idle() #
-  # app$set_inputs(rm_prompts_hp = "tuned")
-  # app$wait_for_idle() #
-  # app$click("complete_RM_prompts")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("done_param_option")
-  # app$wait_for_idle() #
-  # app$click("complete_param")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("run_sl")
-  # app$wait_for_idle()
-  # app$click("complete_RM")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("complete_results_review")
-  # app$wait_for_idle() #
-  # app$click("upload_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("QC_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("MSU_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("PP_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("RM_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("makezipfile")
-  # app$wait_for_idle() #
-  # #app$get_download("download_processed_data", filename = "SLOPE-app_nmrData_multilasso.zip")
-  # app$wait_for_idle() #
-  # app$run_js('$(".cancel").click()')
+  }, error = function(e){
+    log_temp <<- app$get_logs()
+    print(log_temp)
+    print(e$message)
+    testthat::expect(FALSE, "logic has failed")
+  })
   
   testthat::expect(TRUE, "logic has failed")
 })
