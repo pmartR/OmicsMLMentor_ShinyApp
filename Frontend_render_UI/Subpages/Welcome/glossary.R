@@ -113,8 +113,11 @@ map(names(models_long_name), function(x){
     label <- NULL
     # }
     
+    title <- x
+    if(nchar(title) < 30 && title != "Principal Components Analysis") title <- paste0(title, "<br/><br/>")
+    
     box(
-      title = gsub("support vector machine \\(SVM\\)", "SVM", x),
+      title = HTML(title),
       width = 4,
       height = "300px",
       status = status,
