@@ -26,8 +26,9 @@ shinyServer(function(session, input, output) {
     
     # Set a conditional test. We only care if the "s3" parameter exists.
     AWS_cond <- length(query) != 0 && "s3_bucket" %in% names(query)
+    MAP_cond <- length(query) != 0 && 'map-data' %in% names(query)
     
-    if(AWS_cond) AWS <<- T else if(length(query) != 0) MAP_ACTIVE <<- T
+    if(AWS_cond) AWS <<- T else if(MAP_cond) MAP_ACTIVE <<- T
     
     if (AWS) {
       
