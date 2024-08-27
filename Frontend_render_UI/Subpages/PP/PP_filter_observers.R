@@ -1543,8 +1543,6 @@ missingHandleSliderValsFilter <- reactive({
     md_remove = NULL
   )
   
-  req(length(input$missingness_handle_filter_slider) != 0)
-  
   if ("keep" %in% input$missing_options_filter) {
     thresholds$md_keep <- c(0, 100)
     # keep

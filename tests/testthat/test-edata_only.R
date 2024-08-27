@@ -227,6 +227,8 @@ test_that("app works with only e_data", {
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$set_inputs(Lipiddata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_subset_fn = "los")

@@ -501,7 +501,7 @@ observeEvent(input$qc_apply_rollup, {
     single_pep <- FALSE
     single_observation <- FALSE
   }
-  
+  unregister()
   pepQCData$objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
                                       method = input$qc_which_rollup,
                                       qrollup_thresh = input$qc_qrollup_thresh / 100,
@@ -510,6 +510,7 @@ observeEvent(input$qc_apply_rollup, {
                                       combine_fn = input$qc_which_combine_fn,
                                       parallel = TRUE
   )
+  unregister()
   shinyjs::hide("qc_rollup_busy")
   shinyjs::show("qc_biomolecule_detect")
   shinyjs::show("qc_biomolecule_detect_plot")
