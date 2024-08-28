@@ -202,6 +202,7 @@ reset_msu <- function() {
 
 reset_pp <- function() {
   omicsData$objPP <- omicsData$objMSU
+  omicsData$objToFilter <- NULL
   omicsData$objNorm <- NULL
 
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "PP__"))]) {
