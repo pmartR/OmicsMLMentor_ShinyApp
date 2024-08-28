@@ -1,9 +1,10 @@
 library(shinytest2)
-options(parallelly.makeNodePSOCK.setup_strategy = "sequential")
+# options(parallelly.makeNodePSOCK.setup_strategy = "sequential")
 
 test_that("isobaricpepData: Regular and Rewind", {
-  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
-  options(parallelly.makeNodePSOCK.setup_strategy = "sequential")
+  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, 
+                       timeout = 60000, load_timeout = 60000)
+  # options(parallelly.makeNodePSOCK.setup_strategy = "sequential")
   
   tryCatch({
   app$view()
@@ -115,7 +116,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -273,7 +273,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -770,7 +769,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -892,7 +890,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1014,7 +1011,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1136,7 +1132,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1251,7 +1246,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1362,7 +1356,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1473,7 +1466,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1584,7 +1576,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
@@ -1695,7 +1686,6 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  browser()
   app$wait_for_idle(timeout = 15 * 60000)
   app$click("apply_filters", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
