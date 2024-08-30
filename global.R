@@ -68,9 +68,10 @@ suppressPackageStartupMessages({
 options(renv.config.sandbox.enabled = FALSE)
 
 ## GLOBAL VARIABLES ##
-MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
-AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
-# AWS <- T
+# MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
+# AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
+AWS <- F
+MAP_ACTIVE <- F
 
 VALID_HEADER_PARAMS = c("map-data")
 

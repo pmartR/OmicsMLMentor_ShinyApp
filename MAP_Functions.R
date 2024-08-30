@@ -101,7 +101,34 @@ observeEvent(input$dismiss_minio_success, {
   launch_tutorial()
 })
 
-#' @details helper boolean reactive to test if we are pulling data from minio
-data_from_map <- reactive({
-  !is.null(minio_upload_data$project_omic)
-})
+## UI changes and specific observers
+
+observeEvent(c(input$top_page, input$e_data_file, input$e_meta_file), {
+  req(input$top_page == "Upload")
+  
+  map_dtype = minio_upload_data$project_omic$Project$DataType
+  
+  if (isTruthy(map_dtype)) {
+    updatePickerInput(session, 'data_type', selected = ALL_DATATYPE_NAMES[map_dtype])
+    togglestate_add_tooltip(session, 'data_type_js', condition = FALSE, tooltip_text = ttext[['DATA_IMPORTED']])
+  }
+  
+  if (!is.null(minio_upload_data$project_omic)) {
+    edata_placeholder_content = minio_upload_data$project_omic$Data$e_data_filename
+    emeta_placeholder_content = minio_upload_data$project_omic$Data$e_meta_filename
+    
+    if (!is.null(minio_upload_data$project_omic$Data$e_data)) {
+      mimic_fileinput_upload(id = "e_data_file", progress_content="Uploaded from MAP", placeholder_content = edata_placeholder_content)
+    }
+    
+    if (!is.null(minio_upload_data$project_omic$Data$e_meta)) {
+      
+      updatePrettySwitch(session, "have_emeta", value = TRUE)
+      togglestate_add_tooltip(session, 'have_emeta_js', condition = FALSE, tooltip_text = ttext[['EMETA_FROM_MAP']])
+      
+      mimic_fileinput_upload(id = "e_meta_file", progress_content="Uploaded from MAP", placeholder_content = emeta_placeholder_content)
+    }
+    
+    togglestate_add_tooltip(session, 'use_example_js', condition = FALSE, tooltip_text = ttext[['DATA_IMPORTED']])
+  }
+}, ignoreNULL = FALSE)

@@ -56,7 +56,7 @@ observeEvent(input$use_example_fdata, {
 observeEvent(
   c(file_reactive_make_fdata$how_make, file_reactive_make_fdata$data_select_val, 
     file_reactive_make_fdata$use_example), {
-       if(!file_reactive_make_fdata$use_example && !AWS && !data_from_map()){
+       if(!file_reactive_make_fdata$use_example && !AWS && !MAP_ACTIVE){
          
          removeTab(preview_tabset, "Sample Information", session = session)
          
