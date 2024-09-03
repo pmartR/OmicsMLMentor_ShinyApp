@@ -69,9 +69,12 @@ suppressPackageStartupMessages({
 options(renv.config.sandbox.enabled = FALSE)
 
 ## GLOBAL VARIABLES ##
-MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
-AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
-# AWS <- T
+# MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
+# AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
+AWS <- F
+MAP_ACTIVE <- F
+
+VALID_HEADER_PARAMS = c("map-data")
 
 # Load files
 file_loads <- c(
@@ -244,8 +247,9 @@ ttext <- list(
   COVARIATE_TYPE_INFO = "Suppose your covariate has values [1,1,2,2,3,3].  By default, it is treated as a factor variable, but you may want to specify it is numeric.",
   COVARIATES_NO_EFFECT = "Keeping samples that have missing values for a covariate will cause that covariate to be ignored in most subsequent analyses.",
   CV_THRESH_TOO_LOW = "Maximum CV must be between 1 and the maximum data CV: ",
-  DATA_IMPORTED = "Your data has been uploaded from a SLOPE project, continue by completing the remainder of the tab: ",
+  DATA_IMPORTED = "Your data has been uploaded from a MAP project, continue by completing the remainder of the tab",
   DOWNLOAD_OPTS_DISABLED = "Currently selected parameters are the same as the ones currently stored for this plot",
+  EMETA_FROM_MAP = "Biomolecule information uploaded from MAP",
   GTEST_TOO_FEW = "All groups must have at least 3 nonmissing observations for at least one biomolecule to perform the G-test, the following groups did not: ",
   GOALS_NOT_COMPLETE = "Data source and at least two datatypes must be specified and confirmed.  (Separate lipids count as one)",
   HANDLE_MISALIGNED_STATS_INFO = "&quot;Remove&quot; will remove these samples from the dataset, they will not be able to be used in other parts of the app.  &quot;Track&quot; will keep the samples, but they will be prevented from being used in analyses that require identical comparisons across groups.",
@@ -256,6 +260,8 @@ ttext <- list(
   IMDANOVA_VALUES_LIMITS = "<br/> Minimum g-test must be >= 3.  Minimum ANOVA must be >=2.",
   INTEGRATION_LOW_SAMPLES = "Warning: Though SPLS claims to be able to handle low numbers of samples, our independent experiments show instability under 30 samples, proceed with caution.",
   ISOBARIC_NO_GTEST_COMBINED = "Combined and g-test options are disabled for isobaric labeled peptide data",
+  MINIO_IMPORT_SUCCESS = "Your data has been successfully imported from the Multi-Omics Analysis Portal, certain widgets and inputs will be pre-populated and disabled.",
+  MINIO_IMPORT_ERROR = "An error occurred while importing data from the Multi-Omics Analysis Portal:  %s",
   NEWCOL_NO_SPLIT_CHOSEN = "In the field above this one, pick a value that each entry in the chosen column will be split by, then choose which parts of the result to keep",
   NO_BOGEY_COVARIATES = "No samples were removed due exclusively to a missing covariate.",
   PAIRING_INFO = "If your samples are paired, three pieces of information are needed:  The column specifying which pairs of samples go together, the column specifying which group or side of the pairing each sample is in, and which group is to be subtracted from the other.",
