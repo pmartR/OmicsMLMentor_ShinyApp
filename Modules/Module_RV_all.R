@@ -1,7 +1,12 @@
 
-## AWS
+## Cloud Data Retrieval
 # Create a reactive value to hold AWS-specific objects
 AWSobj <- reactiveValues(e_data = NULL, f_data = NULL, e_meta = NULL)
+
+#' @details Store any values passed in the URL
+header_params = reactiveValues()
+
+minio_upload_data <- reactiveValues(project_omic = NULL)
 
 ## Data holder up until object creation
 reactive_dataholder <- reactiveValues(e_data = NULL,
@@ -22,6 +27,11 @@ pepQCData <- reactiveValues(
   objQCPro = NULL,
   keep = FALSE,
   transforms_df = NULL
+)
+
+hp_inputs <- reactiveValues(
+  input_names = list(),
+  input_labels = list()
 )
 
 ## Determine if selected model is supervised

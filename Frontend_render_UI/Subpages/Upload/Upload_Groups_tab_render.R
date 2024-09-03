@@ -4,7 +4,7 @@ output$f_data_upload_UI <- renderUI({
   
   req(!is.null(input$use_fdata) && input$use_fdata == "f_data" && 
         !input$use_example_fdata && input$fdata_options_done > 0 &&
-        input$how_make_fdata == "upload" && !AWS)
+        input$how_make_fdata == "upload" && !AWS && !MAP_ACTIVE)
   req(!is.null(input$data_type))
   
   div(
@@ -30,6 +30,7 @@ output$f_data_upload_UI <- renderUI({
 output$how_make_fdata_UI <- renderUI({
   
   req(input$use_fdata == 'f_data' && !input$use_example_fdata && !AWS)
+  validate(need(!MAP_ACTIVE, "Data has been uploaded from MAP"))
   
   div(
     br(),
@@ -57,7 +58,7 @@ output$f_meta_spec_UI <- renderUI({
         ## Upload, example, or generated fdata
         ((!is.null(input$fdata_upload_done) && input$fdata_upload_done > 0) || 
            input$fdata_options_done > 0 && 
-           (input$use_example_fdata || AWS || input$how_make_fdata == "colnames"))
+           (input$use_example_fdata || AWS || MAP_ACTIVE || input$how_make_fdata == "colnames"))
       )
   
   check_cols <- colnames(reactive_dataholder[["e_data"]]$file)
@@ -104,34 +105,34 @@ output$Group_plot_picker <- renderUI({
 })
 
 output$Group_tab_plots <- renderPlotly({
-
+  
   req(!is.null(reactive_dataholder$f_data$file) && !is.null(input$Gplot_picker))
-
+  
   df <- reactive_dataholder$f_data$file
   df <- df[colnames(df) != input$f_data_id_col]
   df <- gather(df)
   df <- df[!is.na(df$value),]
-
+  
   df <- df[df$key %in% input$Gplot_picker,]
-
+  
   if(all(is.na(as.numeric(as.character(df$value))))){
-      p <- ggplot(df, aes(x = value, fill = value)) +
-        geom_bar(color = "black", show.legend = F) + theme_bw() +
-        ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
-        labs(x = "Level", y = "Samples per level", title = input$Gplot_picker)
+    p <- ggplot(df, aes(x = value, fill = value)) +
+      geom_bar(color = "black", show.legend = F) + theme_bw() +
+      ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+      labs(x = "Level", y = "Samples per level", title = input$Gplot_picker)
   } else {
-
+    
     df$value <-  as.numeric(as.character(df$value))
     p <- ggplot(df, aes(x = value, fill = key)) + geom_histogram(show.legend = F) + theme_bw() +
       ggplot2::theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
       labs(x = "Value", y = "Frequency")
   }
-
+  
   isolate(plot_table_current$table[[paste0("Upload__grouping__", input$Gplot_picker)]] <- p)
   isolate(plot_table_current$names[[paste0("Upload__grouping__", input$Gplot_picker)]] <- paste0("Group info: ", input$Gplot_picker))
-
+  
   p
-
+  
 })
 
 ## Accordion behavior
@@ -152,11 +153,21 @@ observeEvent(input$fdata_upload_done, {
 })
 
 observeEvent(c(input$use_fdata, input$use_example_fdata, input$how_make_fdata), {
+  
   if (!is.null(input$use_fdata) &&
-      (input$use_fdata == ""  || AWS || 
-       isTruthy(input$use_example_fdata) || 
-       !is.null(input$how_make_fdata))) {
+      (
+        ## Endpoint conditions
+       input$use_fdata == ""  ||  ## No f_data
+       AWS ||  ## AWS
+       MAP_ACTIVE || ## MAP
+       isTruthy(input$use_example_fdata) || ## Example data
+       !is.null(input$how_make_fdata)) ## Implies f_data == Yes
+      ) {
     shinyjs::enable("fdata_options_done")
+    
+  # } else if (!is.null(input$use_fdata) && MAP_ACTIVE) {
+  #   shinyjs::enable("fdata_options_done")
+    
   } else {
     shinyjs::disable("fdata_options_done")
   }
@@ -214,8 +225,8 @@ observe({
     (input$use_fdata != 'f_data' && input$fdata_options_done > 0) ||
       (input$use_fdata == 'f_data' && !is.null(input$specify_fdata_done) &&
          input$specify_fdata_done > 0 && input$fdata_options_done > 0
-         )
-    )
+      )
+  )
   
   
   toggleElement("check_group_cols", condition = cond)

@@ -88,6 +88,7 @@ tbl <- function(data, index, namecol)  {
   temp <- map(temp, HTML)
   
   tags$div(
+    style = "height: 100%",
     class = "bg-white table-responsive",
     tags$table(
       class = "table",

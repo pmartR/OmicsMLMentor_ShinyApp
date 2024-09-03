@@ -1078,7 +1078,7 @@ output$unsup_res_aes_UI <- renderUI({
 
   req(length(colors) > 0)
   
-  choices <- if(method %in% c("pca", "ppca")){
+  choices <- if(method %in% c("pca", "ppca", "umap")){
     colors
   } else {
     c("Parameter clusters", colors)
@@ -1150,9 +1150,7 @@ output$structure_plot <- renderPlotly({
   method <- input$pick_model_EM ## While summary getting fixed
 
   color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
-                sym(input$color_by_unsup)
-              else
-                NULL
+                sym(input$color_by_unsup) else NULL
 
   runner <- as.slData(omicsData$objPP)
 
@@ -1278,13 +1276,17 @@ output$structure_plot <- renderPlotly({
 
     if(input$pick_axis == "samples"){
       df[[get_fdata_cname(runner)]] <- runner$f_data[[get_fdata_cname(runner)]]
-      select_cols <- unique(c(get_fdata_cname(runner), input$color_by_unsup))
-      df <- left_join(df, runner$f_data[select_cols])
+      if(input$color_by_unsup != "Parameter clusters"){
+        select_cols <- unique(c(get_fdata_cname(runner), input$color_by_unsup))
+        df <- left_join(df, runner$f_data[select_cols])
+      }
     } else {
 
       df[[get_edata_cname(runner)]] <- runner$e_data[[get_edata_cname(runner)]]
-      select_cols <- unique(c(get_edata_cname(runner), input$color_by_unsup))
-      df <- left_join(df, runner$e_meta[select_cols])
+      if(input$color_by_unsup != "Parameter clusters"){
+        select_cols <- unique(c(get_edata_cname(runner), input$color_by_unsup))
+        df <- left_join(df, runner$e_meta[select_cols])
+      }
     }
 
     if(length(color_by) > 0){

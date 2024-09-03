@@ -80,9 +80,15 @@ upload_tab_overlord <- function(){
           id = "review_upload_box",
           
           br(),
-          progress_tab("Upload"),
-          
-          actionButton("review_upload_done", "Done")
+          progress_tab(
+            "Upload",
+            plot_choices = c(
+              "Data Boxplots" = "Upload__boxplot",
+              "Sample Groups" = "Upload__grouping__*"
+            ),
+            done_btn = actionButton("review_upload_done", "Continue to Quality Control"),
+            reset_btn = actionButton("reset_upload", "Revert to start of Upload")
+          ),
           
         )
         

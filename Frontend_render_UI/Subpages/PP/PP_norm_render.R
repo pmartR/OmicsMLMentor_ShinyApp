@@ -1890,7 +1890,7 @@ assign_norm_output <- function(tab) {
         # "_loess_span"
       ))
       
-      if(!get_data_norm(omicsData$objPP)){
+      if(isolate(!get_data_norm(omicsData$objPP))) {
         omicsData$objNorm <- NULL
         norm_settings[[tab]] <- NULL
         map(UI_elements, enable)
@@ -1930,7 +1930,10 @@ assign_norm_output <- function(tab) {
       ### Pre-Normalized data w/ disabled UI
       if (!is.null(get_data_norm(isolate(omicsData$objPP))) &&
           length(get_data_norm(isolate(omicsData$objPP))) > 0 &&
-          get_data_norm(isolate(omicsData$objPP))) {
+          get_data_norm(isolate(omicsData$objPP)) &&
+          (is.null(input[[paste0(tab, "_normalize_option")]]) ||
+          input[[paste0(tab, "_normalize_option")]] == "No Normalization")) {
+        browser()
         out <- list(
           strong("Data has already been normalized!"),
           br(),
@@ -1947,7 +1950,7 @@ assign_norm_output <- function(tab) {
         return(do.call(tagList, out))
       }
       
-      if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
+      if(isolate(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))) {
         
         out <- list(
           strong("Normalization unavailable for Presence/absence data."),
