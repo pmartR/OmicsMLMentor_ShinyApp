@@ -33,6 +33,11 @@ user_inputs <- reactiveValues(
   rm = NULL,
 )
 
+hp_inputs <- reactiveValues(
+  input_names = list(),
+  input_labels = list(),
+)
+
 ## Determine if selected model is supervised
 supervised <- reactive({
   (input$skip_ag && input$pick_model %in% models_supervised) ||

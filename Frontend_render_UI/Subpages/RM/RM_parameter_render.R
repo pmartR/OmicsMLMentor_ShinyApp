@@ -520,6 +520,13 @@ pca_params <- function(){
   out <- div(
     sliderInput("pca_num_comp", "Number of components", min=2, max=max_pcs, value = 2)
   )
+  
+  hp_inputs$input_labels <- list(
+    "Number of components"
+  )
+  hp_inputs$input_names <- list(
+    "pca_num_comp"
+  )
 }
 
 ### Not yet available
