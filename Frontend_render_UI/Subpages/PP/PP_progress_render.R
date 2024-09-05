@@ -122,59 +122,59 @@ output$preprocessing_progress_inputs_table <- renderTable({
     `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_add_molfilt")]], "Yes", "No")
   )
   
-  if (input[[paste0(get_omicsData_type(omicsData$objPP), "_add_molfilt")]]) {
+  if (input[[paste0(get_omicsData_type(omicsData$objQC), "_add_molfilt")]]) {
     df <- df %>% add_row(
       `Input` = "Molecule Filter Minimum Number Observed",
-      `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_mol_min_num")]] %>% as.character()
+      `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_mol_min_num")]] %>% as.character()
     )
   }
   
   df <- df %>% add_row(
     `Input` = "Biomolecule Detection Filter Applied",
-    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objPP), "_add_imputefilt")]], "Yes", "No")
+    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_add_imputefilt")]], "Yes", "No")
   )
   
   df <- df %>% add_row(
     `Input` = "Coefficient of Variation Filter Applied",
-    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objPP), "_add_cvfilt")]], "Yes", "No")
+    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_add_cvfilt")]], "Yes", "No")
   )
   
-  if (input[[paste0(get_omicsData_type(omicsData$objPP), "_add_cvfilt")]]) {
+  if (input[[paste0(get_omicsData_type(omicsData$objQC), "_add_cvfilt")]]) {
     df <- df %>% add_row(
       `Input` = "Coefficient of Variation Maximum CV",
-      `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_cv_threshold")]] %>% as.character()
+      `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_cv_threshold")]] %>% as.character()
     )
     df <- df %>% add_row(
       `Input` = "CV Filter Uses Groups",
-      `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objPP), "_cvfilt_use_groups")]], "Yes", "No")
+      `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_cvfilt_use_groups")]], "Yes", "No")
     )
   }
   
   df <- df %>% add_row(
     `Input` = "Custom Biomolecule Filter Applied",
-    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objPP), "_add_edata_customfilt")]], "Yes", "No")
+    `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_add_edata_customfilt")]], "Yes", "No")
   )
   
-  if (input[[paste0(get_omicsData_type(omicsData$objPP), "_add_edata_customfilt")]]) {
+  if (input[[paste0(get_omicsData_type(omicsData$objQC), "_add_edata_customfilt")]]) {
     df <- df %>% add_row(
       `Input` = "Custom Biomolecule Filter Selected Biomolecule Handling",
-      `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_edata_remove_or_keep")]]
+      `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_edata_remove_or_keep")]]
     )
     df <- df %>% add_row(
       `Input` = "Custom Biomolecule Filter Selected Biomolecules",
-      `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_edata_customfilt_regex")]]
+      `Value` = paste(input[[paste0(get_omicsData_type(omicsData$objQC), "_edata_customfilt_regex")]], collapse = ", ")
     )
   }
   
   df <- df %>% add_row(
     `Input` = "Normalization Method",
-    `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_normalize_option")]]
+    `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_normalize_option")]]
   )
   
-  if (input[[paste0(get_omicsData_type(omicsData$objPP), "_normalize_option")]] == "Global Normalization") {
+  if (input[[paste0(get_omicsData_type(omicsData$objQC), "_normalize_option")]] == "Global Normalization") {
     df <- df %>% add_row(
       `Input` = "Normalization Function",
-      `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_norm_fn")]]
+      `Value` = input[[paste0(get_omicsData_type(omicsData$objQC), "_norm_fn")]]
     )
     
     subset_names <- c(
@@ -221,6 +221,31 @@ output$preprocessing_progress_inputs_table <- renderTable({
     df <- df %>% add_row(
       `Input` = "Backtransformation Applied",
       `Value` = ifelse(input[[paste0(get_omicsData_type(omicsData$objQC), "_backtransform")]], "Yes", "No")
+    )
+  }
+  
+  if (get_omicsData_type(omicsData$objQC) == "Pepdata" || get_omicsData_type(omicsData$objQC) == "Isobaricpepdata") {
+    df <- df %>% add_row(
+      `Input` = "Rollup Method",
+      `Value` = switch(
+        input$qc_which_rollup, 
+        rollup = "Centering only",
+        rrollup = "Reference",
+        qrollup = "Quantile",
+        zrollup = "Z-Score"
+      )
+    )
+    
+    if (input$qc_which_rollup == "qrollup") {
+      df <- df %>% add_row(
+        `Input` = "Quantile Cutoff",
+        `Value` = input$qc_qrollup_thresh
+      )
+    }
+    
+    df <- df %>% add_row(
+      `Input` = "Centering method",
+      `Value` = input$qc_which_combine_fn
     )
   }
   

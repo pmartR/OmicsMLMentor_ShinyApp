@@ -99,7 +99,7 @@ output$Upload_progress_inputs_table <- renderTable({
       "Sample Information Source"
     ),
     `Value` = c(
-      input$data_type,
+      names(which(ALL_DATATYPE_NAMES == input$data_type)),
       ifelse(input$use_example, "Example Data", "Uploaded Data"),
       ifelse(input$have_emeta, ifelse(input$use_example, "Example Data", "Uploaded Data"), "None"),
       input$e_data_id_col,

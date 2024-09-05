@@ -232,6 +232,14 @@
   }
 }
 
+.progress-visible {
+  visibility:visible !important;
+}
+
+.progress-visible .progress-bar {
+  width:100% !important;
+}
+
 /*!
  * Generated using the Bootstrap Customizer (https://getbootstrap.com/docs/3.4/customize/)
  */

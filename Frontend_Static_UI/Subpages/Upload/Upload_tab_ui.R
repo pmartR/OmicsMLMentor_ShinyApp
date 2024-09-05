@@ -20,19 +20,23 @@ upload_tab <- function() {
             icon = icon("exclamation-sign", lib = "glyphicon"),
             value = "datselect",
             collapsed = F,
-
-            pickerInput(
-              "data_type",
-              "What kind of data do you have?",
-              multiple = T,
-              choices = ALL_DATATYPE_NAMES,
-              selected = character(0),
-              options = pickerOptions(maxOptions = 1),
+            
+            div(
+              id = 'data_type_js',
+              pickerInput(
+                "data_type",
+                "What kind of data do you have?",
+                multiple = T,
+                choices = ALL_DATATYPE_NAMES,
+                selected = character(0),
+                options = pickerOptions(maxOptions = 1),
+              )
             ),
 
             uiOutput("data_select_UI"),
 
-            hidden(checkboxInput("use_example", "Use example data?")),
+            hidden(div(id = "use_example_js",
+                       checkboxInput("use_example", "Use example data?"))), 
             
 
             # div(style="display:inline-block",actionButton("data_type_done", "Done", style="float:right"))

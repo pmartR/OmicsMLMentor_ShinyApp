@@ -204,5 +204,20 @@ output$RM_progress_inputs_table <- renderTable({
     )
   }
   
+  if (length(hp_inputs$input_names) > 0) {
+    for (param in 1:length(hp_inputs$input_names)) {
+      df <- df %>% add_row(
+        `Input` = paste("Hyperparameter:", hp_inputs$input_labels[[param]]),
+        `Value` = paste(
+          input[[hp_inputs$input_names[[param]]]],
+          if (isTruthy(input[[paste0("optimize_", hp_inputs$input_names[[param]])]]))
+            "(Optimized)"
+          else
+            ""
+        )
+      )
+    }
+  }
+  
   df
 })

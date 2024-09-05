@@ -100,73 +100,76 @@ output$missing_data_hist_biomolecule <- renderPlotly({
   
   sliderVals <- missingHandleSliderVals %>% debounce(500)
   
-  if(input$keep_missing == "Yes"){
+  try({
+    if(input$keep_missing == "Yes"){
+      
+      rows <- Reduce("&", list(
+        data[["Percentage missing"]] >= sliderVals()$md_keep[1],
+        data[["Percentage missing"]] <= sliderVals()$md_keep[2]
+      ))
+      
+      data$Handling[rows] <- "Keep"
+      
+    }
     
-    rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= sliderVals()$md_keep[1],
-      data[["Percentage missing"]] <= sliderVals()$md_keep[2]
-    ))
+    if("impute" %in% input$missing_options){
+      
+      rows <- Reduce("&", list(
+        data[["Percentage missing"]] >= sliderVals()$md_impute[1],
+        data[["Percentage missing"]] <= sliderVals()$md_impute[2]
+      ))
+      
+      data$Handling[rows] <- "Estimate"
+      
+    }
     
-    data$Handling[rows] <- "Keep"
+    if("convert" %in% input$missing_options){
+      
+      rows <- Reduce("&", list(
+        data[["Percentage missing"]] >= sliderVals()$md_convert[1],
+        data[["Percentage missing"]] <= sliderVals()$md_convert[2]
+      ))
+      
+      data$Handling[rows] <- "Convert"
+      
+    }
     
-  }
+    if("remove" %in% input$missing_options){
+      
+      rows <- Reduce("&", list(
+        data[["Percentage missing"]] >= sliderVals()$md_remove[1],
+        data[["Percentage missing"]] <= sliderVals()$md_remove[2]
+      ))
+      
+      data$Handling[rows] <- "Remove"
+      
+    }
+    
+    text_ylab <- "biomolecules"
+    
+    p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
+      geom_histogram() + theme_bw() + 
+      labs(y = paste0("Count of ", text_ylab)) + xlim(c(-1,100)) +
+      scale_fill_manual(values = 
+                          c("Convert" = "#c87619", 
+                            "Estimate" = "#238551", 
+                            "Remove" ="#cd4246"))
+    
   
-  if("impute" %in% input$missing_options){
+    # if (inherits(omicsData$objQC, "pepData")) {
+    #   p <- p + ggtitle("Protein level preview")
+    # }
     
-    rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= sliderVals()$md_impute[1],
-      data[["Percentage missing"]] <= sliderVals()$md_impute[2]
-    ))
+    if (inherits(omicsData$objQC, "pepData")) {
+      p <- p + ggtitle("Protein level preview")
+    }
     
-    data$Handling[rows] <- "Estimate"
+    isolate(plot_table_current$table$QC__missing_features <- p)
     
-  }
+    return(p)
+  })
   
-  if("convert" %in% input$missing_options){
-    
-    rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= sliderVals()$md_convert[1],
-      data[["Percentage missing"]] <= sliderVals()$md_convert[2]
-    ))
-    
-    data$Handling[rows] <- "Convert"
-    
-  }
-  
-  if("remove" %in% input$missing_options){
-    
-    rows <- Reduce("&", list(
-      data[["Percentage missing"]] >= sliderVals()$md_remove[1],
-      data[["Percentage missing"]] <= sliderVals()$md_remove[2]
-    ))
-    
-    data$Handling[rows] <- "Remove"
-    
-  }
-  
-  text_ylab <- "biomolecules"
-  
-  p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
-    geom_histogram() + theme_bw() + 
-    labs(y = paste0("Count of ", text_ylab)) + xlim(c(-1,100)) +
-    scale_fill_manual(values = 
-                        c("Convert" = "#c87619", 
-                          "Estimate" = "#238551", 
-                          "Remove" ="#cd4246"))
-  
-
-  # if (inherits(omicsData$objQC, "pepData")) {
-  #   p <- p + ggtitle("Protein level preview")
-  # }
-  
-  if (inherits(omicsData$objQC, "pepData")) {
-    p <- p + ggtitle("Protein level preview")
-  }
-  
-  isolate(plot_table_current$table$QC__missing_features <- p)
-  
-  p
-  
+  return(NULL)
 })
 
 output$qc_biomolecule_title <- renderText({
@@ -534,26 +537,28 @@ observeEvent(c(input$keep_missing, input$missing_options, input$missingness_hand
       !is.null(input$missing_options)) {
     # Prevent user from Removing all biomolecules
     
-    thresholds <- list(
-      keep = missingHandleSliderVals()$md_keep,
-      impute = missingHandleSliderVals()$md_impute,
-      convert = missingHandleSliderVals()$md_convert,
-      remove = missingHandleSliderVals()$md_remove
-    )
-
-    if (inherits(omicsData$objQC, "pepData")) {
-      transform_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
-    } else {
-      transform_df <- slopeR::get_transform_df(omicsData$objQC, thresholds)
-    }
-    
-    if (all(transform_df$Handling == "Remove")) {
-      output$warn_missing_biom <- renderText("All biomolecules would be removed with the specified handling. Please ensure at least one biomolecule is kept.")
-      shinyjs::disable("done_biom_miss")
-    } else {
-      output$warn_missing_biom <- renderText("")
-      shinyjs::enable("done_biom_miss")
-    }
+    try({
+      thresholds <- list(
+        keep = missingHandleSliderVals()$md_keep,
+        impute = missingHandleSliderVals()$md_impute,
+        convert = missingHandleSliderVals()$md_convert,
+        remove = missingHandleSliderVals()$md_remove
+      )
+  
+      if (inherits(omicsData$objQC, "pepData")) {
+        transform_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
+      } else {
+        transform_df <- slopeR::get_transform_df(omicsData$objQC, thresholds)
+      }
+      
+      if (all(transform_df$Handling == "Remove")) {
+        output$warn_missing_biom <- renderText("All biomolecules would be removed with the specified handling. Please ensure at least one biomolecule is kept.")
+        shinyjs::disable("done_biom_miss")
+      } else {
+        output$warn_missing_biom <- renderText("")
+        shinyjs::enable("done_biom_miss")
+      }
+    })
     
   } else {
     output$warn_missing_biom <- renderText("")
