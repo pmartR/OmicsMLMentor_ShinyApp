@@ -72,6 +72,24 @@ output$QC_progress_inputs_table <- renderTable({
     )
   )
   
+  if ("isobaricpepData" %in% class(omicsData$obj)) {
+    df <- df %>% add_row(
+      `Input` = "Reference Group Column",
+      `Value` = input$Isobaricpepdata_ref_group,
+      .before = 1
+    )
+    df <- df %>% add_row(
+      `Input` = "Reference Sample Designation Column",
+      `Value` = input$Isobaricpepdata_ref_col,
+      .before = 1
+    )
+    df <- df %>% add_row(
+      `Input` = "Reference Sample Notation",
+      `Value` = input$Isobaricpepdata_ref_notation,
+      .before = 1
+    )
+  }
+  
   if (input$keep_missing == "No") {
     df <- rbind(df, data.frame(
       check.names = FALSE,
