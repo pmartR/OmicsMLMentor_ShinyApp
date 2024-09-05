@@ -1162,12 +1162,15 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       # make temp objects and clear summaries
       tmp <- omicsData$objPP
       before <- tmp
+      biom_rm_count <- tmp
       
       # molecule filter
       if (!is.null(filters[[name]]$molfilt) && 
           is.null(attributes(tmp)$filters$moleculeFilt) && 
           input[[paste0(name, "_add_molfilt")]]) {
         tmp <- applyFilt(filters[[name]]$molfilt, tmp, min_num = input[[paste0(name, "_mol_min_num")]])
+        user_inputs$filters$molfilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
+        biom_rm_count <- tmp
       }
       # proteomics filter
       if (inherits(tmp, "pepData")) {
@@ -1176,6 +1179,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                    input[[paste0(name, "_add_profilt")]])) {
           tmp <- applyFilt(filters[[name]]$profilt, tmp, min_num_peps = input[[paste0(name, "_min_num_peps")]], 
                            redundancy = input[[paste0(name, "_degen_peps")]])
+          user_inputs$filters$profilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
+          biom_rm_count <- tmp
         }
       }
       
@@ -1203,6 +1208,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
           tmp$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
         } else {
           tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
+          user_inputs$filters$imputefilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
+          biom_rm_count <- tmp
         }
         
         attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
@@ -1237,17 +1244,23 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                          tmp,
                          cv_threshold = input[[paste0(name, "_cv_threshold")]]
         )
+        user_inputs$filters$cvfilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
+        biom_rm_count <- tmp
       }
       
       # biomolecule custom filter
       if (!is.null(filters[[name]]$edata_customfilt)) {
         tmp <- applyFilt(filters[[name]]$edata_customfilt, tmp)
+        user_inputs$filters$customfilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
+        biom_rm_count <- tmp
       }
       
       ## TC filt
       if (!is.null(filters[[name]]$totalCountFilt)) {
         tmp <- applyFilt(filters[[name]]$totalCountFilt, tmp, 
                          min_count = input$Seqdata_min_count)
+        user_inputs$filters$tcfilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
+        biom_rm_count <- tmp
       }
       
       #### SAMPLE FILTERS ####
