@@ -7,6 +7,19 @@ output$QC_progress_summary_table <- renderDT({
 })
 
 output$QC_progress_next_steps <- renderUI({
+  user_inputs$qc <- list(
+    ref_group = input$Isobaricpepdata_ref_group,
+    ref_col = input$Isobaricpepdata_ref_col,
+    ref_notation = input$Isobaricpepdata_ref_notation,
+    single_obs_removed = ifelse(is.null(input$QC_add_molfilt) || input$QC_add_molfilt, "Yes", "No"),
+    outliers_removed = ifelse(is.null(input$QC_rmdfilt_sample_remove), "None", paste(input$QC_rmdfilt_sample_remove, collapse = ", ")),
+    min_pct_sample = input$missing_value_thresh,
+    missingdata_kept = input$keep_missing,
+    handle_impute = ifelse(is.null(missingHandleSliderVals()$md_impute), "None", paste(missingHandleSliderVals()$md_impute, collapse = "-")),
+    handle_convert = ifelse(is.null(missingHandleSliderVals()$md_convert), "None", paste(missingHandleSliderVals()$md_convert, collapse = "-")),
+    handle_remove = ifelse(is.null(missingHandleSliderVals()$md_remove), "None", paste(missingHandleSliderVals()$md_remove, collapse = "-"))
+  )
+  
   tagList(
     tags$b("Model Set-Up"),
     tags$ul(
