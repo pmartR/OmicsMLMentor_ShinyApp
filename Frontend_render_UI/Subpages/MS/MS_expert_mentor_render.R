@@ -3,6 +3,8 @@
 automated_model_text <- reactiveVal()
 dashboard <- reactiveVal()
 
+correlation <- FALSE
+
 tbl <- function(data, index, namecol)  {
   
   temp <- list()
@@ -170,9 +172,9 @@ observeEvent(
   
   # Avoid out of memory crash with large data object
   if (dim(temp_omic$e_data)[1] > 20000) {
-    correlation <- TRUE
+    correlation <<- TRUE
   } else {
-    correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+    correlation <<- any(cor(t(temp_omic$e_data[-id_col])) > .90)
   }
   
   ## Change based on algorithim for holdout
@@ -626,8 +628,6 @@ get_em_column_info <- function() {
   
   id_col <- which(colnames(temp_omic$e_data) == 
                     get_edata_cname(temp_omic))
-  
-  correlation <- any(cor(t(temp_omic$e_data[-id_col])) > .90)
   
   titles <- list(
     "total_samples" = paste0("Total Samples: ", ncol(omicsData$objModel$e_data) - 1),
