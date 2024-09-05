@@ -327,7 +327,7 @@ if (!is.null(params$plots$table$PP__filters__molfilt)) {
 
 ```{r PP imputeFilt}
 text <- ""
-if (params$user_inputs$pp$imputefilt) {
+if (!is.null(params$user_inputs$pp$imputefilt)) {
   text <- paste0(text, "An imputation filter was applied which ")
   if (params$user_inputs$pp$handle_impute != "None") {
     text <- paste0(text, "estimated missing data for biomolecules with ", params$user_inputs$pp$handle_impute, "% missingness")
