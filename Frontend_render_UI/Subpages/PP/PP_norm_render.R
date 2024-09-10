@@ -1964,7 +1964,7 @@ assign_norm_output <- function(tab) {
           length(get_data_norm(isolate(omicsData$objPP))) > 0 &&
           get_data_norm(isolate(omicsData$objPP)) &&
           (is.null(input[[paste0(tab, "_normalize_option")]]) ||
-          input[[paste0(tab, "_normalize_option")]] == "No Normalization") &&
+          input[[paste0(tab, "_normalize_option")]] == "No Normalization")
           ) {
         
         out <- list(
