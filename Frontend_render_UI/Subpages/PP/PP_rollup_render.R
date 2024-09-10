@@ -118,35 +118,29 @@ assign_rollup_output <- function(tab) {
   output[[paste0(tab, "_rollup_res")]] <- renderPlotly({
     req(!inherits(omicsData$objPP, "pepData"))
     
-    # e_data <- omicsData$objPP$e_data
-    # e_data_cname <- pmartR::get_edata_cname(omicsData$objPP)
-    # plot_data <- melt(e_data, id = e_data_cname, na.rm = TRUE)
-    # group_df <- get_group_DF(omicsData$objPP)
-    # plot_data <- left_join(plot_data, group_df, by = c("variable" = colnames(group_df)[1]))
-    # title <- paste0("Protein Roll-up: ", tab, " Data")
-    # 
-    # plot_data <- arrange(plot_data, !!rlang::sym(colnames(group_df)[2]))
-    # plot_data$variable <- factor(plot_data$variable, levels = unique(plot_data$variable))
-    # 
-    # p <- plot_ly(
-    #   data = plot_data,
-    #   x = plot_data$variable,
-    #   y = plot_data$value,
-    #   color = plot_data[[colnames(group_df)[2]]],
-    #   type = "box"
-    # ) %>%
-    #   layout(
-    #     title = title,
-    #     xaxis = list(title = "Samples"),
-    #     yaxis = list(title = "Values")
-    #   )
+    drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
     
-    if(!is.null(get_group_DF(omicsData$objPP))){
-      p <- plot(omicsData$objPP, 
-                color_by = "Group", 
-                order_by = "Group")
+    if(all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1))) {
+
+      ## Still need group designation for color, order
+      df <- as.data.frame(table(melt(omicsData$objPP$e_data)[2:3]))
+      p <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+        geom_col() + theme_bw() + 
+        labs(
+          title = "Protein-summarized data",
+          fill = "Conversion",
+          y = "Number of biomolecules",
+          x = "Sample",
+        ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+      
     } else {
-      p <- plot(omicsData$objPP)
+      if(!is.null(get_group_DF(omicsData$objPP))){
+        p <- plot(omicsData$objPP, 
+                  color_by = "Group", 
+                  order_by = "Group")
+      } else {
+        p <- plot(omicsData$objPP)
+      }
     }
     
     isolate(plot_table_current$table$PP__rollup <- p)

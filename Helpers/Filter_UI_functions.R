@@ -254,7 +254,7 @@ select_biofilter_UI <- function(
         div(
           id = paste0(tabname, "_add_impute_ttip_control"),
           
-          uiOutput("add_impute_ui")#,
+          uiOutput("add_impute_ui")
           # actionButton(inputId = paste0(tabname, "_preview_impute"), "Preview")
         )
       ),
@@ -262,7 +262,6 @@ select_biofilter_UI <- function(
         6,
         
         uiOutput("missing_options_filter_UI"),
-        
         uiOutput("slider_options_filter_ui")
       )
     ),

@@ -50,25 +50,25 @@ output$RM_progress_next_steps <- renderUI({
     }
   }
   
-  user_inputs$rm <- list(
-    model_scope = if(input$rm_prompts_train == "notrain") {
-      "Current Data"
-    } else {
-      "Current and New Data"
-    },
-    hyperparam_source = str_to_title(input$rm_prompts_hp),
-    subset_method = if (input$rm_prompts_hp == "tuned") {
-      ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
-    } else {
-      ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
-    },
-    nfolds = if (input$rm_prompts_hp == "tuned") {
-      input$nFolds_hp %>% as.character()
-    } else {
-      input$nFolds_cv %>% as.character()
-    },
-    hyperparams = df
-  )
+  # user_inputs$rm <- list(
+  #   model_scope = if(input$rm_prompts_train == "notrain") {
+  #     "Current Data"
+  #   } else {
+  #     "Current and New Data"
+  #   },
+  #   hyperparam_source = str_to_title(input$rm_prompts_hp),
+  #   subset_method = if (input$rm_prompts_hp == "tuned") {
+  #     ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
+  #   } else {
+  #     ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
+  #   },
+  #   nfolds = if (input$rm_prompts_hp == "tuned") {
+  #     input$nFolds_hp %>% as.character()
+  #   } else {
+  #     input$nFolds_cv %>% as.character()
+  #   },
+  #   hyperparams = df
+  # )
   
   tagList(
     tags$b("Download"),

@@ -18,9 +18,9 @@ norm_tab <- function(tabname) {
                  value = "picker",
                  collapsed = F,
                  
-                 uiOutput(paste0(tabname, "_normalize_option_UI")),
+                 uiOutput(paste0(tabname, "_normalize_option_UI"))#,
                  
-                 "Note: If the intent of the model is to be used with new data, users must use the 0-1 normalization method, in order to minimize the impact of batch effects. If this method is not selected, users will not be able to export to an RDS object."
+                 # "Note: If the intent of the model is to be used with new data, users must use the zero-to-one normalization method, in order to minimize the impact of batch effects. If this method is not selected, users will not be able to export to an RDS object."
                
              )
              

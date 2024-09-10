@@ -530,7 +530,7 @@ map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
     
     observeEvent(input[[str]], {
       
-      req(length(input[[str]]) > 0)
+      req(length(input[[str]]) > 0 && !is.null(input[[str]]$row))
       
       pull_info <- get(paste0(type, "_table_current"))
       req(!is.null(pull_info))
@@ -839,7 +839,7 @@ output$include_model_UI <- renderUI({
           "Include model as an R object (RDS file)?",
           strong("   "),
           tipify(icon("circle-info"),
-                 paste0("Disabled, as 0-1 normalization was not applied.")
+                 paste0("Disabled, as zero-to-one normalization was not applied.")
           )
         ),
         inputId = "include_model", value = F)

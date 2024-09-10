@@ -1105,10 +1105,41 @@ load_norm_observers <- function(tab) {
     )
     
     observeEvent(input[[paste0(tab, "_normalize_option")]], {
-      req((!is.null(omicsData$objPP)) && (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn)))
-      if (input[[paste0(tab, "_normalize_option")]] %in% c("Global Normalization","SPANS - Proteomics only","No Normalization")) {
+      
+      drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP))
+      
+      req((!is.null(omicsData$objPP)) && 
+            (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn))
+            )
+      
+      if (input[[paste0(tab, "_normalize_option")]] %in% 
+          c("Global Normalization","SPANS - Proteomics only","No Normalization")) {
         # Display an alert when the value is "triggerValue"
-        shinyalert("Note", "Using this normalization method, users will not be able export the model as an RDS object to run on new data. To do that, please use 'Zero-to-one Scaling'.", type = "info")
+        
+        if(!all(omicsData$objPP$e_data[-drop] %in% c(1,0))){
+          
+          shinyalert(
+            "Note", 
+            paste0(paste0("Normalization is not supported for data completely",
+                          " converted to presence/absence. Export of this kind",
+                          " of model is currently not supported.")), type = "info")
+          
+        } else if(inherits(omicsData$objPP, "seqData")){
+          
+          shinyalert(
+            "Note", 
+            paste0(paste0("Normalization is not supported for transcriptomic data. Export of this kind",
+                          " of model is currently not supported.")), type = "info")
+          
+        } else {
+          
+          shinyalert(
+            "Note", 
+            paste0("Using this normalization method, users will not be able ",
+                   "export the model as an RDS object to run on new data. To do ",
+                   "that, please use 'Zero-to-one Scaling'."), type = "info")
+          
+        }
       }
     })
 
@@ -1950,10 +1981,12 @@ assign_norm_output <- function(tab) {
         return(do.call(tagList, out))
       }
       
-      if(isolate(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))) {
+      drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+      
+      if(all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1))) {
         
         out <- list(
-          strong("Normalization unavailable for Presence/absence data."),
+          strong("Normalization unavailable for presence/absence data (all converted to 0s and 1s)."),
           br(),
           
           disabled(pickerInput(paste0(tab, "_normalize_option"),
@@ -1970,8 +2003,23 @@ assign_norm_output <- function(tab) {
       }
       
       
+      missingness_support <- names(models_long_name[models_long_name == input$pick_model_EM]) %in% 
+        names(missing_designation[missing_designation])
+      
+      missingness_present <- any(is.na(omicsData$objPP$e_data[-drop]))
+      
+      post_roll_filt <- inherits(omicsData$objPP, "pepData") && 
+        !is.null(input[[paste0(tabname, "_add_imputefilt")]]) &&
+        input[[paste0(tabname, "_add_imputefilt")]]
+      
+      if(length(missingness_support) > 0 && !missingness_support && 
+         missingness_present && 
+         !post_roll_filt){
+        
+        choicesOpt_norm <- list(disabled = norm_choices != "Zero-to-one scaling")
+      
       ## Isobaric data
-      if (tab == "Isobaric") {
+      } else if (tab == "Isobaric") {
         choicesOpt_norm <- NULL
         
         ## Proteomic data
@@ -2118,7 +2166,10 @@ assign_norm_output <- function(tab) {
       
       lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = FALSE)
       # preview <- actionButton(paste0(tab, "_preview_normalization"), "Preview")
-      bias <- if(input$pick_model_EM %in% models_supervised){
+      
+      cond_sup <- input$pick_model_EM %in% models_supervised
+      
+      bias <- if(cond_sup){
         actionButton(paste0(tab, "_inspect_norm"), "Evaluate Normalization Bias")
       } else div()
       
@@ -2147,14 +2198,12 @@ assign_norm_output <- function(tab) {
       cond_bias <- !is.null(plot_table_current$table$PP__bias__scale) ||
       !is.null(plot_table_current$table$PP__bias__location)
       
+      cond_fdata <- !
+      
       if ( # !cond_loess &&
-        (!cond_zero_one && !cond_global)) {
+        (!cond_zero_one && !cond_global) ||
+        (!cond_bias && cond_sup)) {
         lock <- disabled(lock)
-        # preview <- disabled(preview)
-        if(!is.null(bias))
-          bias <- disabled(bias)
-      } else if(!cond_bias){
-        bias <- disabled(bias)
       } else {
         tooltip <- hidden(tooltip)
       }
@@ -2247,14 +2296,20 @@ assign_norm_output <- function(tab) {
     
     output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
       
-      req(!all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1)))
+      drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+      
+      req(!all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1)))
 
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
         return(isolate(plot_table_current$table$PP__normalization__pre))
       }
       
-      if(all(unlist(omicsData$objPP$e_data[-1]) %in% c(0, 1))){
+      
+      drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+      
+      
+      if(all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1))){
         df <- as.data.frame(table(melt(omicsData$objPP$e_data)[2:3]))
         p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
           geom_col() + theme_bw() + 

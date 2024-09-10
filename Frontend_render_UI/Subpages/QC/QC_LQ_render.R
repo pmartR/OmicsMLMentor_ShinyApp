@@ -26,9 +26,12 @@ output$QC_LQ_Advanced_UI <- renderUI({
 output$QC_single_mol_plot <- renderPlotly({
 
   req(!is.null(omicsData$objQC) && 
-        length(attr(omicsData$objQC, "filters")) == 0,
+        (length(attr(omicsData$objQC, "filters")) == 0 ||
+           !("molFilt" %in% map_chr(attr(omicsData$objQC, "filters"), 1))),
       cancelOutput = T
         )
+  
+  
   
   filt <- molecule_filter(omicsData$objQC)
   

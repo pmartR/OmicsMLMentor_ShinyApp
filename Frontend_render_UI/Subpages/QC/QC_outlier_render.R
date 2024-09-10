@@ -137,7 +137,9 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
   
   req(!is.null(omicsData$objQC) && 
         !inherits(omicsData$objQC, "seqData") &&
-        !("customFilt" %in% map(attr(omicsData$objQC, "filters"), 1)))
+        !is.null(input$outliers_done) && input$outliers_done < 1,
+      cancelOutput = T
+      )
   
   temp_dat <- omicsData$objQC
   
