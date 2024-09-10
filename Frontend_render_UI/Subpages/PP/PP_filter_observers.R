@@ -1677,8 +1677,8 @@ output$missing_options_filter_warning_UI <- renderUI({
         !input[[paste0(tabname, "_add_imputefilt")]])
   
   div(
-  strong(paste0("Warning: Method ", models_long_name[input$pick_model_EM],
-                " does not support missing data. Failure to add this filter ",
+  strong(paste0("Warning: Method '", names(models_long_name[models_long_name == input$pick_model_EM]),
+                "' does not support missing data. Failure to add this filter ",
                 "will enforce zero-to-one normalization and ",
                 "set all missing values to zero.")),
   br(), br())

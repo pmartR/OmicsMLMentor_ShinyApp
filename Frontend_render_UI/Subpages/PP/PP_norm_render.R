@@ -1116,20 +1116,20 @@ load_norm_observers <- function(tab) {
           c("Global Normalization","SPANS - Proteomics only","No Normalization")) {
         # Display an alert when the value is "triggerValue"
         
-        if(!all(omicsData$objPP$e_data[-drop] %in% c(1,0))){
+        if(all(omicsData$objPP$e_data[-drop] %in% c(1,0))){
           
           shinyalert(
             "Note", 
-            paste0(paste0("Normalization is not supported for data completely",
+            paste0("Normalization is not supported for data completely",
                           " converted to presence/absence. Export of this kind",
-                          " of model is currently not supported.")), type = "info")
+                          " of model is currently not supported."), type = "info")
           
         } else if(inherits(omicsData$objPP, "seqData")){
           
           shinyalert(
             "Note", 
-            paste0(paste0("Normalization is not supported for transcriptomic data. Export of this kind",
-                          " of model is currently not supported.")), type = "info")
+            paste0("Normalization is not supported for transcriptomic data. Export of this kind",
+                          " of model is currently not supported."), type = "info")
           
         } else {
           
@@ -1908,6 +1908,7 @@ assign_norm_output <- function(tab) {
     output[[paste0(tab, "_normalize_option_UI")]] <- renderUI({
       
       req(!is.null(isolate(omicsData$objPP)))
+      req(is.null(omicsData$objNorm), cancelOutput = T)
       
       UI_elements <- paste0(tab, c(
         "_normalize_option",
@@ -1963,8 +1964,9 @@ assign_norm_output <- function(tab) {
           length(get_data_norm(isolate(omicsData$objPP))) > 0 &&
           get_data_norm(isolate(omicsData$objPP)) &&
           (is.null(input[[paste0(tab, "_normalize_option")]]) ||
-          input[[paste0(tab, "_normalize_option")]] == "No Normalization")) {
-        browser()
+          input[[paste0(tab, "_normalize_option")]] == "No Normalization") &&
+          ) {
+        
         out <- list(
           strong("Data has already been normalized!"),
           br(),
@@ -2009,8 +2011,8 @@ assign_norm_output <- function(tab) {
       missingness_present <- any(is.na(omicsData$objPP$e_data[-drop]))
       
       post_roll_filt <- inherits(omicsData$objPP, "pepData") && 
-        !is.null(input[[paste0(tabname, "_add_imputefilt")]]) &&
-        input[[paste0(tabname, "_add_imputefilt")]]
+        !is.null(input[[paste0(tab, "_add_imputefilt")]]) &&
+        input[[paste0(tab, "_add_imputefilt")]]
       
       if(length(missingness_support) > 0 && !missingness_support && 
          missingness_present && 
@@ -2198,7 +2200,9 @@ assign_norm_output <- function(tab) {
       cond_bias <- !is.null(plot_table_current$table$PP__bias__scale) ||
       !is.null(plot_table_current$table$PP__bias__location)
       
-      cond_fdata <- !
+      cond_fdata <- !is.null(input$use_fdata) && input$use_fdata == "fdata"
+      
+      if(!cond_global) bias <- disabled(bias)
       
       if ( # !cond_loess &&
         (!cond_zero_one && !cond_global) ||

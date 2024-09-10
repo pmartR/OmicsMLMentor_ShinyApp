@@ -132,8 +132,11 @@ output$model_summary <-renderUI({
 
 #' @details Make the picker of plot type depend on the task.
 output$super_plot_type_UI <- renderUI({
-  req(omicsData$objRM)
+  req(!is.null(omicsData$objRM))
+  
   task <- attr(omicsData$objRM, 'fit_info')$task
+  
+  req(!is.null(task))
   
   if (task == 'regression') {
     choices = c(
