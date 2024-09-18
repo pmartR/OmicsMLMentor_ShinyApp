@@ -1279,6 +1279,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       if (!is.null(filters[[name]]$Libfilt)) {
         tmp <- applyFilt(filters[[name]]$Libfilt, tmp, 
                          size_library = input$min_lib_size)
+        user_inputs$filters$libfilt <- ncol(biom_rm_count$e_data) - ncol(tmp$e_data)
       }
       
       if (!is.null(filters[[name]]$NZfilt)) {

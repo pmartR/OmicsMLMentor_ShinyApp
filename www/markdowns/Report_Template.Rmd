@@ -178,7 +178,12 @@ if (params$user_inputs$qc$single_obs_removed == "Yes") {
 Single Observation Biomolecules: \
 
 ```{r Single Obs}
-params$plots$table$QC__single_obs
+if (is.null(params$plots$table$QC__single_obs))
+{
+  "Plot was not generated."
+} else {
+  params$plots$table$QC__single_obs
+}
 ```
 \
 
@@ -193,10 +198,19 @@ if (params$user_inputs$qc$outliers_removed != "None") {
 
 `r text`
 
-Robust Mahalanobis Distance Outlier Detection: \
+`r if(!inherits(omicsData$objQC, "seqData")) "Robust Mahalanobis Distance Outlier Detection: \\" else ""`
 
 ```{r RMD outliers}
-params$plots$table$QC__rmd_overall
+if(!inherits(omicsData$objQC, "seqData")) {
+  if (is.null(
+    params$plots$table$QC__rmd_overall
+  ))
+  {
+    "Plot was not generated."
+  } else {
+    params$plots$table$QC__rmd_overall
+  }
+}
 ```
 
 \newpage
@@ -236,13 +250,29 @@ if (params$user_inputs$qc$missingdata_kept == "Yes") {
 Sample Missingness: \
 
 ```{r Sample Missingness}
-params$plots$table$QC__missing_samples
+if (is.null(
+  params$plots$table$QC__missing_samples
+  ))
+{
+  "Plot was not generated."
+} else {
+  params$plots$table$QC__missing_samples
+}
 ```
 
 Biomolecule Missingness Handling: \
 
 ```{r QC Missingness Handling}
-suppressWarnings(params$plots$table$QC__missing_features)
+if (is.null(
+  params$plots$table$QC__missing_features
+  ))
+{
+  "Plot was not generated."
+} else {
+  suppressWarnings(
+    params$plots$table$QC__missing_features
+  )
+}
 ```
 \
 
@@ -296,7 +326,14 @@ text <- paste0(text, " scale. \\\n\\\n")
 Transformed Boxplots: \
 
 ```{r PP Transform Plot}
-params$plots$table$PP__transform
+if (is.null(
+  params$plots$table$PP__transform
+  ))
+{
+  "Plot was not generated."
+} else {
+  params$plots$table$PP__transform
+}
 ```
 
 \newpage
@@ -305,7 +342,7 @@ params$plots$table$PP__transform
 
 ```{r PP Molfilt}
 text <- ""
-if (params$user_inputs$pp$molfilt) {
+if (!is.null(params$user_inputs$pp$molfilt) && params$user_inputs$pp$molfilt)  {
   text <- paste0(text, "A molecule filter was applied with a minimum threshold of ")
   text <- paste0(text, params$user_inputs$pp$molfilt_min_num)
   text <- paste0(text, " samples. The filter removed ")
@@ -315,7 +352,7 @@ if (params$user_inputs$pp$molfilt) {
 
 `r text`
 
-`r if (!is.null(params$plots$table$PP__filters__molfilt)) "Molecule Filter: \\newline"`
+`r if (!is.null(params$plots$table$PP__filters__molfilt)) "Molecule Filter: \\"`
 ```{r Molecule Filter}
 if (!is.null(params$plots$table$PP__filters__molfilt)) {
   params$plots$table$PP__filters__molfilt
@@ -327,7 +364,7 @@ if (!is.null(params$plots$table$PP__filters__molfilt)) {
 
 ```{r PP imputeFilt}
 text <- ""
-if (!is.null(params$user_inputs$pp$imputefilt)) {
+if (!is.null(params$user_inputs$pp$imputefilt) && params$user_inputs$pp$imputefilt) {
   text <- paste0(text, "An imputation filter was applied which ")
   if (params$user_inputs$pp$handle_impute != "None") {
     text <- paste0(text, "estimated missing data for biomolecules with ", params$user_inputs$pp$handle_impute, "% missingness")
@@ -372,7 +409,7 @@ if (!is.null(params$plots$table$PP__filters__imputefilt)) {
 
 ```{r PP CVFilt}
 text <- ""
-if (params$user_inputs$pp$cvfilt) {
+if (!is.null(params$user_inputs$pp$cvfilt) && params$user_inputs$pp$cvfilt) {
   text <- paste0(text, "A coefficient of variation filter was applied with a CV threshold of ")
   text <- paste0(text, params$user_inputs$pp$cvfilt_threshold)
   if (params$user_inputs$pp$cvfilt_use_groups) {
@@ -393,6 +430,52 @@ if (!is.null(params$plots$table$PP__filters__cvfilt)) {
 }
 ```
 `r if (!is.null(params$plots$table$PP__filters__cvfilt)) "\\"`
+
+\newpage
+
+```{r PP TCFilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$tcfilt) && params$user_inputs$pp$tcfilt) {
+  text <- paste0(text, "A total count filter was applied with a minimum count of ")
+  text <- paste0(text, params$user_inputs$pp$tcfilt_min_count)
+  text <- paste0(text, ". The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$tcfilt, " biomolecule", ifelse(params$user_inputs$filters$tcfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__totalCountFilt)) "Total Count Filter: \\"`
+
+```{r TC Filter}
+if (!is.null(params$plots$table$PP__filters__totalCountFilt)) {
+  params$plots$table$PP__filters__totalCountFilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__totalCountFilt)) "\\"`
+
+\newpage
+
+```{r PP Libfilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$libfilt) && params$user_inputs$pp$libfilt) {
+  text <- paste0(text, "A library size filter was applied with a minimum library size of ")
+  text <- paste0(text, params$user_inputs$pp$libfilt_min_libsize)
+  text <- paste0(text, ". The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$libfilt, " sample", ifelse(params$user_inputs$filters$libfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__Libfilt)) "Library Size Filter: \\"`
+
+```{r Lib Filter}
+if (!is.null(params$plots$table$PP__filters__Libfilt)) {
+  params$plots$table$PP__filters__Libfilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__Libfilt)) "\\"`
 
 \newpage
 
@@ -419,33 +502,39 @@ if (params$user_inputs$pp$customfilt) {
 
 ```{r PP Normalization}
 text <- ""
-text <- paste0(text, "\\\nThe data was then normalized using ")
-text <- paste0(text, params$user_inputs$pp$norm_method)
-text <- paste0(text, ". ")
-
-if (params$user_inputs$pp$norm_method == "Global Normalization") {
-  text <- paste0(text, "The ")
-  text <- paste0(text, params$user_inputs$pp$norm_fn)
-  text <- paste0(text, " normalization function was used and the ")
-  text <- paste0(text, params$user_inputs$pp$norm_subset_fn)
-  text <- paste0(text, " subset function was used. ")
+if (params$user_inputs$pp$norm_method != "No Normalization") {
+  text <- paste0(text, "\\\nThe data was then normalized using ")
+  text <- paste0(text, params$user_inputs$pp$norm_method)
+  text <- paste0(text, ". ")
   
-  if (params$user_inputs$pp$norm_subset_fn == "Percentage present and rank invariant (ppp+rip)") {
-    text <- paste0(text, "The percentage present value used was ")
-    text <- paste0(text, params$user_inputs$pp$norm_ppp)
-    text <- paste0(text, " and the rank invariant p-value used was ")
-    text <- paste0(text, params$user_inputs$pp$norm_rip)
-    text <- paste0(text, ". ")
+  if (params$user_inputs$pp$norm_method == "Global Normalization") {
+    text <- paste0(text, "The ")
+    text <- paste0(text, params$user_inputs$pp$norm_fn)
+    text <- paste0(text, " normalization function was used and the ")
+    text <- paste0(text, params$user_inputs$pp$norm_subset_fn)
+    text <- paste0(text, " subset function was used. ")
+    
+    if (params$user_inputs$pp$norm_subset_fn == "Percentage present and rank invariant (ppp+rip)") {
+      text <- paste0(text, "The percentage present value used was ")
+      text <- paste0(text, params$user_inputs$pp$norm_ppp)
+      text <- paste0(text, " and the rank invariant p-value used was ")
+      text <- paste0(text, params$user_inputs$pp$norm_rip)
+      text <- paste0(text, ". ")
+    }
   }
+} else {
+  text <- "Normalization was not applied."
 }
 ```
 
 `r text`
 
-Normalized Data Boxplots: \
+`r if(params$user_inputs$pp$norm_method != "No Normalization") "Normalized Data Boxplots: \\" else ""`
 
 ```{r Normalized Boxplots}
-params$plots$table$PP__normalization__post
+if (params$user_inputs$pp$norm_method != "No Normalization") {
+  params$plots$table$PP__normalization__post
+}
 ```
 
 ```{r PP Rollup}

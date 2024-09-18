@@ -47,6 +47,8 @@ output$preprocessing_progress_next_steps <- renderUI({
     customfilt = input[[paste0(get_omicsData_type(omicsData$objQC), "_add_edata_customfilt")]],
     tcfilt = input[[paste0(get_omicsData_type(omicsData$objQC), "_add_totalCountFilt")]],
     tcfilt_min_count = input[[paste0(get_omicsData_type(omicsData$objQC), "_min_count")]],
+    libfilt = input[[paste0(get_omicsData_type(omicsData$objQC), "_add_Libfilt")]],
+    libfilt_min_libsize = input[[paste0(get_omicsData_type(omicsData$objQC), "_min_lib_size")]],
     customfilt_handling = input[[paste0(get_omicsData_type(omicsData$objQC), "_edata_remove_or_keep")]],
     customfilt_regex = input[[paste0(get_omicsData_type(omicsData$objQC), "_edata_customfilt_regex")]],
     norm_method = input[[paste0(get_omicsData_type(omicsData$objQC), "_normalize_option")]],
@@ -165,7 +167,7 @@ output$preprocessing_progress_inputs_table <- renderTable({
     {
       df <- df %>% add_row(
         `Input` = "Total Count Filter Minimum Count",
-        `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_min_count")]]
+        `Value` = input[[paste0(get_omicsData_type(omicsData$objPP), "_min_count")]] %>% as.character()
       )
     }
   }
