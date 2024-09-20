@@ -651,6 +651,7 @@ if (params$user_inputs$msu$model_type == "Supervised") {
 ```
 
 ```{r}
+text <- ""
 if (params$user_inputs$msu$model_type == "Supervised") {
   text <- "ROC Details: \\"
 }
