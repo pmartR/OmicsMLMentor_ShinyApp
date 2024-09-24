@@ -115,10 +115,28 @@ supervised_tab <- function() {
   
 }
 
+
+output$model_summary <-renderUI({
+  
+  method <- input$pick_model_EM
+  div(
+    br(),
+    strong(names(models_long_name)[models_long_name == method]),
+    br(),
+    hr(),
+    text_get(method)
+    
+  )
+})
+
+
 #' @details Make the picker of plot type depend on the task.
 output$super_plot_type_UI <- renderUI({
-  req(omicsData$objRM)
+  req(!is.null(omicsData$objRM))
+  
   task <- attr(omicsData$objRM, 'fit_info')$task
+  
+  req(!is.null(task))
   
   if (task == 'regression') {
     choices = c(

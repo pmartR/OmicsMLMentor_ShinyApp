@@ -1,12 +1,14 @@
 
 patch_notes <- list(
-  "v 1.0" = "Added functionality for introjs and user experience levels",
-  "v 1.1" = "Additional features, quality of life support, and AWS deployment support"
+  "v 0.1" = "Added functionality for introjs and user experience levels",
+  "v 0.2" = "Additional features, quality of life support, and AWS deployment support",
+  "v 0.3" = "Bugfix and progress UI release for MP prod enviornment -- upcoming changes include reports, more bugfixes, and improved AWS functionality"
 )
 
 subtext <- c(
   "12Dec2023",
-  "27Mar2024"
+  "27Mar2024",
+  "19Aug2024"
 )
 
 observeEvent(input$launch_app_info,{

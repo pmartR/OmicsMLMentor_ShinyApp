@@ -32,6 +32,8 @@ output$QC_single_mol_plot <- renderPlotly({
       cancelOutput = T
         )
   
+  
+  
   filt <- molecule_filter(omicsData$objQC)
   
    p <- plot(filt, min_num = 2)

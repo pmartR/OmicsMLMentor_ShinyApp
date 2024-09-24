@@ -134,7 +134,17 @@ observeEvent(
     )), 
     input$top_page == "Model Set-Up"
   )
+    
+  shiny::showNotification(
+    "Calculating optimal models for your data, please wait...",
+    duration = NULL,
+    id = "expert_mentor_note"
+  )
   
+  on.exit({
+    shiny::removeNotification(id = "expert_mentor_note")
+  })
+    
   temp_omic <- omicsData$objModel
   
   if(get_data_scale(temp_omic) == "abundance" && 

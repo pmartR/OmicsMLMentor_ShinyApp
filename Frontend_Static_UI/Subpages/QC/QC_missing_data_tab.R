@@ -137,17 +137,7 @@ missing_data <- function(){
                    radioGroupButtons("keep_missing", "Keep data as-is?",
                                      choices = c("No", "Yes"), selected = "No"),
                    
-                   pickerInput(
-                     "missing_options",
-                     "Preview biomolecule detection handling:",
-                     choices = c(
-                       # "Keep data as-is" = "keep",
-                       "🟩 Estimate values in samples with no biomolecule detection" = "impute",
-                       "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
-                       "🟥 Remove biomolecules with incomplete detection" = "remove"
-                     ),
-                     multiple = T
-                   ),
+                   uiOutput("missing_options_UI"),
                    
                    textOutput("Note_nonmissing"),
                    textOutput("warn_missing_biom"),
