@@ -293,7 +293,7 @@ output$slider_options_ui <- renderUI({
     ))
   }
   
-  div(
+  out <- div(
     column(1, "  "),
     column(9, MultiSlider.shinyInput(
       "missingness_handle_slider",
@@ -312,6 +312,14 @@ output$slider_options_ui <- renderUI({
     )
     
   )
+  
+  if(inherits(omicsData$objQC, "pepData") && !is.null(pepQCData$pepQCData)){
+    
+    out <- hidden(out)
+    
+  }
+  
+  out
   
 })
 
@@ -496,7 +504,7 @@ observeEvent(input$qc_apply_rollup, {
     single_pep <- FALSE
     single_observation <- FALSE
   }
-  
+  unregister()
   pepQCData$objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
                                       method = input$qc_which_rollup,
                                       qrollup_thresh = input$qc_qrollup_thresh / 100,
@@ -505,6 +513,7 @@ observeEvent(input$qc_apply_rollup, {
                                       combine_fn = input$qc_which_combine_fn,
                                       parallel = TRUE
   )
+  unregister()
   shinyjs::hide("qc_rollup_busy")
   shinyjs::show("qc_biomolecule_detect")
   shinyjs::show("qc_biomolecule_detect_plot")

@@ -407,7 +407,7 @@ observeEvent(input$complete_filters, ignoreInit = T, {
   print("filters")
   
   if(!is.null(omicsData$objfilters)){
-    omicsData$objPP <- omicsData$objfilters
+    omicsData$objPP <- auto_remove_na(omicsData$objfilters)
   }
   disable("apply_filters")
   
@@ -455,7 +455,9 @@ observeEvent(input$complete_norm, ignoreInit = T, {
   
   if(!is.null(omicsData$objNorm) && 
      input[[paste0(tabname, "_normalize_option")]] != "No Normalization"){
-    omicsData$objPP <- omicsData$objNorm
+    omicsData$objPP <- auto_remove_na(omicsData$objNorm)
+  } else {
+    omicsData$objPP <- auto_remove_na(omicsData$objPP)
   }
   
   shinyalert(title = "Success!", "Continue to next page or review results?",

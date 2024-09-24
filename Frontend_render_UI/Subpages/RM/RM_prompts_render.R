@@ -26,7 +26,7 @@ holdout_valid <- reactive({
   ## Some eval function
   
   ## Check number of samples or number of samples in smallest group size
-  if(!is.null(omicsData$objPP$f_data)){
+  if(!is.null(omicsData$objPP$f_data) && !is.null(get_group_table(omicsData$objPP))){
     nsamp <- min(get_group_table(omicsData$objPP))
   } else {
     nsamp <- ncol(omicsData$objPP$e_data[-1])
