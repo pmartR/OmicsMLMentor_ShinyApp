@@ -19,6 +19,13 @@ shinyServer(function(session, input, output) {
     source(f, local = TRUE)
   }
   
+  # only exposed when shiny::runApp(test.mode = TRUE) -- shinytest2 sets this variable when running Shiny based app or document.
+  exportTestValues(
+    omicsData = reactiveValuesToList(omicsData),
+    plot_table_current = reactiveValuesToList(plot_table_current),
+    table_table_current = reactiveValuesToList(table_table_current)
+  )
+  
   observeEvent(session$clientData$url_search, once = T, {
    
     # Parse the query string at the url header

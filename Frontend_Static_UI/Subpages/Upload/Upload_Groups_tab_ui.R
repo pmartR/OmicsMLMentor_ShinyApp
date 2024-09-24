@@ -17,7 +17,7 @@ groups_tab <- function() {
                    
                    radioGroupButtons(
                      inputId = "use_fdata", label = "Include Sample Information in workflow?",
-                     choices = c("Yes" = "f_data", "No" = ""), selected = character(0)
+                     choices = c("Yes" = "f_data", "No" = "No"), selected = character(0)
                    ),
                    
                    "(Allows for response or coloring designation on experimental factors or other Sample Information)",

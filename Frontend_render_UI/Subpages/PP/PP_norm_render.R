@@ -951,6 +951,7 @@ load_norm_observers <- function(tab) {
     observeEvent(input[[paste0(tab, "_lock_norm")]], {
 
       req(!is.null(input[[paste0(tab, "_normalize_option")]]))
+      req(input$top_page == "Pre-processing")
 
       UI_elements <- paste0(tab, c(
         "_normalize_option",
@@ -1140,6 +1141,7 @@ load_norm_observers <- function(tab) {
                    "that, please use 'Zero-to-one Scaling'."), type = "info")
           
         }
+
       }
     })
 

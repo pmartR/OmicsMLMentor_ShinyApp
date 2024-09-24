@@ -27,7 +27,8 @@ output$QC_single_mol_plot <- renderPlotly({
 
   req(!is.null(omicsData$objQC) && 
         (length(attr(omicsData$objQC, "filters")) == 0 ||
-           !("molFilt" %in% map_chr(attr(omicsData$objQC, "filters"), 1))),
+        !any("molFilt" %in% map(attr(omicsData$objQC, "filters"), 1))
+        ),
       cancelOutput = T
         )
   

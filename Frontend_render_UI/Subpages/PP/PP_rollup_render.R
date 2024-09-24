@@ -44,6 +44,8 @@ load_rollup_observers <- function(tab) {
         pep$e_meta[[cname]] <- as.character(pep$e_meta[[cname]])
         
         norm_attr <- attr(pep,"data_info")$norm_info$norm_fn 
+        
+        unregister()
         omicsData$objPP <- protein_quant(pep,
                                                   method = input$qc_which_rollup,
                                                   qrollup_thresh = input$qc_qrollup_thresh / 100,
@@ -52,7 +54,7 @@ load_rollup_observers <- function(tab) {
                                                   combine_fn = input$qc_which_combine_fn,
                                                   parallel = TRUE
         )
-        
+        unregister()
         attr(omicsData$objPP,"data_info")$norm_info$norm_fn <- norm_attr
         
         if (input$keep_missing != "Yes") {

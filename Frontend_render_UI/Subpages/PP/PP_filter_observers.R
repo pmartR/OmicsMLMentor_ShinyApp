@@ -17,9 +17,6 @@ observeEvent(input$em_select, once = T, {
   })
 })
 
-# # only show the loading screen once on initial load
-filter_status <- reactiveValues(loaded = FALSE)
-
 #  filter storage
 filters <- reactiveValues()
 
@@ -146,7 +143,7 @@ make_filter <- function(dataname, filter_tag, message, func, settings, preview =
         do.call(func, c(list(omicsData$objPP), args))
       },
       error = function(e) {
-        shinyalert(message, paste0("System error: ", e))
+        shinyalert(message, paste0("System error: ", e$message))
         updatePrettySwitch(session, paste0(dataname, "_add_", filter_tag), value = FALSE)
         return(NULL)
       }
@@ -1223,6 +1220,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         
         thresholds <- filter_settings[[name]]$imputefilt
         
+        tmp <- auto_remove_na(tmp)
+        
         # Only apply impute 
         if (get_omicsData_type(tmp) == "Pepdata") {
           # Impute all of e_data
@@ -1419,7 +1418,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                     textOutput("rollup_note_text")
               )
           )
-      )
+      ),
       # fluidRow(
       #   column(10,
       #          align = "center", offset = 1,
@@ -1427,7 +1426,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       #          actionButton("goto_norm", "Continue to normalization", style = "margin-top:5px;width:75%")
       #   )
       # )#,
-      # footer = NULL
+      footer = actionButton("dismiss_modal",label = "Dismiss")
     )
   )
   
@@ -1439,6 +1438,10 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   #   export_filters[[export_obj]] <- attr(omicsData$objPP[[export_obj]], "filters")
   # }
   # exportTestValues(filters = export_filters)
+})
+
+observeEvent(input$dismiss_modal, {
+  removeModal()
 })
 
 
