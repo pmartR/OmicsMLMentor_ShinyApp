@@ -56,15 +56,15 @@ auto_remove_na <- function(omicsData){
 }
 
 observeEvent(omicsData$obj, {
-  omicsData$objQC <- auto_remove_na(omicsData$obj)
+  omicsData$objQC <- omicsData$obj
 })
 
 observeEvent(omicsData$objQC, {
-  omicsData$objMSU <- auto_remove_na(omicsData$objQC)
+  omicsData$objMSU <- omicsData$objQC
 })
 
 observeEvent(omicsData$objMSU, {
-  omicsData$objPP <- auto_remove_na(omicsData$objMSU)
+  omicsData$objPP <- omicsData$objMSU
 })
 
 ## Track selected model and response

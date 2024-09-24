@@ -112,6 +112,10 @@ reset_upload <- function() {
 reset_qc <- function() {
   omicsData$objQC <- omicsData$obj
   
+  pepQCData$pepQCData <- NULL
+  pepQCData$pepQCData$keep <- FALSE
+  pepQCData$transforms_df <- NULL
+  
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "QC__"))]) {
     plot_table_current$table[[name]] <- NULL
   }
@@ -132,13 +136,23 @@ reset_qc <- function() {
   shinyjs::removeClass("show_missing_data", "blueoutline")
   shinyjs::removeClass("review_QC", "blueoutline")
   
+  omicsData$objRefnorm <- NULL
+  if (inherits(omicsData$objQC, "pepData")) {
+    shinyjs::hide("refnorm_complete")
+  }
+
   updateBoxCollapse(session, "references_collapse_left", open = "columnids")
   
   shinyjs::disable("show_outlier_detect")
   
   shinyjs::disable("show_missing_data")
-  updateBoxCollapse(session, "missing_data_box", open = "missing_by_biomolecule")
-  updateBoxCollapse(session, "qc_missing_plots", open = "missing_data_biomolecule_plot")
+  updateBoxCollapse(session, "missing_data_box", 
+                    open = "missing_data_sample_box", 
+                    close = "missing_by_biomolecule")
+  if (inherits(omicsData$objQC, "pepData")) {
+    shinyjs::hide("qc_biomolecule_detect")
+    shinyjs::hide("qc_biomolecule_detect_plot")
+  }
   shinyjs::hide("done_md")
   
   shinyjs::disable("review_QC")
@@ -146,7 +160,7 @@ reset_qc <- function() {
   updateProgressBar(session, "QC_refnorm_done", value = 0)
   updateProgressBar(session, "QC_lo_done", value = 0)
   updateProgressBar(session, "QC_outlier_done", value = 0)
-  updateProgressBar(session, "missing_data_done", value = 0)
+  updateProgressBar(session, "QC_missing_data_done", value = 0)
 }
 
 reset_msu <- function() {
@@ -190,6 +204,17 @@ reset_pp <- function() {
   omicsData$objPP <- omicsData$objMSU
   omicsData$objToFilter <- NULL
   omicsData$objNorm <- NULL
+  filter_settings_stored$stored <- NULL
+  filter_effects$removed_mols <- NULL
+  filter_effects$removed_samples <- NULL
+  
+  purrr::map(names(filters), function(nm) filters[[nm]] <- NULL)
+  purrr::map(names(filter_flags), function(nm) filter_flags[[nm]] <- NULL)
+  purrr::map(names(filter_settings), function(nm) filter_settings[[nm]] <- NULL)
+  
+  purrr::map(grep("_add_", names(input), value = T), function(id) {
+    updatePrettySwitch(session = session, id, value = F)
+  })
 
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "PP__"))]) {
     plot_table_current$table[[name]] <- NULL
@@ -198,6 +223,9 @@ reset_pp <- function() {
   for (name in names(table_table_current$table)[which(startsWith(names(table_table_current$table), "PP__"))]) {
     table_table_current$table[[name]] <- NULL
   }
+  
+  nm <- get_omicsData_type(omicsData$objPP)
+  updatePrettySwitch(session = session, inputId = paste0(nm, "_lock_norm"), value = FALSE)
   
   shinyjs::show(id = "transform_box")
   shinyjs::hide(id = "filter_box")
@@ -222,6 +250,8 @@ reset_pp <- function() {
   shinyjs::disable("show_normalization")
   updateBoxCollapse(session, id = "normalization_picker", open = "picker")
   
+  shinyjs::hide("complete_rollup")
+  
   shinyjs::disable("review_PP")
   
   updateProgressBar(session, "transform_done", value = 0)
@@ -231,7 +261,8 @@ reset_pp <- function() {
 }
 
 reset_rm <- function () {
-  omicsData$objRM <- omicsData$objPP
+  omicsData$objRM <- NULL
+  omicsData$objRM_reduced <- NULL
   
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "RM__"))]) {
     plot_table_current$table[[name]] <- NULL
@@ -274,6 +305,8 @@ reset_rm <- function () {
   updateBoxCollapse(session = session, id = "download_collapse_pages", open = "download_tabset_QC")
 }
 
+qc_fix <- reactiveVal()
+
 observeEvent(input$reset_upload, {
   req(isTruthy(input$reset_upload))
   reset_upload()
@@ -287,10 +320,18 @@ observeEvent(c(input$rewind_qc, input$reset_qc), {
   reset_rm()
   reset_pp()
   reset_msu()
+  reset_qc()
   
   updateNavbarPage(session, "top_page", "Quality Control")
   removeModal()
+  
+  qc_fix(runif(1))
 })
+
+observeEvent(qc_fix(), {
+  reset_qc()
+}, priority = -1)
+
 
 observeEvent(c(input$rewind_msu, input$reset_msu), {
   req(isTruthy(input$rewind_msu) || isTruthy(input$reset_msu))

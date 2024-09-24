@@ -402,7 +402,6 @@ observeEvent(input$complete_RM_prompts, ignoreInit = T, {
     # disable("show_parameters")
     # disable("show_runmodel")
     disable("review_RM")
-  }
   
   shinyalert(title = "Success!", "Continue to next page or review results?",
              showCancelButton = T, closeOnEsc = F,
@@ -446,6 +445,7 @@ observeEvent(input$complete_RM_prompts, ignoreInit = T, {
   updateProgressBar(session, "params_done", value = 0)
   updateProgressBar(session, "RM_done", value = 0)
   
+  }
 })
 
 observeEvent(input$complete_TS_RM, ignoreInit = T, {
