@@ -173,6 +173,28 @@ models_supervised <- models_long_name[sup_designation]
 
 models_unsupervised <- models_long_name[!sup_designation]
 
+statistical_methods <- c(`Cross Validation`="cross_validation", 
+                         `Hyperparameter Tuning`="hyperparameter_tuning", 
+                         `Imputation`="imputation",
+                         `rrollup` = "rrollup",
+                         `zrollup` = "zrollup",
+                         `qrollup` = "qrollup",
+                         `SPANS` = "spans",
+                         `rMd Filter` = "rmd_filter",
+                         `Median Normalization` = "median_normalization",
+                         `Mean Normaliaztion` = "mean_normalization",
+                         `Zero-to-One Normalization` = "zero_one_normalization",
+                         `Z-Score` = "zscore",
+                         `Median Absolute Deviation` = "mad",
+                         `All (biomolecules)` = "all_b",
+                         `Complete (biomolecules)` = "complete_b",
+                         `LOS (biomolecules)` = "los",
+                         `PPP (biomolecules)` = "ppp",
+                         `RIP (biomolecules)` = "rip",
+                         `PPP RIP (biomolecules)` = "ppp_rip",
+                         `Backtransform` = "backtransform"
+                         )
+
 #' #'@details Statistical integration methods and corresponding tooltip
 #' VALID_STATSINTEG_ANALYSES = list(
 #'   "SPLS" = "spls",
