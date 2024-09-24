@@ -90,6 +90,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -206,6 +208,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -300,6 +304,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -389,6 +395,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$click("msu_review_done")
   app$wait_for_idle() #
   app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
@@ -480,6 +488,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -570,6 +580,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -658,6 +670,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -737,6 +751,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$click("msu_review_done")
   app$wait_for_idle() #
   app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
@@ -818,6 +834,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$wait_for_idle() #
   app$click("done_tr_box")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -897,6 +915,8 @@ test_that("RNASeq: Regular, Rewind, All Models", {
   app$click("msu_review_done")
   app$wait_for_idle() #
   app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$click("complete_transform")
   app$wait_for_idle() #

@@ -1,7 +1,12 @@
 library(shinytest2)
+# options(parallelly.makeNodePSOCK.setup_strategy = "sequential")
 
 test_that("isobaricpepData: Regular and Rewind", {
-  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
+  app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, 
+                       timeout = 60000, load_timeout = 60000)
+  # options(parallelly.makeNodePSOCK.setup_strategy = "sequential")
+  
+  tryCatch({
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
@@ -122,6 +127,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -185,12 +192,12 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   #app$expect_download("download_processed_data")
+  
+  # # RF
   app$click("new_model")
   app$wait_for_idle() #
   app$click("rewind_qc", wait_ = FALSE)
-  app$wait_for_idle(timeout = 15 * 60000) #
-  
-  # RF
+  app$wait_for_idle(timeout = 15 * 60000)
   app$click("Isobaricpepdata_ref_done_idcols")
   app$wait_for_idle() #
   app$click("refnorm_complete", wait_ = FALSE)
@@ -277,6 +284,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -343,7 +352,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
-  
+
   # PSVM
   # app$click("new_model")
   # app$wait_for_idle() #
@@ -399,6 +408,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   # app$wait_for_idle() #
   # app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  # app$wait_for_idle() #
   # app$set_inputs(Pepdata_norm_fn = "mean")
   # app$wait_for_idle() #
   # app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -465,7 +476,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   # app$wait_for_idle() #
   # app$click("makezipfile", wait_ = FALSE)
   # app$wait_for_idle(timeout = 15 * 60000)
-  
+
   # RSVM
   # app$click("new_model")
   # app$wait_for_idle() #
@@ -521,6 +532,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   # app$wait_for_idle() #
   # app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  # app$wait_for_idle() #
   # app$set_inputs(Pepdata_norm_fn = "mean")
   # app$wait_for_idle() #
   # app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -587,7 +600,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   # app$wait_for_idle() #
   # app$click("makezipfile", wait_ = FALSE)
   # app$wait_for_idle(timeout = 15 * 60000)
-  
+
   # LSVM
   # app$click("new_model")
   # app$wait_for_idle() #
@@ -643,6 +656,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   # app$wait_for_idle() #
   # app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   # app$wait_for_idle() #
+  # app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  # app$wait_for_idle() #
   # app$set_inputs(Pepdata_norm_fn = "mean")
   # app$wait_for_idle() #
   # app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -709,7 +724,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   # app$wait_for_idle() #
   # app$click("makezipfile", wait_ = FALSE)
   # app$wait_for_idle(timeout = 15 * 60000)
-  
+
   # GBTree
   app$click("new_model")
   app$wait_for_idle() #
@@ -765,6 +780,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -828,7 +845,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   app$run_js('$(".cancel").click()')
-  
+
   # PLS
   app$click("new_model")
   app$wait_for_idle() #
@@ -884,6 +901,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -947,7 +966,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   app$run_js('$(".cancel").click()')
-  
+
   # Multi
   app$click("new_model")
   app$wait_for_idle() #
@@ -1003,6 +1022,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -1066,7 +1087,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   app$run_js('$(".cancel").click()')
-  
+
   # MultiLASSO
   app$click("new_model")
   app$wait_for_idle() #
@@ -1122,6 +1143,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -1185,7 +1208,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   app$run_js('$(".cancel").click()')
-  
+
   # HClust
   app$click("new_model")
   app$wait_for_idle() #
@@ -1233,6 +1256,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -1289,7 +1314,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   app$run_js('$(".cancel").click()')
-  
+
   # KMeans
   app$click("new_model")
   app$wait_for_idle() #
@@ -1342,6 +1367,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "los")
@@ -1397,7 +1424,7 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$click("makezipfile", wait_ = FALSE)
   app$wait_for_idle(timeout = 15 * 60000)
   app$run_js('$(".cancel").click()')
-  
+
   # PCA
   app$click("new_model")
   app$wait_for_idle() #
@@ -1449,6 +1476,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
   app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
@@ -1558,6 +1587,8 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "los")
@@ -1615,112 +1646,122 @@ test_that("isobaricpepData: Regular and Rewind", {
   app$run_js('$(".cancel").click()')
   
   # UMAP
-  # app$click("new_model")
-  # app$wait_for_idle() #
-  # app$click("rewind_msu")
-  # app$wait_for_idle() #
-  # app$click("vscols_options_done")
-  # app$wait_for_idle() #
-  # app$click("vscols_cats_done")
-  # app$wait_for_idle() #
-  # app$click("done_VS")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts = "supervised")
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts = "unsupervised")
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts_unsupervised = "variation source")
-  # app$wait_for_idle() #
-  # app$set_inputs(ag_prompts_unsupervised = "clusters")
-  # app$wait_for_idle() #
-  # app$click("ag_done")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(pick_model_EM = "umap", wait_ = FALSE)
-  # app$run_js('$(".filter-option").click()')
-  # app$wait_for_idle() #
-  # app$click("em_select")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("msu_review_done")
-  # app$wait_for_idle() #
-  # app$click("done_tr_box")
-  # app$wait_for_idle() #
-  # app$click("complete_transform")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
-  # app$wait_for_idle(timeout = 15 * 60000)
-  # app$click("apply_filters", wait_ = FALSE)
-  # app$wait_for_idle(timeout = 15 * 60000)
-  # app$click("dismiss_modal")
-  # app$wait_for_idle(timeout = 15 * 60000) #
-  # app$click("complete_filters")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$set_inputs(Pepdata_normalize_option = "Global Normalization")
-  # app$wait_for_idle() #
-  # app$set_inputs(Pepdata_norm_fn = "mean")
-  # app$wait_for_idle() #
-  # app$set_inputs(Pepdata_subset_fn = "los")
-  # app$wait_for_idle() #
-  # app$set_inputs(Pepdata_backtransform = "FALSE")
-  # app$wait_for_idle() #
-  # app$set_inputs(Pepdata_lock_norm = TRUE)
-  # app$wait_for_idle() #
-  # app$click("complete_norm")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("Pepdata_apply_rollup", wait_ = FALSE)
-  # app$wait_for_idle(timeout = 15 * 60000)
-  # app$click("complete_rollup")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("complete_ppreview")
-  # app$wait_for_idle() #
-  # app$set_inputs(rm_prompts_hp = "custom")
-  # app$wait_for_idle() #
-  # app$set_inputs(rm_prompts_hp = "tuned")
-  # app$wait_for_idle() #
-  # app$click("complete_RM_prompts")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("done_param_option")
-  # app$wait_for_idle() #
-  # app$click("complete_param")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("run_sl")
-  # app$wait_for_idle(timeout = 15 * 60000)
-  # app$click("complete_RM")
-  # app$wait_for_idle() #
-  # app$run_js('$(".confirm").click()')
-  # app$wait_for_idle() #
-  # app$click("complete_results_review")
-  # app$wait_for_idle() #
-  # app$click("upload_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("QC_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("MSU_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("PP_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("RM_dwn_done")
-  # app$wait_for_idle() #
-  # app$click("makezipfile", wait_ = FALSE)
-  # app$wait_for_idle(timeout = 15 * 60000)
-  # app$run_js('$(".cancel").click()')
+  app$click("new_model")
+  app$wait_for_idle() #
+  app$click("rewind_msu")
+  app$wait_for_idle() #
+  app$click("vscols_options_done")
+  app$wait_for_idle() #
+  app$click("vscols_cats_done")
+  app$wait_for_idle() #
+  app$click("done_VS")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "supervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts = "unsupervised")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "variation source")
+  app$wait_for_idle() #
+  app$set_inputs(ag_prompts_unsupervised = "clusters")
+  app$wait_for_idle() #
+  app$click("ag_done")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "umap", wait_ = FALSE)
+  app$run_js('$(".filter-option").click()')
+  app$wait_for_idle() #
+  app$click("em_select")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("msu_review_done")
+  app$wait_for_idle() #
+  app$click("done_tr_box")
+  app$wait_for_idle() #
+  app$click("complete_transform")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(Pepdata_add_imputefilt = TRUE, wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("apply_filters", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("dismiss_modal")
+  app$wait_for_idle(timeout = 15 * 60000) #
+  app$click("complete_filters")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$set_inputs(Pepdata_normalize_option = "Global Normalization")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
+  app$set_inputs(Pepdata_norm_fn = "mean")
+  app$wait_for_idle() #
+  app$set_inputs(Pepdata_subset_fn = "los")
+  app$wait_for_idle() #
+  app$set_inputs(Pepdata_backtransform = "FALSE")
+  app$wait_for_idle() #
+  app$set_inputs(Pepdata_lock_norm = TRUE)
+  app$wait_for_idle() #
+  app$click("complete_norm")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("Pepdata_apply_rollup", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("complete_rollup")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_ppreview")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "custom")
+  app$wait_for_idle() #
+  app$set_inputs(rm_prompts_hp = "tuned")
+  app$wait_for_idle() #
+  app$click("complete_RM_prompts")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("done_param_option")
+  app$wait_for_idle() #
+  app$click("complete_param")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("run_sl")
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$click("complete_RM")
+  app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
+  app$click("complete_results_review")
+  app$wait_for_idle() #
+  app$click("upload_dwn_done")
+  app$wait_for_idle() #
+  app$click("QC_dwn_done")
+  app$wait_for_idle() #
+  app$click("MSU_dwn_done")
+  app$wait_for_idle() #
+  app$click("PP_dwn_done")
+  app$wait_for_idle() #
+  app$click("RM_dwn_done")
+  app$wait_for_idle() #
+  app$click("makezipfile", wait_ = FALSE)
+  app$wait_for_idle(timeout = 15 * 60000)
+  app$run_js('$(".cancel").click()')
+
+  }, error = function(e){
+    log_temp <<- app$get_logs()
+    print(log_temp)
+    print(e$message)
+    browser()
+    testthat::expect(FALSE, "logic has failed")
+  })
   
   testthat::expect(TRUE, "logic has failed")
 })

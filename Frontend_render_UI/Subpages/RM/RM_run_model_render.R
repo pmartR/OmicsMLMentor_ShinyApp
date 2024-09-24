@@ -612,6 +612,8 @@ unsupervised_tab <- function() {
 
 observeEvent(input$run_sl, {
   
+  omicsData$objRM_reduced <- NULL
+  
   ## Check normalization application
   shinyjs::show("RM_busy")
   
@@ -1231,8 +1233,10 @@ output$structure_plot <- renderPlotly({
     
     if (method == 'pca') {
       args[['num_comp']] = input$pca_num_comp
+      args[["slMethod"]] = method
     } else if (method == 'ppca') {
       args[['num_comp']] = input$ppca_num_comp
+      args[["slMethod"]] = method
     }
     
     df <- do.call(

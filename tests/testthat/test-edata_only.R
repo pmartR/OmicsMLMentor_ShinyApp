@@ -1,7 +1,10 @@
 library(shinytest2)
 
 test_that("app works with only e_data", {
+  
   app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
+  
+  tryCatch({
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
@@ -104,12 +107,17 @@ test_that("app works with only e_data", {
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Lipiddata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_subset_fn = "los")
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_backtransform = "FALSE")
   app$wait_for_idle() #
+  
+  ## Note: inspect norm does not trigger for unsupervised data
+  
   app$set_inputs(Lipiddata_lock_norm = TRUE)
   app$wait_for_idle() #
   app$click("complete_norm")
@@ -219,6 +227,8 @@ test_that("app works with only e_data", {
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')
+  app$wait_for_idle() #
   app$set_inputs(Lipiddata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Lipiddata_subset_fn = "los")
@@ -265,6 +275,13 @@ test_that("app works with only e_data", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle()
+  
+  }, error = function(e){
+    log_temp <<- app$get_logs()
+    print(log_temp)
+    print(e$message)
+    testthat::expect(FALSE, "logic has failed")
+  })
   
   testthat::expect(TRUE, "logic has failed")
 })

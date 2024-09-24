@@ -2,6 +2,8 @@ library(shinytest2)
 
 test_that("uploaded data functions properly", {
   app <- AppDriver$new(name = "SLOPE-app", height = 1039, width = 1619, timeout = 60000, load_timeout = 60000)
+  
+  tryCatch({
   app$view()
   app$wait_for_idle() #
   app$run_js('$(".cancel").click()')
@@ -106,6 +108,8 @@ test_that("uploaded data functions properly", {
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
   app$wait_for_idle() #
+  app$set_inputs(pick_model_EM = "rf", wait_ = FALSE) ## default svm is ng for label-free
+  app$wait_for_idle() #
   app$click("em_select")
   app$wait_for_idle() #
   app$run_js('$(".confirm").click()')
@@ -130,6 +134,8 @@ test_that("uploaded data functions properly", {
   app$wait_for_idle() #
   app$set_inputs(Pepdata_normalize_option = "Global Normalization")
   app$wait_for_idle() #
+  app$run_js('$(".confirm").click()')  # Trigger on "Note"
+  app$wait_for_idle() #
   app$set_inputs(Pepdata_norm_fn = "mean")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_subset_fn = "ppp_rip")
@@ -137,6 +143,8 @@ test_that("uploaded data functions properly", {
   app$set_inputs(Pepdata_backtransform = "FALSE")
   app$wait_for_idle() #
   app$set_inputs(Pepdata_lock_norm = TRUE)
+  app$wait_for_idle() #
+  app$click("Pepdata_inspect_norm")
   app$wait_for_idle() #
   app$click("complete_norm")
   app$wait_for_idle() #
@@ -334,6 +342,13 @@ test_that("uploaded data functions properly", {
   app$wait_for_idle() #
   app$click("makezipfile")
   app$wait_for_idle()
+  
+  }, error = function(e){
+    log_temp <<- app$get_logs()
+    print(log_temp)
+    print(e$message)
+    testthat::expect(FALSE, "logic has failed")
+  })
   
   testthat::expect(TRUE, "logic has failed")
 })
