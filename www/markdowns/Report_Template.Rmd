@@ -160,6 +160,12 @@ if (is.null(params$plots$table$Upload__boxplot))
 ```{r QC}
 text <- ""
 
+if (inherits(params$omicsData$obj, "nmrData") && !is.null(params$user_inputs$refnorm_applied) && params$user_inputs$refnorm_applied == "Yes") {
+  text <- paste0(text, "The data was referenced normalized using the ")
+  text <- paste0(text, params$user_inputs$refnorm_identifier, " identifier from ")
+  text <- paste0(text, params$user_inputs$refnorm_source, ".")
+}
+
 if (inherits(params$omicsData$obj, "isobaricpepData")) {
   text <- paste0(text, "The data was referenced normalized using ")
   text <- paste0(text, params$user_inputs$qc$ref_group, " as the group, and ")

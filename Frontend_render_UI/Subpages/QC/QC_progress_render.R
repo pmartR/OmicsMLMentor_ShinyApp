@@ -8,6 +8,9 @@ output$QC_progress_summary_table <- renderDT({
 
 output$QC_progress_next_steps <- renderUI({
   user_inputs$qc <- list(
+    refnorm_applied = input$Nmrdata_reference_choice,
+    refnorm_source = input$Nmrdata_reference_source,
+    refnorm_identifier = input$Nmrdata_picker_reference,
     ref_group = input$Isobaricpepdata_ref_group,
     ref_col = input$Isobaricpepdata_ref_col,
     ref_notation = input$Isobaricpepdata_ref_notation,
@@ -71,6 +74,29 @@ output$QC_progress_inputs_table <- renderTable({
       input$keep_missing
     )
   )
+  
+  if ("nmrData" %in% class(omicsData$obj)) {
+    df <- df %>% add_row(
+      `Input` = "Reference Normalization Applied",
+      `Value` = input$Nmrdata_reference_choice,
+      .before = 1
+    )
+    
+    if (input$Nmrdata_reference_choice == "Yes")
+    {
+      df <- df %>% add_row(
+        `Input` = "Reference Normalization Source",
+        `Value` = input$Nmrdata_reference_source,
+        .before = 2
+      )
+      
+      df <- df %>% add_row(
+        `Input` = "Reference Normalization Identifier",
+        `Value` = input$Nmrdata_picker_reference,
+        .before = 2
+      )
+    }
+  }
   
   if ("isobaricpepData" %in% class(omicsData$obj)) {
     df <- df %>% add_row(
