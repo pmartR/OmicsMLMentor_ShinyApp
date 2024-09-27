@@ -6,6 +6,29 @@ options(shiny.maxRequestSize = 250 * 1024^2,
         )
 
 shinyServer(function(session, input, output) {
+  onStop(function() {
+    # save the session object
+    if (Sys.getenv("SHINY_TEST_MODE") == "1") {
+      message("Session is ending. Saving the session object.")
+      server_env <- parent.env(environment())
+      
+      ## get all objects which are reactivevalues objects and
+      ## which are not identical to input
+      rvs <- map_lgl(as.list(server_env), ~inherits(.x, "reactivevalues") & !identical(.x, input))
+      
+      rv_names = names(rvs[rvs])
+      
+      POSTMORTEM_OBJECTS <<- list()
+      
+      isolate({
+        for (name in rv_names) {
+          POSTMORTEM_OBJECTS[[name]] <<- reactiveValuesToList(server_env[[name]])
+        }
+        
+        POSTMORTEM_OBJECTS[["input"]] <<- reactiveValuesToList(input)
+      })
+    }
+  })
   
   file_loads <- c(
     list.files("./Modules/", recursive = T, full.names = T),

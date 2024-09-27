@@ -68,6 +68,9 @@ suppressPackageStartupMessages({
 
 options(renv.config.sandbox.enabled = FALSE)
 
+# THEME BW EVERYWHERE!
+ggplot2::theme_set(ggplot2::theme_bw())
+
 ## GLOBAL VARIABLES ##
 # MAP_ACTIVE <- ifelse(Sys.getenv("MAP_VERSION") == "1", TRUE, FALSE)
 # AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
@@ -134,8 +137,6 @@ TABS_CHANGE_STATE <- c(
   "Upload", "Quality Control", "Model Set-Up",
   "Pre-Processing", "Run Model", "Download"
 )
-
-# models <- names(algo_rules)
 
 models_long_name <- c(
   `Linear support vector machine` = "lsvm",
