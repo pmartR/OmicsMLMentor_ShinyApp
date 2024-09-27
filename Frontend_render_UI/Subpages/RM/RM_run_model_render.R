@@ -605,6 +605,7 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
+                uiOutput("unsup_plot_type_UI"),
                 br(),
                 uiOutput("unsup_plot_type_UI"),
                 br(),
@@ -1151,14 +1152,7 @@ output$unsup_res_aes_UI <- renderUI({
     num_clusts_picker <- pickerInput("dendro_num_k", "Number of clusters", choices = 2:max_clusts, selected = 2)
     
     element_list[[length(element_list) + 1]] <- num_clusts_picker
-    
-    vjust_input = numericInput("dendro_vjust", "Vertical adjustment", value = 0.5, min = 0, max = 1, step = 0.1)
-    hjust_input = numericInput("dendro_hjust", "Horizontal adjustment", value = 1.5, min = 0, max = 1, step = 0.1)
-    label_size_input = numericInput("dendro_label_size", "Label size", value = 5, min = 0.1, max = 20, step = 0.1)
-    
-    element_list[[length(element_list) + 1]] <- vjust_input
-    element_list[[length(element_list) + 1]] <- hjust_input
-    element_list[[length(element_list) + 1]] <- label_size_input
+
   }
   
   ### plot the pcs
@@ -1212,7 +1206,8 @@ output$pc_yaxis_UI <- renderUI({
 # 
 # ## Make plotly so we can hover over the points
 # 
-output$structure_plot <- renderPlot({
+
+output$structure_plot <- renderPlotly({
 
   input$redraw_unsup_structure_plot
   omicsData$objRM
@@ -1263,9 +1258,9 @@ output$structure_plot <- renderPlot({
           slData = omicsData$objPP,
           label_obs = TRUE,
           k = input$dendro_num_k,
-          label.vjust = input$dendro_vjust,
-          label.hjust = input$dendro_hjust,
-          label_size = input$dendro_label_size
+          # label.vjust = input$dendro_vjust,
+          # label.hjust = input$dendro_hjust,
+          # label_size = input$dendro_label_size
         )
       } else if (plot_type == "pca") {
         plot_call = rlang::call_modify(
