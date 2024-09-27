@@ -604,6 +604,7 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
+                uiOutput("unsup_plot_type_UI"),
                 br(),
                   withSpinner(plotlyOutput("structure_plot")),
                 br(),
@@ -1077,13 +1078,40 @@ output$performance_plot_RM_reduced <- renderPlotly({
 #
 # })
 # 
+
+# Picker for plot type, depending on the class of the output.  This will either be slRes.cluster or slRes.embed.
+# currently pretty few plot options for these.
+output$unsup_plot_type_UI <- renderUI({
+  req(inherits(omicsData$objRM, c("slRes.cluster", "slRes.embed")))
+  
+  if (inherits(omicsData$objRM, "slRes.cluster")) {
+    fit_obj <- workflows::extract_fit_engine(omicsData$objRM)
+    # always has at least the pca scatter
+    choices <- c("Scatter plot" = "pca")
+    if (inherits(fit_obj, "hclust")) {
+      choices <- c(choices, "Dendrogram" = "dendro")
+    }
+  } else {
+    choices <- c("Scatterplot" = "scatter")
+  }
+  
+  picker_out = pickerInput(
+    "unsup_plot_type", "Plot type", choices = choices,
+    selected = input$unsup_plot_type
+  )
+  
+  return(picker_out)
+  
+})
+
+
 output$unsup_res_aes_UI <- renderUI({
-
-  req(!is.null(input$pick_model_EM) && !supervised())
-
+  req(!is.null(input$pick_model_EM) && !supervised(), omicsData$objRM)
+  
   method <- input$pick_model_EM ## While summary getting fixed
 
-  element_list <- list()
+  # always have a redraw plot button
+  element_list <- list(actionButton("redraw_unsup_structure_plot", "Redraw plot"), br(), br())
   
   # req(method %in% c())
 
@@ -1098,18 +1126,34 @@ output$unsup_res_aes_UI <- renderUI({
 
   req(length(colors) > 0)
   
-  choices <- if(method %in% c("pca", "ppca", "umap")){
+  choices <- if(inherits(omicsData$objRM, "slRes.embed")){
     colors
   } else {
     c("Parameter clusters", colors)
   }
-
-  color_by_picker <- pickerInput("color_by_unsup", "Color by:", choices = choices)
   
-  element_list[[length(element_list) + 1]] <- color_by_picker
+  # color by is probably not relevant for e.g. dendrogram plots
+  if (isTruthy(input$unsup_plot_type %in% c("pca", "scatter"))) {
+    color_by_picker <- pickerInput("color_by_unsup", "Color by:", choices = choices)
+    
+    element_list[[length(element_list) + 1]] <- color_by_picker
+  } else if (isTruthy(input$unsup_plot_type %in% c("dendro"))) {
+    max_clusts = if (attr(omicsData$objRM, "axis") == "samples") {
+      length(attr(omicsData$objRM, "sample_names"))
+    } else if (attr(omicsData$objRM, "axis") == "biomolecules") {
+      nrow(attr(omicsData$objRM, "feature_info"))
+    }
+    
+    max_clusts = min(20, max_clusts)
+    num_clusts_picker <- pickerInput("dendro_num_k", "Number of clusters", choices = 2:max_clusts, selected = 2)
+    
+    element_list[[length(element_list) + 1]] <- num_clusts_picker
+  }
+  
   ### plot the pcs
   
-  if (inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca"))) {
+  # This is currently only valid for embedding plots
+  if (inherits(omicsData$objRM, "slRes.embed")) {
     element_list[[length(element_list) + 1]] <- uiOutput("pc_xaxis_UI")
     element_list[[length(element_list) + 1]] <- uiOutput("pc_yaxis_UI")
   }
@@ -1119,29 +1163,35 @@ output$unsup_res_aes_UI <- renderUI({
 })
 
 output$pc_xaxis_UI <- renderUI({
-  req(inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca")))
+  req(inherits(omicsData$objRM, "slRes.embed"))
   num_comp <- omicsData$objRM$steps[[1]]$num_comp
   
-  choices = c(1:num_comp)
+  choices = setdiff(
+    c(1:num_comp),
+    input$unsup_embed_yaxis
+  )
   
   picker_out <- pickerInput(
-    "unsup_pca_xaxis_pc", "Plot which component on x-axis?" , choices = choices,
-    selected = input$unsup_pca_xaxis_pc
+    "unsup_embed_xaxis", "Plot which component on x-axis?" , choices = choices,
+    selected = input$unsup_embed_xaxis
   )
   
   return(picker_out)
 })
 
 output$pc_yaxis_UI <- renderUI({
-  req(inherits(omicsData$objRM$steps[[1]], c("step_pca", "step_ppca")))
+  req(inherits(omicsData$objRM, "slRes.embed"))
   num_comp <- omicsData$objRM$steps[[1]]$num_comp
   
-  choices = c(1:num_comp)
+  choices = setdiff(
+    c(1:num_comp),
+    input$unsup_embed_xaxis
+  )
   
-  selected = if(!is.null(input$unsup_pca_yaxis_pc)) input$unsup_pca_yaxis_pc else choices[2] 
+  selected = if(!is.null(input$unsup_embed_yaxis)) input$unsup_embed_yaxis else choices[2] 
   
   picker_out <- pickerInput(
-    "unsup_pca_yaxis_pc", "Plot which component on y-axis?", choices = choices,
+    "unsup_embed_yaxis", "Plot which component on y-axis?", choices = choices,
     selected = selected
   )
   
@@ -1160,174 +1210,88 @@ output$unsup_slider_UI <- renderUI({
 # ## Make plotly so we can hover over the points
 # 
 output$structure_plot <- renderPlotly({
+
+  input$redraw_unsup_structure_plot
+  omicsData$objRM
   
-  req(!is.null(input$pick_model_EM) && 
-        !supervised())
-  validate(
-    need(!is.null(omicsData$objRM), 
-         "No model results found.  Please run the model to see results plots."))
-
-  method <- input$pick_model_EM ## While summary getting fixed
-
-  color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
-                sym(input$color_by_unsup) else NULL
-
-  runner <- as.slData(omicsData$objPP)
-
-  ## Allow coloring by fdata for axis = "samples" and emeta if axis = "biomolecules"
-
-  if(method == "kmeans"){
-
-    clusters <- tidyclust::extract_centroids(omicsData$objRM)
-    
-    ## How to snag contributing points out of this? Add hovers too
-    clust <- omicsData$objRM$fit$fit$fit$cluster
-    temp <- as.data.frame(omicsData$objRM$pre$mold$predictors)
-    
-    
-    p <- fviz_cluster(omicsData$objRM$fit$fit$fit, data = temp,
-                      # palette = c("#2E9FDF", "#00AFBB"),
-                      geom = "point",
-                      ellipse.type = "convex", 
-                      ggtheme = theme_bw()
-    )
-
-  } else if (method == "hclust"){
-
-
-    if(input$pick_axis == "samples"){
-    ## hclust method needs to include sample names for plotting
-    omicsData$objRM$fit$fit$fit$labels <- colnames(omicsData$objPP$e_data)[
-      -which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP))]
-
-    } else {
-
-      omicsData$objRM$fit$fit$fit$labels <- omicsData$objPP$e_data[get_edata_cname(omicsData$objPP)]
-
-    }
-
-    if(length(color_by) > 0){
-
-      list_cols <- as.numeric(
-        as.factor(omicsData$objPP$f_data[[as.character(color_by)]]))
-      names(list_cols) <- omicsData$objPP$f_data[[get_fdata_cname(omicsData$objPP)]]
-      
-      if(!is.null(input$height_clust) && input$height_clust == "Height"){
-        dend <- dendro_data_k(omicsData$objRM$fit$fit$fit, 
-                              h = input$cut_height,
-                              custom_color = list_cols)
+  isolate({
+    req(!is.null(input$pick_model_EM) && 
+          !supervised())
+    validate(
+      need(!is.null(omicsData$objRM), 
+           "No model results found.  Please run the model to see results plots."))
+  
+    method <- input$pick_model_EM ## While summary getting fixed
+  
+    color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
+                  input$color_by_unsup else NULL
+  
+    runner <- as.slData(omicsData$objPP)
+  
+  
+   
+    if (inherits(omicsData$objRM, "slRes.cluster")) {
+      plot_type <- if (!isTruthy(input$unsup_plot_type %in% c("dendro", "pca"))) {
+        "pca"
       } else {
-        dend <- dendro_data_k(omicsData$objRM$fit$fit$fit, 
-                              k = input$num_clust,
-                              custom_color = list_cols)
+        input$unsup_plot_type
       }
-      
-    } else {
-      
-      if(!is.null(input$height_clust) && input$height_clust == "Height"){
-        dend <- dendro_data_k(omicsData$objRM$fit$fit$fit, 
-                              h = input$cut_height)
+    } else if (inherits(omicsData$objRM, "slRes.embed")) {
+      plot_type <- if (!isTruthy(input$unsup_plot_type %in% c("scatter"))) {
+        "scatter"
       } else {
-        dend <- dendro_data_k(omicsData$objRM$fit$fit$fit, 
-                              k = input$num_clust)
-      }
-
-    }
-    
-    p <- plot_ggdendro_multi(dend, branch.size = 0.5, expand.y = input$expand_y)
-
-    # hclust_fit %>%
-    #   extract_centroids(num_clusters = 2)
-
-    # hclust_fit %>%
-    #   extract_centroids(cut_height = 250)
-
-  } else if (method %in% c("pca", "ppca")){
-    args = list(
-      slData = runner,
-      axis = input$pick_axis,
-      bake = T
-    )
-    
-    if (method == 'pca') {
-      args[['num_comp']] = input$pca_num_comp
-      args[["slMethod"]] = method
-    } else if (method == 'ppca') {
-      args[['num_comp']] = input$ppca_num_comp
-      args[["slMethod"]] = method
-    }
-    
-    df <- do.call(
-      slopeR:::embed_unsup,
-      args
-    )
-
-    df <- as.data.frame(df)
-
-    if(input$pick_axis == "samples"){
-      df[[get_fdata_cname(runner)]] <- runner$f_data[[get_fdata_cname(runner)]]
-      select_cols <- unique(c(get_fdata_cname(runner), input$color_by_unsup))
-      df <- left_join(df, runner$f_data[select_cols])
-    } else {
-      df[[get_edata_cname(runner)]] <- runner$e_data[[get_edata_cname(runner)]]
-      select_cols <- unique(c(get_edata_cname(runner), input$color_by_unsup))
-      df <- left_join(df, runner$e_meta[select_cols])
-    }
-    
-    xvar = if (!is.null(input$unsup_pca_xaxis_pc)) paste0("PC", input$unsup_pca_xaxis_pc) else "PC1"
-    yvar =  if (!is.null(input$unsup_pca_yaxis_pc)) paste0("PC", input$unsup_pca_yaxis_pc) else "PC2"
-    
-    if(length(color_by) > 0){
-      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]], color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw()
-    } else {
-      ## Where is R2?
-      p <- ggplot(df, aes(x = .data[[xvar]], y = .data[[yvar]])) + geom_point(size = 3) + theme_bw()
-    }
-
-  } else {
-
-    ## this seems off maybe
-    df <- slopeR:::embed_unsup(runner,
-                               slMethod = "umap",
-                               axis = input$pick_axis,
-                               bake = T
-    )
-
-    df <- as.data.frame(df)
-
-    if(input$pick_axis == "samples"){
-      df[[get_fdata_cname(runner)]] <- runner$f_data[[get_fdata_cname(runner)]]
-      if(input$color_by_unsup != "Parameter clusters"){
-        select_cols <- unique(c(get_fdata_cname(runner), input$color_by_unsup))
-        df <- left_join(df, runner$f_data[select_cols])
-      }
-    } else {
-
-      df[[get_edata_cname(runner)]] <- runner$e_data[[get_edata_cname(runner)]]
-      if(input$color_by_unsup != "Parameter clusters"){
-        select_cols <- unique(c(get_edata_cname(runner), input$color_by_unsup))
-        df <- left_join(df, runner$e_meta[select_cols])
+        input$unsup_plot_type
       }
     }
-
-    if(length(color_by) > 0){
-      p <- ggplot(df, aes(x = UMAP1, y = UMAP2, color = !!color_by)) + 
-               geom_point(size = 3) + theme_bw()
-    } else {
-      ## Where is R2?
-      p <- ggplot(df, aes(x = UMAP1, y = UMAP2)) + 
-               geom_point(size = 3) + theme_bw()
+    
+    # base plot call
+    plot_call = rlang::expr(
+      plot(
+        omicsData$objRM, 
+        plotType = plot_type
+      )
+    )
+    
+    # plot depends on whether we have a cluster or embedding result
+    if (inherits(omicsData$objRM, "slRes.cluster")) {
+      if (plot_type == "dendro") {
+        plot_call = rlang::call_modify(
+          plot_call,
+          slData = omicsData$objPP,
+          label_obs = TRUE,
+          k = input$dendro_num_k
+        )
+      } else if (plot_type == "pca") {
+        plot_call = rlang::call_modify(
+          plot_call, 
+          slData = omicsData$objPP,
+          color_by = color_by,
+          ellipse = TRUE
+        )
+      }
+      
+      p <- rlang::eval_tidy(plot_call)
+    } else if (inherits(omicsData$objRM, "slRes.embed")) {
+      if (plot_type == "scatter") {
+        xvar = if (!is.null(input$unsup_embed_xaxis)) input$unsup_embed_xaxis else 1
+        yvar = if (!is.null(input$unsup_embed_yaxis)) input$unsup_embed_yaxis else 2
+        
+        plot_call = rlang::call_modify(
+          plot_call,
+          components = c(xvar, yvar),
+          slData = runner,
+          color_by = color_by
+        )
+      }
+      
+      p <- rlang::eval_tidy(plot_call)
     }
-
-  }
-  
-  isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
-  isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
-  
-  if (!inherits(p$data, "waiver")) {
+    
+    isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
+    isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
     isolate(table_table_current$table$RM__model_eval <- p$data)
-  }
+  
+    p
+  })
 
-  p
 })
