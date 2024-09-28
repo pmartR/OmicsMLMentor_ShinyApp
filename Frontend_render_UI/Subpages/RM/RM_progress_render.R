@@ -22,13 +22,6 @@ output$RM_progress_summary_table <- renderDT({
     p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))   
   }
   
-<<<<<<< Frontend_render_UI/Subpages/RM/RM_progress_render.R
-  p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))      
-  
-  if (".level" %in% names(p)) {
-    p <- p %>% dplyr::group_by(.level)
-  }
-  
   auc_by_level <- p %>%
     dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity),
                   sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
