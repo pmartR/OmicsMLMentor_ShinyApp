@@ -22,8 +22,9 @@ output$preprocessing_progress_next_steps <- renderUI({
   
   if (length(subset_name) == 0) {
     subset_name <- NULL
-    rollup_method <- NULL
-  } else {
+  }
+  
+  if (!is.null(input$qc_which_rollup)) {
     rollup_method <- switch(
       input$qc_which_rollup, 
       rollup = "Centering only",
@@ -31,6 +32,8 @@ output$preprocessing_progress_next_steps <- renderUI({
       qrollup = paste0("Quantile (cutoff at ", input$qc_qrollup_thresh, ")"),
       zrollup = "Z-Score"
     )
+  } else {
+    rollup_method <- NULL
   }
   
   user_inputs$pp <- list(
