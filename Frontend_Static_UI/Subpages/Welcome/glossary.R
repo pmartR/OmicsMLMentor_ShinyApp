@@ -9,9 +9,9 @@ glossary_popup <- function(){
       tabsetPanel(
         id = "gloss_tabs",
         
-        tabPanel("Current page",
-                 uiOutput("current_page_glossary")
-                 ),
+        # tabPanel("Current page",
+        #          uiOutput("current_page_glossary")
+        #          ),
         
         tabPanel("Model information",
                  wellPanel(

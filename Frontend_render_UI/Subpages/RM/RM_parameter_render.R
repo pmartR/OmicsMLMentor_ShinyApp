@@ -9,6 +9,7 @@ apply_disabled <- function(el) {
 output[["param_opti_UI"]] <- renderUI({
   if(input$rm_prompts_hp == "tuned"){
     out <- actionButton("param_opti", "Optimize parameters")
+    out <- disabled(actionButton("param_opti", "Optimize parameters"))
     if(!any(map_lgl(grep("optimize", names(input), value = T), 
                     function(x) input[[x]])))
       out <- disabled(out)
@@ -61,7 +62,9 @@ rf_params <- function(){
     response <- input$f_data_response_picker
   }
   
-  x <- as.data.frame(t(omicsData$objPP$e_data[-1]))
+  drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+  
+  x <- as.data.frame(t(omicsData$objPP$e_data[-drop]))
   if(length(response) == 1){
     y <- omicsData$objPP$f_data[[response]]
   } else {
@@ -424,7 +427,9 @@ gbtree_params <- function(){
     response <- input$f_data_response_picker
   }
   
-  x <- as.data.frame(t(omicsData$objPP$e_data[-1]))
+  drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+  
+  x <- as.data.frame(t(omicsData$objPP$e_data[-drop]))
   if(length(response) == 1){
     y <- omicsData$objPP$f_data[[response]]
   } else {

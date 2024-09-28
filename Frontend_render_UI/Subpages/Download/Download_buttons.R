@@ -121,7 +121,7 @@ observeEvent(input$makezipfile, {
       files = c(file_names_tables, file_names_plots, fs::path_sanitize(input$report_name)), 
       flags = "-r")
   
-  zipped_file$fs <- paste0(fname, ".zip") #c(zipped_file$fs, paste0(fname, ".zip"))
+  zipped_file$fs <- paste0(fname, ".zip")
 })
 
 

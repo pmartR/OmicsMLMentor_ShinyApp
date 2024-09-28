@@ -274,8 +274,16 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
                                                    "RNA-seq" = "rnaseq_"
                        )
                        
+                       data_grab <- NULL
                        
-                       data_grab <- get(paste0(pmartRdata_prefix, sub("_", "", label)))
+                       tryCatch({
+                         data_grab <- get(paste0(pmartRdata_prefix, sub("_", "", label)))
+                       }, error = function(e) {
+                         updatePrettySwitch(session, "have_emeta", value = FALSE)
+                         shinyalert(title = "Data Unavailable", "Example biomolecule information for this data type is unavailable.")
+                       })
+                       
+                       if (is.null(data_grab)) return()
                        
                        reactive_dataholder[[label]]$filename <- "Example file"
                        reactive_dataholder[[label]]$file <- default_factor(data_grab)

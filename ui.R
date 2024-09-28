@@ -124,8 +124,8 @@ ui <- function(request) {
     ),
     
     
-    uiOutput("developer_buttons")
+    uiOutput("developer_buttons"),
     
-    
+    shinybusy::add_busy_spinner(spin = "orbit", position = "bottom-left", timeout = 200)
   )
 } # shinyUI + shinyjs tagList

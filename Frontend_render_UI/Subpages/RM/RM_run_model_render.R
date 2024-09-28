@@ -115,10 +115,28 @@ supervised_tab <- function() {
   
 }
 
+
+output$model_summary <-renderUI({
+  
+  method <- input$pick_model_EM
+  div(
+    br(),
+    strong(names(models_long_name)[models_long_name == method]),
+    br(),
+    hr(),
+    text_get(method)
+    
+  )
+})
+
+
 #' @details Make the picker of plot type depend on the task.
 output$super_plot_type_UI <- renderUI({
-  req(omicsData$objRM)
+  req(!is.null(omicsData$objRM))
+  
   task <- attr(omicsData$objRM, 'fit_info')$task
+  
+  req(!is.null(task))
   
   if (task == 'regression') {
     choices = c(
@@ -611,6 +629,8 @@ unsupervised_tab <- function() {
 }
 
 observeEvent(input$run_sl, {
+  
+  omicsData$objRM_reduced <- NULL
   
   ## Check normalization application
   shinyjs::show("RM_busy")
@@ -1231,8 +1251,10 @@ output$structure_plot <- renderPlotly({
     
     if (method == 'pca') {
       args[['num_comp']] = input$pca_num_comp
+      args[["slMethod"]] = method
     } else if (method == 'ppca') {
       args[['num_comp']] = input$ppca_num_comp
+      args[["slMethod"]] = method
     }
     
     df <- do.call(
@@ -1302,7 +1324,10 @@ output$structure_plot <- renderPlotly({
   
   isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
   isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
-  isolate(table_table_current$table$RM__model_eval <- p$data)
+  
+  if (!inherits(p$data, "waiver")) {
+    isolate(table_table_current$table$RM__model_eval <- p$data)
+  }
 
   p
 })

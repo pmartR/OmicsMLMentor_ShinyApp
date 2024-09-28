@@ -1,4 +1,31 @@
 
+output$missing_options_UI <- renderUI({
+  
+  if(inherits(omicsData$objQC, "proData")){
+    subtext <- c(
+      "Estimation of values must be at peptide level data for proteomics data.", 
+      "", "")
+    disabled <- c(T, F, F)
+  } else {
+    disabled <- NULL
+    subtext <- NULL
+  }
+  
+  pickerInput(
+    "missing_options",
+    "Preview biomolecule detection handling:",
+    choices = c(
+      # "Keep data as-is" = "keep",
+      "🟩 Estimate values in samples with no biomolecule detection" = "impute",
+      "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
+      "🟥 Remove biomolecules with incomplete detection" = "remove"
+    ),
+    choicesOpt = list(subtext = subtext, disabled = disabled),
+    multiple = T
+  )
+  
+})
+
 ## Prevent stupid
 observeEvent(input$missing_value_thresh, {
   req(!is.null(input$missing_value_thresh) && !is.na(input$missing_value_thresh))
@@ -293,7 +320,7 @@ output$slider_options_ui <- renderUI({
     ))
   }
   
-  div(
+  out <- div(
     column(1, "  "),
     column(9, MultiSlider.shinyInput(
       "missingness_handle_slider",
@@ -312,6 +339,14 @@ output$slider_options_ui <- renderUI({
     )
     
   )
+  
+  if(inherits(omicsData$objQC, "pepData") && !is.null(pepQCData$pepQCData)){
+    
+    out <- hidden(out)
+    
+  }
+  
+  out
   
 })
 
@@ -496,7 +531,7 @@ observeEvent(input$qc_apply_rollup, {
     single_pep <- FALSE
     single_observation <- FALSE
   }
-  
+  unregister()
   pepQCData$objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
                                       method = input$qc_which_rollup,
                                       qrollup_thresh = input$qc_qrollup_thresh / 100,
@@ -505,6 +540,7 @@ observeEvent(input$qc_apply_rollup, {
                                       combine_fn = input$qc_which_combine_fn,
                                       parallel = TRUE
   )
+  unregister()
   shinyjs::hide("qc_rollup_busy")
   shinyjs::show("qc_biomolecule_detect")
   shinyjs::show("qc_biomolecule_detect_plot")

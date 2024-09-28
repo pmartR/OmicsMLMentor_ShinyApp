@@ -2647,13 +2647,7 @@
     "pmartRdata": {
       "Package": "pmartRdata",
       "Version": "2.0.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "pmartRdata",
-      "RemoteUsername": "pmartR",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "bb4729346c264b45deb310f2d99199cd09776051",
+      "Source": "./renv/local/pmartRdata.zip",
       "Requirements": [
         "R"
       ],

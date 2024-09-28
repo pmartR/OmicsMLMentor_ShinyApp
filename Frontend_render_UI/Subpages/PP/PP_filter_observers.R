@@ -1,18 +1,21 @@
 
 ## Top page of filters
 observeEvent(input$em_select, once = T, {
+  
   output$filter_page <- renderUI({
-    isolate(filter_tab_temp(get_omicsData_type(omicsData$objPP),
-                    # F,
-                    input$keep_missing == "Yes",
-                    input$user_level_pick,
-                    attr(omicsData$obj, "data_info")$data_scale_actual
-                    ))
+    
+    isolate(
+      filter_tab_temp(
+        tabname = get_omicsData_type(omicsData$objPP),
+        no_cv = get_data_norm(omicsData$objPP),
+        keep_missing = input$keep_missing == "Yes",
+        user_level = input$user_level_pick,
+        datascale = attr(omicsData$obj, "data_info")$data_scale_actual
+        )
+      )
+    
   })
 })
-
-# # only show the loading screen once on initial load
-filter_status <- reactiveValues(loaded = FALSE)
 
 #  filter storage
 filters <- reactiveValues()
@@ -140,7 +143,7 @@ make_filter <- function(dataname, filter_tag, message, func, settings, preview =
         do.call(func, c(list(omicsData$objPP), args))
       },
       error = function(e) {
-        shinyalert(message, paste0("System error: ", e))
+        shinyalert(message, paste0("System error: ", e$message))
         updatePrettySwitch(session, paste0(dataname, "_add_", filter_tag), value = FALSE)
         return(NULL)
       }
@@ -1142,7 +1145,38 @@ priority = 10
 ### Apply filters ###
 observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   
+  
   name <- get_omicsData_type(omicsData$objPP)
+  
+  if(
+    ## no seq
+    !inherits(omicsData$objPP, "seqData") &&
+    
+    ## Model doesn't support missingness
+    input$pick_model_EM %in% models_long_name[!missing_designation] &&
+    
+    ## no impute detected
+     (is.null(filters[[name]]$imputefilt) ||
+     is.null(input[[paste0(name, "_add_imputefilt")]]) ||
+     !input[[paste0(name, "_add_imputefilt")]]) &&
+    
+    ## Missingness
+    !all(missingval_result(omicsData$objPP)$na.by.molecule$num_NA == 0)
+    
+  ){
+    
+    shinyalert(
+      title = "Please select a missingness handling strategy",
+      text = paste0("The selected model, '", 
+                    names(models_long_name)[models_long_name == input$pick_model_EM], 
+                    "', does not allow for missing values.",
+                    " Please select a missingness handling strategy using",
+                    " the designated filter in the sidebar."),
+      type = "error"
+    )
+    return()
+    
+  }
   
   # gather indices in f_data of removed samples from all sample filters
   if (!is.null(omicsData$objPP$f_data)) {
@@ -1190,6 +1224,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
           input[[paste0(name, "_add_imputefilt")]]) {
         
         thresholds <- filter_settings[[name]]$imputefilt
+        
+        tmp <- auto_remove_na(tmp)
         
         # Only apply impute 
         if (get_omicsData_type(tmp) == "Pepdata") {
@@ -1396,7 +1432,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                     textOutput("rollup_note_text")
               )
           )
-      )
+      ),
       # fluidRow(
       #   column(10,
       #          align = "center", offset = 1,
@@ -1404,7 +1440,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       #          actionButton("goto_norm", "Continue to normalization", style = "margin-top:5px;width:75%")
       #   )
       # )#,
-      # footer = NULL
+      footer = actionButton("dismiss_modal",label = "Dismiss")
     )
   )
   
@@ -1416,6 +1452,10 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
   #   export_filters[[export_obj]] <- attr(omicsData$objPP[[export_obj]], "filters")
   # }
   # exportTestValues(filters = export_filters)
+})
+
+observeEvent(input$dismiss_modal, {
+  removeModal()
 })
 
 
@@ -1610,43 +1650,56 @@ missingHandleSliderValsFilter <- reactive({
 
 output$rollup_note_text <- renderText({
   if(inherits(omicsData$objMSU, "pepData")){
+
     "Note: Value estimation (imputation) will occur at the protein level."
+
   } else ""
 })
 
 output$missing_options_filter_UI <- renderUI({
   
   all_choices <-  c(
-    "Keep data as-is" = "keep",
     "🟩 Estimate values in samples with no biomolecule detection" = "impute",
     "🟧 Convert undetected biomolcule values to 0, all other values to 1" = "convert",
     "🟥 Remove biomolecules with incomplete detection" = "remove"
   )
   
-  handles_missing <- map_lgl(
-    map(
-      algo_rules, 
-      function(x) {
-        if (is.null(x$hard$any_is_na)) {
-          return(TRUE)
-        }
-        x$hard$any_is_na[[1]]
-      }
-    ), 
-    1
-  )
-  
-  if(!(handles_missing[input$pick_model_EM])){
-    all_choices <- all_choices[-1]
+  if(inherits(omicsData$objMSU, "proData")){
+    subtext <- c(
+      "Estimation of values must be at peptide level data for proteomics data.", 
+      "", "")
+    disabled <- c(T, F, F)
+  } else {
+    disabled <- NULL
+    subtext <- NULL
   }
   
   pickerInput(
     "missing_options_filter",
     "Handling method:",
     choices = all_choices,
+    choicesOpt = list(subtext = subtext, disabled = disabled),
     selected = input$missing_options,
     multiple = T
   )
+})
+
+output$missing_options_filter_warning_UI <- renderUI({
+  
+  tabname <- get_omicsData_type(omicsData$objPP)
+  
+  req(!(names(models_long_name[models_long_name == input$pick_model_EM]) %in% 
+          names(missing_designation[missing_designation])) &&
+        !is.null(input[[paste0(tabname, "_add_imputefilt")]]) &&
+        !input[[paste0(tabname, "_add_imputefilt")]])
+  
+  div(
+  strong(paste0("Warning: Method '", names(models_long_name[models_long_name == input$pick_model_EM]),
+                "' does not support missing data. Failure to add this filter ",
+                "will enforce zero-to-one normalization and ",
+                "set all missing values to zero.")),
+  br(), br())
+  
 })
 
 
@@ -1747,7 +1800,10 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
     group_sizes <- get_group_table(omicsData$objPP)
     if(is.null(group_sizes)) group_sizes <- nrow(omicsData$objPP$f_data)
     max_x <- max(group_sizes)
-    if(is.null(group_sizes)) max_x <- ncol(omicsData$objPP$e_data[-1])
+    
+    drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP))      
+    
+    if(is.null(group_sizes)) max_x <- ncol(omicsData$objPP$e_data[-drop])
     req(max_x > 1)
     
     numericInput(
@@ -1985,7 +2041,9 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
                    color_by = "Group", order_by = "Group") +
           labs(title = "Before handling missingness")
         
-        if(all(unlist(tmp$e_data[-1]) %in% c(0, 1))){
+        drop <- which(colnames(tmp$e_data) == get_edata_cname(tmp))
+        
+        if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
           
           ## Still need group designation for color, order
           df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
@@ -2006,9 +2064,10 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       } else {
         p1 <- plot(isolate(omicsData$objPP)) +
           labs(title = "Before handling missingness")
+
+        drop <- which(colnames(tmp$e_data) == get_edata_cname(tmp))        
         
-        
-        if(all(unlist(tmp$e_data[-1]) %in% c(0, 1))){
+        if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
           df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
           p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
             geom_col() + theme_bw() + 
@@ -2083,6 +2142,7 @@ output$add_impute_ui <- renderUI({
 
   div(
     out1,
+    uiOutput("missing_options_filter_warning_UI"),
     out2
   )
 })

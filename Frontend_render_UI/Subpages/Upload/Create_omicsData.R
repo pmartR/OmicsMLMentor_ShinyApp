@@ -56,7 +56,6 @@ observeEvent(input$check_group_cols, {
       } else {
         attr(res, "data_info")$data_scale_actual <- data_scale_hold
       }
-      
       res
     },
     error = function(e) {

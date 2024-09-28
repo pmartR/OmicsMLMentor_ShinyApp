@@ -15,10 +15,14 @@ output$RM_progress_summary_table <- renderDT({
   
   if (length(unique(pred_df$response)) == 2) {
     pos_class <- names(pred_df)[3]
+    p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))  
+    p[".level"] <- gsub(".pred_", "", pos_class)
   } else {
     pos_class <- names(pred_df)[3:(2+length(unique(pred_df$response)))]
+    p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))   
   }
   
+<<<<<<< Frontend_render_UI/Subpages/RM/RM_progress_render.R
   p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))      
   
   if (".level" %in% names(p)) {
@@ -26,7 +30,8 @@ output$RM_progress_summary_table <- renderDT({
   }
   
   auc_by_level <- p %>%
-    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity), sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
+    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity),
+                  sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
     dplyr::summarise(sum(spc_diff*sens_avg, na.rm=T))
   
   if (length(auc_by_level) > 1) {

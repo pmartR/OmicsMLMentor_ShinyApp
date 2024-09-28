@@ -103,7 +103,7 @@ output$transform_preview_plot <- renderPlotly({
       p <- plot(x)
     # }
     
-    yaxis <- switch(get_data_info(x)$data_scale_actual,
+    yaxis <- switch(attr(x, "data_info")$data_scale_actual,
                     lcpm = "Log counts per million",
                     upper = "Upper-quantile transformed counts",
                     median = "Median counts")
@@ -189,6 +189,7 @@ observeEvent(input$complete_transform, {
     omicsData$objPP <- edata_transform(omicsData$objMSU, input$transform)
     omicsData$objToFilter <- omicsData$objPP
   } else {
+
     # This has to happen after filters
     # omicsData$objPP <- edata_transform_seq(omicsData$objMSU, input$transform)
   }

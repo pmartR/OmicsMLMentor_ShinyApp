@@ -155,14 +155,11 @@ observeEvent(input$fdata_upload_done, {
 observeEvent(c(input$use_fdata, input$use_example_fdata, input$how_make_fdata), {
   
   if (!is.null(input$use_fdata) &&
-      (
-        ## Endpoint conditions
-       input$use_fdata == ""  ||  ## No f_data
-       AWS ||  ## AWS
-       MAP_ACTIVE || ## MAP
-       isTruthy(input$use_example_fdata) || ## Example data
-       !is.null(input$how_make_fdata)) ## Implies f_data == Yes
-      ) {
+
+      (input$use_fdata == "No"  || AWS || MAP_ACTIVE || ## MAP
+       isTruthy(input$use_example_fdata) || 
+       !is.null(input$how_make_fdata))) {
+
     shinyjs::enable("fdata_options_done")
     
   # } else if (!is.null(input$use_fdata) && MAP_ACTIVE) {
@@ -205,6 +202,19 @@ observeEvent(reactive_dataholder$f_data$file, {
   }
 })
 
+## Warn for 
+observeEvent(input$use_fdata, {
+  req(!is.null(input$use_fdata) && input$use_fdata == "")
+  shinyalert("Warning: predictive models will not be available",
+             paste0("Models that can predict experimental groups",
+                   " or sample conditions based on biomolecule data",
+                   " are not available without a Sample Information file.",
+                   " Please make sure this is appropriate for your goals ",
+                   "before clicking the 'Confirm selections' button."),
+             type = "warning"
+  )
+  
+})
 
 ## completion button show
 observe({
