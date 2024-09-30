@@ -64,7 +64,7 @@ text <- paste0(text, " ")
 text <- paste0(text, if (params$user_inputs$upload$edata_norm == "No") "unnormalized" else "normalized")
 text <- paste0(text, " data, with \"")
 text <- paste0(text, params$user_inputs$upload$edata_nasymbol)
-text <- paste0(text, "\" denoting missing data.")
+text <- paste0(text, "\" denoting missing values.")
 
 if (!is.null(params$user_inputs$upload$fdata_source) && params$user_inputs$upload$fdata_source != "None") {
   text <- paste0(text, "\\\n")
@@ -146,7 +146,7 @@ Abundance Data Boxplots: \
 ```{r Upload boxplot}
 if (is.null(params$plots$table$Upload__boxplot))
 {
-  "Plot was not generated."
+  "Plot was not generated in the SLOPE session."
 } else {
   params$plots$table$Upload__boxplot
 }
@@ -174,7 +174,7 @@ if (inherits(params$omicsData$obj, "isobaricpepData")) {
 }
 
 if (params$user_inputs$qc$single_obs_removed == "Yes") {
-  text <- paste0(text, "Biomolecules for which only a single observation was detected were discarded. ")
+  text <- paste0(text, params$user_inputs$filters$single_molfilt, " biomolecules for which only a single observation was detected were discarded. ")
 }
 ```
 
@@ -186,7 +186,7 @@ Single Observation Biomolecules: \
 ```{r Single Obs}
 if (is.null(params$plots$table$QC__single_obs))
 {
-  "Plot was not generated."
+  "Plot was not generated in the SLOPE session."
 } else {
   params$plots$table$QC__single_obs
 }
@@ -212,7 +212,7 @@ if(!inherits(omicsData$objQC, "seqData")) {
     params$plots$table$QC__rmd_overall
   ))
   {
-    "Plot was not generated."
+    "Plot was not generated in the SLOPE session."
   } else {
     params$plots$table$QC__rmd_overall
   }
@@ -260,20 +260,20 @@ if (is.null(
   params$plots$table$QC__missing_samples
   ))
 {
-  "Plot was not generated."
+  "Plot was not generated in the SLOPE session."
 } else {
   params$plots$table$QC__missing_samples
 }
 ```
 
-Biomolecule Missingness Handling: \
+Biomolecule Missingness: \
 
-```{r QC Missingness Handling}
+```{r QC Missingness}
 if (is.null(
   params$plots$table$QC__missing_features
   ))
 {
-  "Plot was not generated."
+  "Plot was not generated in the SLOPE session."
 } else {
   suppressWarnings(
     params$plots$table$QC__missing_features
@@ -336,7 +336,7 @@ if (is.null(
   params$plots$table$PP__transform
   ))
 {
-  "Plot was not generated."
+  "Plot was not generated in the SLOPE session."
 } else {
   params$plots$table$PP__transform
 }
@@ -351,7 +351,7 @@ text <- ""
 if (!is.null(params$user_inputs$pp$molfilt) && params$user_inputs$pp$molfilt)  {
   text <- paste0(text, "A molecule filter was applied with a minimum threshold of ")
   text <- paste0(text, params$user_inputs$pp$molfilt_min_num)
-  text <- paste0(text, " samples. The filter removed ")
+  text <- paste0(text, " observations. The filter removed ")
   text <- paste0(text, params$user_inputs$filters$molfilt, " biomolecule", ifelse(params$user_inputs$filters$molfilt != 1, "s", ""), ". \\\n")
 }
 ```
@@ -521,9 +521,9 @@ if (params$user_inputs$pp$norm_method != "No Normalization") {
     text <- paste0(text, " subset function was used. ")
     
     if (params$user_inputs$pp$norm_subset_fn == "Percentage present and rank invariant (ppp+rip)") {
-      text <- paste0(text, "The percentage present value used was ")
+      text <- paste0(text, "The percentage present threshold used was ")
       text <- paste0(text, params$user_inputs$pp$norm_ppp)
-      text <- paste0(text, " and the rank invariant p-value used was ")
+      text <- paste0(text, " and the rank invariant p-value threshold used was ")
       text <- paste0(text, params$user_inputs$pp$norm_rip)
       text <- paste0(text, ". ")
     }
@@ -571,7 +571,7 @@ if (!is.null(params$plots$table$PP__rollup)) {
 
 ```{r Run Model}
 if (params$user_inputs$msu$model_type == "Supervised") {
-text <- "A model was created with the purpose of running on "
+text <- paste0("A ", params$user_inputs$msu$model_selected, " model was created with the purpose of running on ")
 text <- paste0(text, switch(params$user_inputs$rm$model_scope,
                             "Current Data" = "the uploaded dataset only",
                             "the uploaded dataset and future datasets"), ". ")
