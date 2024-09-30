@@ -606,10 +606,9 @@ unsupervised_tab <- function() {
                   # DTOutput("train_metrics"),
                 uiOutput("unsup_plot_type_UI"),
                 br(),
-                  withSpinner(plotlyOutput("structure_plot")),
+                  withSpinner(plotOutput("structure_plot")),
                 br(),
-                column(6, uiOutput("unsup_res_aes_UI")),
-                column(6, uiOutput("unsup_slider_UI"))
+                uiOutput("unsup_res_aes_UI")
                 
               )
               
@@ -1148,6 +1147,14 @@ output$unsup_res_aes_UI <- renderUI({
     num_clusts_picker <- pickerInput("dendro_num_k", "Number of clusters", choices = 2:max_clusts, selected = 2)
     
     element_list[[length(element_list) + 1]] <- num_clusts_picker
+    
+    vjust_input = numericInput("dendro_vjust", "Vertical adjustment", value = 0.5, min = 0, max = 1, step = 0.1)
+    hjust_input = numericInput("dendro_hjust", "Horizontal adjustment", value = 1.5, min = 0, max = 1, step = 0.1)
+    label_size_input = numericInput("dendro_label_size", "Label size", value = 5, min = 0.1, max = 20, step = 0.1)
+    
+    element_list[[length(element_list) + 1]] <- vjust_input
+    element_list[[length(element_list) + 1]] <- hjust_input
+    element_list[[length(element_list) + 1]] <- label_size_input
   }
   
   ### plot the pcs
@@ -1158,7 +1165,7 @@ output$unsup_res_aes_UI <- renderUI({
     element_list[[length(element_list) + 1]] <- uiOutput("pc_yaxis_UI")
   }
   
-  return(do.call(tagList, element_list))
+  return(do.call(div, c(list(class = "inline-wrapper-1"), element_list)))
   
 })
 
@@ -1198,18 +1205,10 @@ output$pc_yaxis_UI <- renderUI({
   return(picker_out)
 })
 
-output$unsup_slider_UI <- renderUI({
-  
-  req(input$pick_model_EM == "hclust")
-  
-  sliderInput("expand_y", "Adjust sample name margin", min = 0, max = 1, value = 0.5)
-  
-})
-
 # 
 # ## Make plotly so we can hover over the points
 # 
-output$structure_plot <- renderPlotly({
+output$structure_plot <- renderPlot({
 
   input$redraw_unsup_structure_plot
   omicsData$objRM
@@ -1259,7 +1258,10 @@ output$structure_plot <- renderPlotly({
           plot_call,
           slData = omicsData$objPP,
           label_obs = TRUE,
-          k = input$dendro_num_k
+          k = input$dendro_num_k,
+          label.vjust = input$dendro_vjust,
+          label.hjust = input$dendro_hjust,
+          label_size = input$dendro_label_size
         )
       } else if (plot_type == "pca") {
         plot_call = rlang::call_modify(
