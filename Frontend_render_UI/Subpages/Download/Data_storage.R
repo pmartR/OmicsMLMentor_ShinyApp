@@ -815,7 +815,7 @@ output$include_model_UI <- renderUI({
   trans_fn <- attr(omicsData$objPP,"data_info")$data_scale_actual
   
   if(inherits(omicsData$objPP, "seqData") && 
-     (is.null(trans_fn) || trans_fn != "lcpm")){
+     (is.null(trans_fn) || trans_fn != "lcpm") && AWS){
     
     include_mod <- disabled(
       checkboxInput(
@@ -830,7 +830,7 @@ output$include_model_UI <- renderUI({
         inputId = "include_model", value = F)
     )
     
-  } else if(!inherits(omicsData$objPP, "seqData") && 
+  } else if(!inherits(omicsData$objPP, "seqData") && AWS &&
             (is.null(norm_fn) || norm_fn != "zero_to_one")){
     
     include_mod <- disabled(

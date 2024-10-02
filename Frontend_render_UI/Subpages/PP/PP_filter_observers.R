@@ -77,7 +77,7 @@ observeEvent(c(apply_filt_flags(), filter_settings_stored$stored), {
            "totalCountFilt" = "totalCountFilt",
            "NZfilt" = "RNAFilt",
            "Libfilt" = "RNAFilt",
-           "profilt" = "proFilt"
+           "profilt" = "proteomicsFilt"
            )
     )
   
@@ -2086,11 +2086,25 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       
       p <- p + labs(title = "Coefficient of Variation (CV)")
 
+    } else if ((filter_tag == "profilt" )){
+      
+      filter_obj <- filters[[tabname]][[filter_tag]]
+      
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
+      settings$x <- filter_obj
+      settings$min_num_peps <- as.numeric(settings$min_num_peps)
+      
+      p <- do.call(plot, settings)
+      
     } else {
       
       isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
       isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
 
+      filter_obj <- filters[[tabname]][[filter_tag]]
+      
       p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                       settings))
     }

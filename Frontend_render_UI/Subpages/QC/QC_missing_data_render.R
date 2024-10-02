@@ -532,7 +532,19 @@ observeEvent(input$qc_apply_rollup, {
     single_observation <- FALSE
   }
   unregister()
-  pepQCData$objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
+  
+  temp_dat <- edata_transform(omicsData$objQC, "log2")
+
+  if(is.null(temp_dat$f_data)){
+    temp_dat$f_data <- data.frame(
+      SampleID = colnames(temp_dat$e_data)[
+        colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
+      Temp_col_all = "All"
+    )
+  }
+  
+  
+  pepQCData$objQCPro <- protein_quant(temp_dat,
                                       method = input$qc_which_rollup,
                                       qrollup_thresh = input$qc_qrollup_thresh / 100,
                                       single_pep = single_pep,

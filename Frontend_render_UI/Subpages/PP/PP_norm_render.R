@@ -79,11 +79,6 @@ combine_omicsdata <- function(obj_1, obj_2){
     dplyr::select(-dplyr::one_of(get_fdata_cname(obj_1))) %>%
     colnames()
   
-  if (is.null(omicsData$objNorm)) {
-    updatePrettySwitch(session, paste0(tab, "_lock_norm"), value = F)
-    return(NULL)
-  }
-  
   new_fdata <- obj_1$f_data %>%
     dplyr::left_join(
       dplyr::select(obj_2$f_data, -dplyr::one_of(obj_1_fdata_colnames)),
@@ -987,6 +982,7 @@ load_norm_observers <- function(tab) {
                      
           )
           
+          browser()
           updatePrettySwitch(inputId = paste0(tab, "_lock_norm"), value = F)
           return()
         }
@@ -1000,6 +996,24 @@ load_norm_observers <- function(tab) {
           noconv <- subset_noconv(as.slData(omicsData$objPP))
           conv <- subset_conv(as.slData(omicsData$objPP))
           
+          if(is.null(noconv$f_data)){
+            noconv$f_data <- data.frame(
+              SampleID = colnames(noconv$e_data)[
+                colnames(noconv$e_data) != pmartR::get_edata_cname(noconv)],
+              Temp_col_all = "All"
+            )
+            noconv <- group_designation(noconv, "Temp_col_all")
+            
+            
+            conv$f_data <- data.frame(
+              SampleID = colnames(conv$e_data)[
+                colnames(conv$e_data) != pmartR::get_edata_cname(conv)],
+              Temp_col_all = "All"
+            )
+            conv <- group_designation(conv, "Temp_col_all")
+          } 
+          
+          
           omicsData$objNorm <- check_norm_possible(noconv,
                                              subset_fn = input[[paste0(tab, "_subset_fn")]],
                                              norm_fn = input[[paste0(tab, "_norm_fn")]],
@@ -1010,7 +1024,18 @@ load_norm_observers <- function(tab) {
           
           if(!is.null(conv) && !is.null(noconv) && !identical(noconv, conv)){
             
+            if (is.null(omicsData$objNorm)) {
+              updatePrettySwitch(session, paste0(tab, "_lock_norm"), value = F)
+              return(NULL)
+            }
+            
             omicsData$objNorm <- combine_omicsdata(omicsData$objNorm, conv)
+            
+          }
+          
+          if(is.null(omicsData$objPP$f_data)){
+            
+            omicsData$objNorm$f_data <- NULL
           }
 
           norm_settings[[tab]] <- list(
@@ -1109,9 +1134,11 @@ load_norm_observers <- function(tab) {
       
       drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP))
       
-      req((!is.null(omicsData$objPP)) && 
-            (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn))
-            )
+      req(
+        (!is.null(omicsData$objPP)) && 
+          (is.null(attr(omicsData$objPP,"data_info")$norm_info$norm_fn)) &&
+          !get_data_norm(omicsData$objPP) && AWS
+      )
       
       if (input[[paste0(tab, "_normalize_option")]] %in% 
           c("Global Normalization","SPANS - Proteomics only","No Normalization")) {
@@ -1141,37 +1168,8 @@ load_norm_observers <- function(tab) {
                    "that, please use 'Zero-to-one Scaling'."), type = "info")
           
         }
-
       }
-    })
-
-    # Tab tool tip for normalization sidebar
-    # observeEvent(c(
-    #   input[[paste0(tab, "_lock_norm")]],
-    #   norm_settings[[tab]],
-    #   SPANS_res[[tab]],
-    #   input[[paste0(tab, "_normalize_option")]]
-    # ),
-    # {
-    # 
-    #   req(tab %in% ALL_DATATYPE_NAMES)
-    # 
-    #   # show_add_tooltip(
-    #   #   session,
-    #   #   paste0(tab, "_apply_norm_icon"),
-    #   #   is.null(norm_settings[[tab]]),
-    #   #   "Set parameters and apply normalization"
-    #   # )
-    # 
-    #   show_add_tooltip(
-    #     session,
-    #     paste0(tab, "_spans_norm_icon"),
-    #     is.null(SPANS_res[[tab]]),
-    #     "Run SPANS using 2+ normalization settings"
-    #   )
-    # },
-    # ignoreNULL = FALSE
-    # )
+})
 }
 
 norm_settings <- reactiveValues()
@@ -1910,7 +1908,7 @@ assign_norm_output <- function(tab) {
     output[[paste0(tab, "_normalize_option_UI")]] <- renderUI({
       
       req(!is.null(isolate(omicsData$objPP)))
-      req(is.null(omicsData$objNorm), cancelOutput = T)
+      req(isolate(is.null(omicsData$objNorm)), cancelOutput = T)
       
       UI_elements <- paste0(tab, c(
         "_normalize_option",
@@ -2168,7 +2166,9 @@ assign_norm_output <- function(tab) {
       
       req(!is.null(input[[paste0(tab, "_normalize_option")]]))
       
-      lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = FALSE)
+      bool <- if(is.null(omicsData$objNorm)) FALSE else TRUE
+      
+      lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = bool)
       # preview <- actionButton(paste0(tab, "_preview_normalization"), "Preview")
       
       cond_sup <- input$pick_model_EM %in% models_supervised
