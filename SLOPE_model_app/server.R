@@ -5,7 +5,7 @@ options(shiny.maxRequestSize = 250 * 1024^2,
 
 shinyServer(function(session,input,output){
   omicsData <- reactiveValues(new_edata = NULL, new_fdata = NULL, model = NULL)
-
+  zipped_file <- reactiveValues(fs = NULL)
   # edata upload
   observeEvent(input$upload_edata,ignoreInit = TRUE,{
     req(input$upload_edata)
@@ -19,6 +19,21 @@ shinyServer(function(session,input,output){
       NULL
     })
     omicsData$new_edata <- new_edata
+  })
+  
+  # emeta upload
+  observeEvent(input$upload_emeta,ignoreInit = TRUE,{
+    req(input$upload_emeta)
+    req(!is.null(input$upload_emeta$name))
+    print("File upload event triggered")
+    # read in RDS object
+    new_emeta <- tryCatch({
+      read.csv(input$upload_emeta$datapath)
+    }, error = function(e) {
+      showNotification(paste("Error in reading CSV file:", e$message), type = "error")
+      NULL
+    })
+    omicsData$new_emeta <- new_emeta
   })
   
   # fdata upload
@@ -167,6 +182,49 @@ shinyServer(function(session,input,output){
     )
   })
   
+  output$e_meta_spec_UI <- renderUI({
+    req(!is.null(input$upload_emeta))
+    # req(isTruthy(input$have_emeta) && 
+    #       (input$emeta_upload_done > 0 || 
+    #          input$specify_edata_done > 0 && (input$use_example || AWS)) &&
+    #       !is.null(reactive_dataholder[["e_meta"]]$file))
+    
+    # req(input$data_type_done > 0 && !is.null(input$data_type))
+    
+    #choices <- colnames(reactive_dataholder[["e_meta"]]$file)
+    choices <- colnames(omicsData$new_emeta)
+    choices <- choices[choices != input$e_data_id_col]
+    
+    if(input$data_type %in% c("Label-free", "Isobaric")){
+      text <- "Which column identifies proteins?"
+    } else {
+      text <- "Which column contains information of interest?"
+    }
+    
+    collapseBox(
+      "Specify Biomolecule Information Properties",
+      icon_id = "edata_params_icon",
+      icon = icon("exclamation-sign", lib = "glyphicon"),
+      value = "data_props",
+      collapsed = F,
+      
+      pickerInput(
+        "e_meta_id_col",
+        text,
+        choices = choices,
+        selected = isolate(if(!is.null(input$e_meta_id_col)) input$e_meta_id_col else character(0))
+      ),
+      
+      # div(style="display:inline-block",actionButton("specify_emeta_done", "Done", style="float:right"))
+      
+      
+      fluidRow(
+        column(10, ""),
+        column(2, actionButton("specify_emeta_done", "Done", style="float:right"))
+      )
+    )
+  })
+  
   # create omics data
   observeEvent(input$check_selections_upload, {
     
@@ -174,9 +232,11 @@ shinyServer(function(session,input,output){
     
     edata <- omicsData$new_edata
     fdata <- omicsData$new_fdata
+    emeta <- omicsData$new_emeta
     
     edata_cname <- input$e_data_id_col
     fdata_cname <- input$f_data_id_col
+    emeta_cname <- input$e_meta_id_col
     
     if(is.null(fdata)){
       fdata <- data.frame(SampleID = colnames(edata)[colnames(edata) != edata_cname],
@@ -213,8 +273,8 @@ shinyServer(function(session,input,output){
     od <- tryCatch(
       {
         res <- object_fn(
-          e_data = edata, f_data = fdata,
-          edata_cname = edata_cname, fdata_cname = fdata_cname,
+          e_data = edata, f_data = fdata, e_meta = emeta,
+          edata_cname = edata_cname, fdata_cname = fdata_cname, emeta_cname = emeta_cname,
           data_scale = data_scale, is_normalized = is_normalized
         )
         
@@ -255,7 +315,7 @@ shinyServer(function(session,input,output){
   
   # transformation
   output$transform_picker_UI <- renderUI({
-    
+    req(!is.null(omicsData$obj))
     if(inherits(omicsData$obj, "seqData")){
       # return(
       #   div(
@@ -320,73 +380,346 @@ shinyServer(function(session,input,output){
     
   })
   
-  observeEvent(input$done_tr_box,{
-    req(!is.null(input$transform) && !is.null(input$datascale))
+  observeEvent(input$check_selections_upload,{
+    req(!is.null(omicsData$obj))
     
-    if(input$transform != input$datascale){
-      omicsData$obj_t <- edata_transform(omicsData$obj,data_scale = input$transform)
-    } else {
-      omicsData$obj_t <- omicsData$obj
+    # pipeline
+    omics_processed = omicsData$obj
+    
+    # log2 or otherwise
+    data_scale_info <- attributes(omicsData$rds_model$pp_omics)$data_info$data_scale
+    
+    # this will be used in all scenarios - will need to build this up
+    # more with more filters in the future
+    all_filter_functions <- c("custom_filter","molecule_filter","cv_filter")
+    names(all_filter_functions) <- c("customFilt","moleculeFilt","cvFilt")
+    # imdanova filter()
+    # rmd_filter()
+    
+    # arguments needed for those functions
+    all_filter_requirements <- list(
+      "moleculeFilt" = list("threshold" = NA,method = list("use_groups" = NA,"use_batch" = NA)),
+      "cvFilt" = list("threshold" = NA,method = list("use_groups" = NA)))
+    
+    # get the different filters used in omics object from original model
+    filter_info <- pmartR::get_filters(omicsData$rds_model$norm_omics)
+    filter_types <- unlist(sapply(filter_info,function(x) x['type']))
+    filter_types <- filter_types[filter_types != "customFilt"]
+    
+    # subset to ones present in this specific analysis
+    all_filter_requirements_specific <- all_filter_requirements[which(names(all_filter_requirements) %in% filter_types)]
+    
+    # iterate through the specific filters for this dataset
+    for(i in 1:length(all_filter_requirements_specific)){
+      
+      # molecule filter
+      if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
+        # which filter in original matches this ?
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
+        # add in attributes
+        all_filter_requirements_specific[[i]]$threshold = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[i]]$method$use_groups = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$method$use_groups
+        all_filter_requirements_specific[[i]]$method$use_batch = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$method$use_batch
+      }
+      # cv filter
+      if(names(all_filter_requirements_specific)[i] == "cvFilt"){
+        # which filter in original matches this ?
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
+        # add in attributes
+        all_filter_requirements_specific[[i]]$threshold = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[i]]$method$use_groups = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$method$use_groups
+      }
     }
     
-    # place holder for real stuff
-    # but just convert every missing value to 0 just to have something in place
-    omicsData$obj_t$e_data[is.na(omicsData$obj_t$e_data)] <- 0
+    # normalization
+    norm_method <- attr(omicsData$rds_model$norm_omics,"data_info")$norm_info$norm_fn
+
+    # rollup
+    # if we have pepdata in normalized object but prodata in pp omics object
+    # this means that we have undergone protein rollup
+    # so we need to rollup as well
+    rollup_method = "Not Applicable"
+    if("proData" %in% class(omicsData$rds_model$pp_omics) & "pepData" %in% class(omicsData$rds_model$norm_omics)){
+      rollup_method = attr(omicsData$rds_model$pp_omics,"pro_quant_info")$method
+    }
     
+    omicsData$pp_info <- list("scale" = data_scale_info,
+                              "normalization" = norm_method,
+                              "filters" = all_filter_requirements_specific,
+                              "rollup" = rollup_method)
+    
+    # add in group designation if needed for downstream filters
+    if(!is.null(attr(omicsData$rds_model$norm_omics,"group_DF"))){
+      # need check that main effect column is in both original and new dataset
+      omicsData$obj <- pmartR::group_designation(omicsData$obj,
+                                                   main_effects = attributes(attr(omicsData$rds_model$norm_omics,"group_DF"))$main_effects)
+    }
+    
+    # convert to log2 scale immediately
+    if(data_scale_info != attributes(omicsData$obj)$data_info$data_scale){
+      omicsData$obj_scaled = pmartR::edata_transform(omicsData$obj,data_scale_info)
+    } else {
+      omicsData$obj_scaled = omicsData$obj
+    }
+  })
+
+  
+  observeEvent(input$confirm_filters,{
+    req(omicsData$obj_scaled)
+    # pipeline
+    omics_processed = omicsData$obj_scaled
+    
+    # this will be used in all scenarios - will need to build this up
+    # more with more filters in the future
+    all_filter_functions <- c("custom_filter","molecule_filter","cv_filter")
+    names(all_filter_functions) <- c("customFilt","moleculeFilt","cvFilt")
+    # imdanova filter()
+    # rmd_filter()
+    
+    # arguments needed for those functions
+    all_filter_requirements <- list(
+      "moleculeFilt" = list("threshold" = NA,method = list("use_groups" = NA,"use_batch" = NA)),
+      "cvFilt" = list("threshold" = NA,method = list("use_groups" = NA)))
+    
+    # get the different filters used in omics object from original model
+    filter_info <- pmartR::get_filters(omicsData$rds_model$norm_omics)
+    filter_types <- unlist(sapply(filter_info,function(x) x['type']))
+    filter_types <- filter_types[filter_types != "customFilt"]
+    
+    # subset to ones present in this specific analysis
+    all_filter_requirements_specific <- all_filter_requirements[which(names(all_filter_requirements) %in% filter_types)]
+    
+    # iterate through the specific filters for this dataset
+    for(i in 1:length(all_filter_requirements_specific)){
+      
+      # molecule filter
+      if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
+        # which filter in original matches this ?
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
+        # add in attributes
+        all_filter_requirements_specific[[i]]$threshold = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[i]]$method$use_groups = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$method$use_groups
+        all_filter_requirements_specific[[i]]$method$use_batch = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$method$use_batch
+        
+        filtObj = pmartR::molecule_filter(omics_processed,all_filter_requirements_specific[[i]]$method$use_groups,all_filter_requirements_specific[[i]]$method$use_batch)
+        omics_processed = pmartR::applyFilt(filtObj,omics_processed,min_num = all_filter_requirements_specific[[i]]$threshold)
+      }
+      # cv filter
+      if(names(all_filter_requirements_specific)[i] == "cvFilt"){
+        # which filter in original matches this ?
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
+        # add in attributes
+        all_filter_requirements_specific[[i]]$threshold = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[i]]$method$use_groups = attr(omicsData$rds_model$norm_omics,"filters")[[og_filter_id]]$method$use_groups
+        
+        filtObj = pmartR::cv_filter(omics_processed,all_filter_requirements_specific[[i]]$method$use_groups)
+        omics_processed = pmartR::applyFilt(filtObj,omics_processed,cv_threshold = all_filter_requirements_specific[[i]]$threshold)
+      }
+    }
+    
+    # convert to normalization immediately
+    if((attributes(omicsData$obj)$data_info$norm_info$is_normalized == FALSE)|
+       (!is.null(attributes(omicsData$obj)$data_info$norm_info$norm_fn) && attributes(omicsData$obj)$data_info$norm_info$norm_fn != norm_method)){
+      omicsData$obj_norm <- pmartR::normalize_zero_one_scaling(omics_processed)
+    } else {
+      omicsData$obj_norm <- omics_processed
+    }
+    
+    # convert to sl object
+    omics_sl <- as.slData(omicsData$obj_norm)
+    omicsData$obj_sl <- omics_sl
+    
+    # rollup
+    # if we have pepdata in normalized object but prodata in pp omics object
+    # this means that we have undergone protein rollup
+    # so we need to rollup as well
+    if("proData" %in% class(omicsData$rds_model$pp_omics) & "pepData" %in% class(omicsData$rds_model$norm_omics)){
+      rollup_method = attr(omicsData$rds_model$pp_omics,"pro_quant_info")$method
+      omicsData$obj_sl_rollup <- slopeR::protein_rollup(omics_sl,method = rollup_method)
+    }
   })
   
-  # normalize data
-  observeEvent(input$normalize_01_scaling,{
-    req(!is.null(omicsData$obj_t))
-    norm_object <- pmartR:::zero_one_scale(omicsData$obj_t$e_data,
-                                           get_edata_cname(omicsData$obj_t))
-    omicsData$obj_norm <- omicsData$obj_t
-    omicsData$obj_norm$e_data <- norm_object$transf_data
+  output$protein_rollup_pp_UI <- renderUI({
+    req(omicsData$obj_sl)
+    
+    if(!is.null(omicsData$obj_sl_rollup)){
+      collapseBox(
+        div(
+          "Rollup",
+        ),
+        value = "rollup",
+        collapsed = F,
+        plotOutput("transformation_rollup_plot")
+      )
+    }
   })
+
+  
+  
+  observeEvent(input$done_molecule_filter,{
+    req(!is.null(omicsData$obj))
+    
+    molfilt_1 <- molecule_filter(omicsData$obj)
+    omicsData$obj_mol <- applyFilt(molfilt_1, omicsData = omicsData$obj,min_num = 2)
+  })
+  
+  
+  
+  
   
   # run model
   observeEvent(input$run_model,{
     
-    req(!is.null(omicsData$obj_norm))
-    req(!is.null(omicsData$rds_model))
+    req(!is.null(omicsData$obj_sl)|!is.null(omicsData$obj_sl_rollup))
+    req(!is.null(omicsData$rds_model$full_model))
     
-    new_info <- omicsData$obj_norm$e_data[,-which(colnames(omicsData$obj_norm$e_data) == pmartR::get_edata_cname(omicsData$obj_norm))] %>%
+    # if the data is rolled up use that version, otherwise use OG slope version
+    if(!is.null(omicsData$obj_sl_rollup)){
+      omicsNewdata = omicsData$obj_sl_rollup
+    } else {
+      omicsNewdata = omicsData$obj_sl
+    }
+    
+    orig_names <- attr(omicsData$rds_model$full_model,"feature_info")
+    # remove columns not found in training data
+    pro_edata <- omicsNewdata$e_data
+    pro_edata <- pro_edata[unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)]) %in% orig_names$names_orig,]
+    # find which are found in the OG version but not in the new data
+    # we will want
+    in_og_not_new <- orig_names$names_orig[!orig_names$names_orig %in% unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)])]
+    
+    in_og_not_new_df <- data.frame(emetname = in_og_not_new,
+                                   matrix(0,ncol = nrow(omicsNewdata$f_data),nrow = length(in_og_not_new)))
+    emetCol = which(colnames(in_og_not_new_df) == "emetname")
+    colnames(in_og_not_new_df)[emetCol] <- pmartR::get_emeta_cname(omicsNewdata)
+    colnames(in_og_not_new_df)[-emetCol] <- colnames(pro_edata)[-emetCol]
+    # add into old dataset
+    pro_edata <- dplyr::bind_rows(pro_edata,in_og_not_new_df)
+    
+    # arrange them to match the original features
+    pro_edata <- pro_edata[match(orig_names$names_orig,unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)])),]
+    
+    # now set up new data to be ran with predictions
+    new_info <- pro_edata[,-which(colnames(pro_edata) == pmartR::get_edata_cname(omicsNewdata))] %>%
       t() %>% data.frame()
     names(new_info) <- paste0("feature_",seq(from = 1, to = ncol(new_info)))
     
-    unique_outcomes <- unlist(unique(omicsData$rds_model$pre$mold$outcomes))
-
+    # unique levels in the model
+    unique_outcomes <- unlist(unique(omicsData$rds_model$full_model$pre$mold$outcomes))
+    
     contains_exact_values <- function(column, values) {
       all(sort(column[!is.na(column)]) %in% (values))
     }
     
     # Apply the function to each column and find the matching column name
-    matching_column <- colnames(omicsData$obj_norm$f_data)[apply(omicsData$obj_norm$f_data, 2, contains_exact_values, values = unique_outcomes)][1]
+    matching_column <- colnames(omicsNewdata$f_data)[apply(omicsNewdata$f_data, 2, contains_exact_values, values = unique_outcomes)][1]
     
-    fdata_sub <- omicsData$obj_norm$f_data %>%
-      dplyr::select(!!as.symbol(pmartR::get_fdata_cname(omicsData$obj_norm)),
+    fdata_sub <- omicsNewdata$f_data %>%
+      dplyr::select(!!as.symbol(pmartR::get_fdata_cname(omicsNewdata)),
                     !!as.symbol(matching_column))
     
     new_info <- new_info %>%
-      tibble::rownames_to_column(var = pmartR::get_fdata_cname(omicsData$obj_norm)) %>%
-      dplyr::left_join(fdata_sub,by = pmartR::get_fdata_cname(omicsData$obj_norm))
+      tibble::rownames_to_column(var = pmartR::get_fdata_cname(omicsNewdata)) %>%
+      dplyr::left_join(fdata_sub,by = pmartR::get_fdata_cname(omicsNewdata))
     
     new_info <- new_info %>%
       dplyr::rename(response = !!as.symbol(matching_column)) %>%
-      tibble::column_to_rownames(var = pmartR::get_fdata_cname(omicsData$obj_norm))
-    omicsData$predictions <- data.frame(predict(omicsData$rds_model,new_data = new_info)) %>%
-      dplyr::rename(Predictions = `.pred_class`)
+      tibble::column_to_rownames(var = pmartR::get_fdata_cname(omicsNewdata))
+    new_info[is.na(new_info)] <- 0
+    
+    
+    # run predictions
+    prediction_test_df <- tibble(response = factor(unlist(omicsNewdata$f_data[matching_column]),levels = unique_outcomes),
+                                 .pred_class = unlist(predict(omicsData$rds_model$full_model$fit$fit,new_data = new_info))) %>%
+      dplyr::bind_cols(data.frame(predict(omicsData$rds_model$full_model$fit$fit,new_data = new_info,type = "prob"))) %>%
+      dplyr::mutate(`__SAMPNAMES__` = unlist(omicsNewdata$f_data[pmartR::get_fdata_cname(omicsNewdata)]))
+    # full model already an slRes object
+    full_model_test <- omicsData$rds_model$full_model
+    full_model_train <- omicsData$rds_model$full_model
+    
+    attributes(full_model_train)$prediction_test <- attributes(full_model_train)$prediction_train
+    # update it to match OOB estimates
+    #attributes(full_model_train)$prediction_test$.pred_Mock <- full_model_train$fit$fit$fit$votes[,1]
+    #attributes(full_model_train)$prediction_test$.pred_RhCMV <- full_model_train$fit$fit$fit$votes[,2]
+    #attributes(full_model_train)$prediction_test$.pred_class <- ifelse(attributes(full_model_train)$prediction_test$.pred_Mock > 0.5,"Mock","RhCMV")
+    
+    # update test dataset too
+    attributes(full_model_test)$prediction_test <- prediction_test_df
+  
+    omicsData$obj_predictions <- full_model_test
   })
   
-  output$predict_plot <- renderPlot({
-    req(!is.null(omicsData$predictions))
-    pred_plot = ggplot(omicsData$predictions,aes(x = Predictions)) +
-      geom_bar() + 
-      theme_bw() + 
-      labs(title = "Predictions", y = "Count")
-    pred_plot
+  # log 2 plot
+  output$transformation_scaling_plot <- renderPlot({
+    req(!is.null(omicsData$obj_scaled))
+    if(!is.null(attributes(omicsData$obj_scaled)$group_DF)){
+      plot(omicsData$obj_scaled, use_VizSampNames = T,color_by = "Group")
+    } else {
+      plot(omicsData$obj_scaled, use_VizSampNames = T)
+    }
   })
   
+  # norm plot
+  output$transformation_norm_plot <- renderPlot({
+    req(!is.null(omicsData$obj_norm))
+    if(!is.null(attributes(omicsData$obj_norm)$group_DF)){
+      plot(omicsData$obj_norm, use_VizSampNames = T,color_by = "Group")
+    } else {
+      plot(omicsData$obj_norm, use_VizSampNames = T)
+    }
+  })
+  
+  # rollup plot
+  output$transformation_rollup_plot <- renderPlot({
+    req(!is.null(omicsData$obj_sl_rollup))
+    if(!is.null(attributes(omicsData$obj_sl_rollup)$group_DF)){
+      plot(omicsData$obj_sl_rollup, use_VizSampNames = T,color_by = "Group")
+    } else {
+      plot(omicsData$obj_sl_rollup, use_VizSampNames = T)
+    }
+  })
+  
+  output$predict_plot_ROC <- renderPlot({
+    req(!is.null(omicsData$obj_predictions))
+    plot(omicsData$obj_predictions, plotType = "roc_curve")
+  })
+  output$predict_plot_predictBar <- renderPlot({
+    req(!is.null(omicsData$obj_predictions))
+    plot(omicsData$obj_predictions, plotType = "prediction_bar")
+  })
+  output$predict_plot_confusionHeatmap <- renderPlot({
+    req(!is.null(omicsData$obj_predictions))
+    plot(omicsData$obj_predictions, plotType = "confusion_heatmap")
+  })
+  output$predict_plot_confidenceScatter <- renderPlot({
+    req(!is.null(omicsData$obj_predictions))
+    plot(omicsData$obj_predictions, plotType = "confidence_scatter")
+  })
+  
+  output$download_processed_data <- downloadHandler(
+    filename = function() {
+      paste0("SLOPE_output_", gsub("( |:|-)", "_", Sys.time()), ".zip")
+    },
+    content = function(fname) {
+      file.copy(zipped_file$fs, fname)
+    },
+    contentType = "application/zip"
+  )
+  
+  # download tab
+  output$Download_button <- renderUI({
+    button <- downloadButton(
+      "download_processed_data",
+      tags$b("Download Bundle")
+    )
+    
+    div(
+      id = "js_downloadbutton",
+      style = "margin-left:4px;float:left",
+      class = "grey_button",
+      button
+    )
+  })
   # BROWSER
   observeEvent(input$Browser,{
     browser()
