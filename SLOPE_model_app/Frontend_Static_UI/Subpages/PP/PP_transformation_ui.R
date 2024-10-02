@@ -1,37 +1,51 @@
 transformation_UI <- function() {
   div(
     column(
-      4,
+      12,
       collapseBoxGroup(
-        id = "transform_collapse", multiple = FALSE, open = c("transformation"),
-        # biomolecule filters
+        id = "preprocessing_collapse", multiple = TRUE,
         collapseBox(
-          
           div(
-            "Transformation and Scaling",
-            hidden(div(id = "ok_data_filters", style = "color:orange;float:right", icon("ok", lib = "glyphicon")))
+            "Backfilled",
+          ),
+          value = "backfill",
+          collapsed = F
+        ),
+        # molecule filters
+        collapseBox(
+          div(
+            "Transformation",
           ),
           value = "transformation",
           collapsed = F,
-          uiOutput("transform_picker_UI"),
-          
-          actionButton("done_tr_box", "Done")
-        )
-      ), # parent collapse
-      
-      hidden(actionButton("complete_transform", "Confirm Selections"))
-      
-    ), # column 4
-    column(
-      8,
-      collapseBoxGroup(
-        id = "transform_plots_preview", multiple = TRUE, open = c("transform_preview"),
-        collapseBox("Visualize transformation and data scaling",
-                    collapsed = F,
-                    value = "transform_preview",
-                    uiOutput("transform_preview_plot_render")
-                    #plotlyOutput("transform_preview_plot")
-        )             )
-    ) # column 8
+          plotOutput("transformation_scaling_plot")
+          #plotOutput("transformation_norm_plot")
+          #uiOutput("molecule_filter_UI"),
+          #actionButton("check_processing_steps","Check Pre-Processing Steps"),
+          #actionButton("confirm_processing_steps","Confirm Pre-Processing Steps")
+        ),
+        collapseBox(
+          div(
+            "Filters",
+            checkboxInput("apply_filters","Apply Filters?"),
+            actionButton("confirm_filters","Confirm Filters")
+          ),
+          value = "filters",
+          collapsed = F
+          #actionButton("apply_filters","Apply Filters"),
+          #uiOutput("transformation_filters_UI")
+        ),
+        collapseBox(
+          div(
+            "Normalization",
+          ),
+          value = "normalization",
+          collapsed = F,
+          plotOutput("transformation_norm_plot")
+          #uiOutput("transformation_normalization_UI")
+        ),
+        uiOutput("protein_rollup_pp_UI")
+      )
+    )
   )
 }

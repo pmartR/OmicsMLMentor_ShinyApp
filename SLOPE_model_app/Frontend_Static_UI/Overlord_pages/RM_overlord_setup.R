@@ -6,7 +6,16 @@ RM_tab_overlord <- function(){
         actionButton("run_model","Run Model")
       ),
       div(
-        plotOutput("predict_plot")
-      )
-    )
-}
+        tabsetPanel(
+          tabPanel("ROC Curve",
+                   plotOutput("predict_plot_ROC")),
+          tabPanel("Prediction Bar",
+                   plotOutput("predict_plot_predictBar")),
+          tabPanel("Confusion Heatmap",
+                   plotOutput("predict_plot_confusionHeatmap")),
+          tabPanel("Confidence Scatter",
+                   plotOutput("predict_plot_confidenceScatter"))
+          )
+        )
+  )
+  }
