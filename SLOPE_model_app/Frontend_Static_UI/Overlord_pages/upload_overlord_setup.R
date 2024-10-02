@@ -16,6 +16,10 @@ upload_tab_overlord <- function(){
         uiOutput("e_data_spec_UI")
       ),
       div(
+        fileInput("upload_emeta",label = "Upload Meta Information"),
+        uiOutput("e_meta_spec_UI")
+      ),
+      div(
         fileInput("upload_fdata",label = "Upload Sample Information"),
         uiOutput("f_meta_spec_UI")
       ),
