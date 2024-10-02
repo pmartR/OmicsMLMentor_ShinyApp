@@ -63,9 +63,16 @@ observeEvent(input$makezipfile, {
   model_export <- list()
   # if we have include model set to be TRUE then we include the model
   if((!is.null(input$include_model)) && (input$include_model == TRUE)){
-    model_export = list(full_model = omicsData$objRM)
+    model_export = list(full_model = list(full_model = omicsData$objRM,
+                                          norm_omics = omicsData$objNorm,
+                                          pp_omics = omicsData$objPP))
     if(!is.null(omicsData$objRM_reduced)){
-      model_export = list(full_model = omicsData$objRM,reduced_model = omicsData$objRM_reduced)
+      model_export = list(full_model = list(full_model = omicsData$objRM,
+                                            norm_omics = omicsData$objNorm,
+                                            pp_omics = omicsData$objPP),
+                          reduced_model = list(reduced_model = omicsData$objRM_reduced,
+                                               norm_omics = omicsData$objNorm,
+                                               pp_omics = omicsData$objPP))
     }
   }
   

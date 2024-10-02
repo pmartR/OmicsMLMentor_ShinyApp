@@ -25,7 +25,8 @@ ui <- function(request) {
       tabPanel("Welcome",welcome_tab()),
       tabPanel("Upload",upload_tab_overlord()),
       tabPanel("Pre-processing",preprocessing_tab_overlord()),
-      tabPanel("Run Model", RM_tab_overlord())
+      tabPanel("Run Model", RM_tab_overlord()),
+      tabPanel("Downloads", downloads_tab_overlord())
     ),
     # end Navbarpage
     actionButton("Browser","whats wrong")
