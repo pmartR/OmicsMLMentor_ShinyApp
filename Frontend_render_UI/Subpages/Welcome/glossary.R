@@ -1,6 +1,7 @@
 
 img_get <- function(abbr) switch(
   abbr,
+  # Algorithms
   lsvm = "model_images/linear_svm.png",
   psvm = "model_images/poly_svm.png",
   rsvm = "model_images/radial_svm.png",
@@ -18,7 +19,28 @@ img_get <- function(abbr) switch(
   pca = "model_images/pca.png",
   gbtree = "model_images/gbtree.png",
   ppca = "model_images/pca.png",
-  umap = "model_images/umap.png"
+  umap = "model_images/umap.png",
+  # Statistical Methods
+  cross_validation = "statistical_methods_images/cross_validation.png",
+  hyperparameter_tuning = "statistical_methods_images/hyperparameter_tuning.png",
+  imputation = "statistical_methods_images/imputation.png",
+  rrollup = "statistical_methods_images/rollup.png",
+  zrollup = "statistical_methods_images/rollup.png",
+  qrollup = "statistical_methods_images/rollup.png",
+  rmd_filter = "statistical_methods_images/rmd_filter.png",
+  spans = "statistical_methods_images/normalization.png",
+  zero_one_normalization = "statistical_methods_images/normalization.png",
+  median_normalization = "statistical_methods_images/median.png",
+  mean_normalization = "statistical_methods_images/mean.png",
+  zscore = "statistical_methods_images/zscore.png",
+  mad = "statistical_methods_images/median.png",
+  all_b = "statistical_methods_images/biomolecule_data.jpg",
+  complete_b = "statistical_methods_images/biomolecule_data.jpg",
+  los = "statistical_methods_images/quantile_dist.png",
+  ppp = "statistical_methods_images/biomolecule_data.jpg",
+  rip = "statistical_methods_images/kruskal_wallis.png",
+  ppp_rip = "statistical_methods_images/kruskal_wallis.png",
+  backtransform = "statistical_methods_images/normalization.png"
 )
 
 svm_text <- paste0(
@@ -31,12 +53,9 @@ svm_text <- paste0(
 
 text_get <- function(abbr) switch(
   abbr,
-  lsvm = paste0(svm_text, 
-                "Linear SVM search for a flat plane that seperates the two experimental conditions best."),
-  psvm = paste0(svm_text, 
-                "Polynomial SVM search for a curved plane that seperates the two experimental conditions best."),
-  rsvm = paste0(svm_text, 
-                "Radial SVM search for a circle-like plane that seperates the two experimental conditions best."),
+  lsvm = paste0(svm_text, "Linear SVM search for a flat plane that seperates the two experimental conditions best."),
+  psvm = paste0(svm_text, "Polynomial SVM search for a curved plane that seperates the two experimental conditions best."),
+  rsvm = paste0(svm_text, "Radial SVM search for a circle-like plane that seperates the two experimental conditions best."),
   multi = paste0("Multinomial logistic models are used to predict the ",
                  "probability that a sample belongs to one or more specific experimental conditions.",
                  " An example would be determining if a patient is healthy or",
@@ -71,8 +90,9 @@ text_get <- function(abbr) switch(
                " However, unlike LDA, which assumes that each class shares the same covariance matrix, QDA allows each class to have its own unique covariance matrix.",
                " This flexibility enables QDA to capture more complex, non-linear boundaries between classes, making it suitable for datasets where the relationship between features and class labels is not linear.",
                " Despite its increased complexity and higher computational cost compared to LDA, QDA can be very powerful when the assumptions about the distinct covariance structures hold true."),
-  
-  pls = paste(),
+  pls = paste("Partial Least Squares (PLS) regression is a statistical method that combines features of principal component analysis and multiple regression. It is primarily used to analyze data with many highly collinear predictors.",
+              "PLS regression reduces the predictors to a smaller set of uncorrelated components and performs linear regression on these components instead of the original data. This method is particularly useful when the predictors exhibit multicollinearity and when the number of predictors exceeds the number of observations,", 
+              "which would cause traditional multiple regression methods to fail or produce unreliable results."),
   gbtree = paste0("The Gradient Boosted Trees algorithm is an ensemble machine learning technique that builds a series of decision trees sequentially, where each tree aims to correct the errors of the previous ones.",
                   " This is achieved by optimizing a loss function using gradient descent, where each new tree is fitted to the negative gradient of the loss function with respect to the current model's predictions.",
                   " By combining the predictions of multiple trees, GBT creates a powerful predictive model that captures complex patterns and interactions in the data."),
@@ -93,7 +113,53 @@ text_get <- function(abbr) switch(
   umap = paste0("Uniform Manifold Approximation and Projection (UMAP) is a dimensionality reduction algorithm that is particularly effective for visualizing high-dimensional data.",
                 " UMAP works by constructing a high-dimensional graph of the data points and then optimizing a low-dimensional representation that preserves the structure of the original data.",
                 " Unlike other methods, UMAP excels in capturing both global and local structures, making it highly effective for tasks like clustering and visualization.",
-                " Its ability to handle large datasets efficiently and produce insightful low-dimensional embeddings has made UMAP a popular model.")
+                " Its ability to handle large datasets efficiently and produce insightful low-dimensional embeddings has made UMAP a popular model."),
+  cross_validation = paste("Cross-validation is a technique used in machine learning to assess the performance of a model.",
+                            "Unlike traditional validation methods, which may use a single train-test split, cross-validation involves dividing the dataset into multiple subsets or \"folds.\"",
+                            "The model is trained on a combination of these folds and validated on the remaining fold. This process is repeated multiple times, each time with a different fold being used for validation.",
+                            "The results are then averaged to produce a more reliable estimate of the model's performance. This method helps in mitigating overfitting and provides a better understanding of how the model will perform on unseen data."),
+  hyperparameter_tuning = paste("Hyperparameter tuning in machine learning is the process of optimizing the parameters that govern the learning process and architecture of a model.",
+                                "Unlike model parameters, which are learned from the training data, hyperparameters are set before the training process begins and can significantly influence the model's performance.",
+                                "Different models have different hyperparameters. Tuning these hyperparameters involves selecting the best set of values from a predefined range, often using techniques such as grid search, random search, or more advanced methods.",
+                                "The goal in tuning is to find the optimal combination that maximizes model performance on a validation set, thereby improving its generalizability and effectiveness on unseen data. Hyperparameter tuning is crucial in achieving a well-performing machine learning model."),
+  imputation = paste("Imputation is a statistical technique used to handle missing or incomplete data in datasets. The main objective of imputation is to provide plausible values in place of missing data, allowing for a more accurate analysis.", 
+                     "This process helps to maintain the integrity of the dataset and ensures that the results are not skewed due to missing information. Common imputation methods include simple techniques like replacing missing values with the mean, median, or mode of the available data, as well as more complex approaches like regression imputation or using another machine learning model.",
+                     "By addressing the issue of missing data through imputation, researchers can ensure that their conclusions are based on comprehensive and robust datasets."),
+  rrollup = paste0("A reference-based summarization of peptide data used to estimate protein abundances. For a peptides assigned to a protein, this method utilizes",
+    " the abundance of the peptide with the most observations as a 'reference' to scale all other",
+    " peptide abundances mapped to the same protein. Where a tie in the number of observations occurs, the peptide with the greatest median abundance is",
+    " selected as the reference. After scaling, either the mean or median (user-selected) of assigned peptides in each sample is used as the final protein quantification."),
+  qrollup = paste0("A quantile-based summarization of peptide data is performed to estimate protein abundances. For all peptides assigned to a protein, this method only",
+    " keeps peptides whose mean was a above a user-specified threshold for all peptides assigned to that protein, essentially keeping on average the most abundant ",
+    "peptides per protein. After filtering, either the mean or median (user-selected) of the remaining peptides aundances is used as the final protein quantification."),
+  zrollup = paste0("A z-score based summarization of peptide data is performed to estimate protein abundances. For a peptides assigned to a protein, this method calculates ",
+    " the median and standard deviation of all peptide abundances mapped to the same protein. The peptides medians are substracted",
+    " from their respective peptide abundances in each sample, then divided by the respective standard deviation. After this scaling, either the mean or median (user-selected) of assigned peptides in each sample is used as the final protein quantification."),
+  spans = paste0("An automated process that is used to assess the best normalization method for proteomic data. This method iterates through several possible normalizations",
+    ", and where a normalization was found to not induce biases based on experimentatal group (evaluated via a distribution of location and/or scaling methods across ", 
+    "experimental groups), the normalization is assessed for conservation of differentially expressed biomolecules before and after normalization. Normalizations with the best results recieves higher numeric scores."),
+  rmd_filter = paste0("A robust Mahalanobis distance (rMd) of non-parametric data properties is computed to identify possible outlier samples. A robust principal components",
+    " analysis is computed on data properties such as correlation and skewness to generate eigenvectors for each metric, then the rMd is calculated to determine",
+    "how divergent a sample is compared to the mean of the data within its experimental group."),
+  zero_one_normalization = paste("Zero-to-one normalization, also known as min-max scaling, is a data preprocessing technique used to transform the values of numerical data into a common scale, typically within the range of 0 to 1.", 
+                                 "This is achieved by subtracting the minimum value of the dataset and then dividing by the range (maximum value minus minimum value). Missing values map to zero in this process "),
+  median_normalization = paste0("Median normalization is performed to reduce variation unrelated to the experimental conditions of interest. The median of all peptides in the",
+    " specified subset are caculated for each sample, then used to scale all values for each respective sample."),
+  mean_normalization = paste0("Mean normalization is performed to reduce variation unrelated to the experimental conditions of interest. The median of all peptides in the",
+                              " specified subset are caculated for each sample, then used to scale all values for each respective sample."),
+  zscore = paste0("Z-score transformation is performed to reduce variation unrelated to the experimental conditions of interest. Each feature is scaled by subtracting",
+    " the mean of the feature subset specified for normalization and then dividing the result by the standard deviation (SD) of the feature",
+    " subset specified for normalization to get the normalized data."),
+  mad = paste0("Median absolute deviation (MAD) transformation is performed to reduce variation unrelated to the experimental conditions of interest. Each feature is scaled by ",
+    "subtracting the median of the feature subset specified for normalization and then dividing the result by the median absolute deviation (MAD) of the",
+    " feature subset specified for normalization to get the normalized data."),
+  all_b = "All biomolecules are used in metrics to scale/transform the data.",
+  complete_b = "All biomolecules without missing observations are used in metrics to scale/transform the data.",
+  los = "Biomolecules associated with the top L proportion of highest absolute abundance, where L was between 0 and 1, are used in metrics to scale/transform the data.",
+  ppp = "Biomolecules present in at or above a user-specified porpotion of samples are used in metrics to scale/transform the data.",
+  rip = "All biomolecules without missing observations that had a Kruskal-Wallis on group membership p-value greater than a user-defined threshold are used in metrics to scale/transform the data.",
+  ppp_rip = "Biomolecules present in at or above a user-specified porpotion of samples that had a Kruskal-Wallis on group membership p-value greater than a user-defined threshold are used in metrics to scale/transform the data.",
+  backtransform = "Normalized values are backtransformed such that the normalized values were on a similar scale as the orginal unnormalized values. All values are backtransformed by a global metric taken across all samples prior to normalization depending on the type of normalization."
 )
 
 map(names(models_long_name), function(x){
@@ -155,3 +221,51 @@ map(names(models_long_name), function(x){
   
 })
 
+
+## Statistical Methods
+map(names(statistical_methods), function(x){
+  abbr <- statistical_methods[[x]]
+  output[[paste0("SM_", abbr)]] <- renderUI({
+    
+    status <- "primary"
+    label <- NULL
+    
+    title <- x
+    if(nchar(title) < 30 ) title <- paste0(title, "<br/><br/>")
+    
+    box(
+      title = HTML(title),
+      width = 4,
+      height = "300px",
+      status = status,
+      label = label,
+      
+      div(
+        style = "height: 100%",
+        flipBox(
+          id = paste0("statistical_method_", abbr),
+          width = 12,
+          front = div(
+            
+            fluidRow(
+              column(12,
+                     img(src = img_get(abbr), width = "95%", height = "250px")
+              ))),
+          back = div(
+            style = "height: 100%",
+            fluidRow(
+              style = "height: 100%",
+              column(
+                12,
+                style = "height: 100%",
+                div(
+                  style = "height: 100%; overflow-y: auto",
+                  text_get(abbr)
+                )
+              )))
+        )
+      )
+    )
+  })
+  
+})
