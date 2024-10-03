@@ -2208,7 +2208,7 @@ assign_norm_output <- function(tab) {
       
       if ( # !cond_loess &&
         (!cond_zero_one && !cond_global) ||
-        (cond_global && !cond_bias && cond_sup)) {
+        (!cond_bias && cond_sup)) {
         lock <- disabled(lock)
       } else {
         tooltip <- hidden(tooltip)
