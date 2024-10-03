@@ -37,6 +37,20 @@ glossary_popup <- function(){
         
         tabPanel("Statistical methods",
                  wellPanel(
+                   strong("Click graph for more information"),
+                   hr(),
+                   div(
+                     style = 'height:500px; overflow-y: scroll',
+                     br(),
+                     fluidRow(
+                       map(statistical_methods, 
+                           function(x) {
+                             uiOutput(paste0("SM_", x))
+                           })
+                             
+                     )
+                     
+                   )
                  )
         )
       ))
