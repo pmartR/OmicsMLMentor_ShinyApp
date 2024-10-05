@@ -54,7 +54,7 @@ text <- paste0(text, " samples and ")
 text <- paste0(text, length(unique(params$omicsData$obj$e_data[[params$user_inputs$upload$edata_idcol]])))
 text <- paste0(text, " biomolecules designated by the **")
 text <- paste0(text, params$user_inputs$upload$edata_idcol)
-text <- paste0(text, "** column. The data was imported as ")
+text <- paste0(text, "** column. The data were imported as ")
 text <- paste0(text, switch(params$user_inputs$upload$edata_datascale, 
                             abundance = "raw intensity",
                             log2 = "log base 2 scaled",
