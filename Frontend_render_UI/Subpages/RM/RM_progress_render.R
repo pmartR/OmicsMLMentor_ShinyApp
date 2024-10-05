@@ -23,17 +23,14 @@ output$RM_progress_summary_table <- renderDT({
   }
   
   auc_by_level <- p %>%
+    dplyr::group_by(.level) %>%
     dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity),
                   sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
     dplyr::summarise(sum(spc_diff*sens_avg, na.rm=T))
   
-  if (length(auc_by_level) > 1) {
-    names(auc_by_level)[1] <- "Group"
-    names(auc_by_level)[2] <- "AUC of ROC"
-  } else {
-    names(auc_by_level)[1] <- "AUC of ROC"
-  }
-  
+  names(auc_by_level)[1] <- "Group"
+  names(auc_by_level)[2] <- "AUC of ROC"
+
   auc_by_level
 })
 
