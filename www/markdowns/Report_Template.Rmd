@@ -266,18 +266,20 @@ if (is.null(
 }
 ```
 
-Biomolecule Missingness: \
+`r if (params$user_inputs$qc$missingdata_kept != "Yes") "Biomolecule Missingness: \\"`
 
-```{r QC Missingness}
-if (is.null(
-  params$plots$table$QC__missing_features
-  ))
-{
-  "Plot was not generated in the SLOPE session."
-} else {
-  suppressWarnings(
+```{r QC Missingness Plot}
+if (params$user_inputs$qc$missingdata_kept != "Yes") {
+  if (is.null(
     params$plots$table$QC__missing_features
-  )
+    ))
+  {
+    "Plot was not generated in the SLOPE session."
+  } else {
+    suppressWarnings(
+      params$plots$table$QC__missing_features
+    )
+  }
 }
 ```
 \
