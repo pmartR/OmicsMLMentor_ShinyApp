@@ -5,7 +5,8 @@ observeEvent(input$check_selections_upload, {
   fdata <- reactive_dataholder$f_data$file
   emeta <- reactive_dataholder$e_meta$file
   
-  data_type <- reactive_dataholder$model$datatype
+  data_type <- class(reactive_dataholder$model$model$norm_omics)
+  
   if(!is.null(input$pick_dt)){
     data_type <- input$pick_dt
   }
@@ -27,15 +28,13 @@ observeEvent(input$check_selections_upload, {
   ## this will need to switch to with naming convention updates
   fn_use <- switch(
     data_type,
-    "Positive" = "as.lipidData", 
-    "Negative" = "as.lipidData", 
-    "Label-free" = "as.pepData",
-    "Isobaric" = "as.isobaricpepData", 
-    "Protein" = "as.proData", 
-    "ProteinTMT" = "as.proData", 
-    "GC-MS" = "as.metabData", 
-    "NMR" = "as.nmrData",
-    "RNA-seq" = "as.seqData"
+    "lipidData" = "as.lipidData", 
+    "pepData" = "as.pepData",
+    "isobaricpepData" = "as.isobaricpepData", 
+    "proData" = "as.proData",
+    "metabData" = "as.metabData", 
+    "nmrData" = "as.nmrData",
+    "seqData" = "as.seqData"
   )
   
   object_fn <- get(fn_use)

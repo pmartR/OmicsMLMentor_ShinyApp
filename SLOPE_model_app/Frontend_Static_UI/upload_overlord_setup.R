@@ -25,9 +25,9 @@ upload_tab <- function(){
           
         ),
         
-        actionButton(inputId = "check_selections_upload", 
+        disabled(actionButton(inputId = "check_selections_upload", 
                      label = "Confirm selections"
-        )
+        ))
         ),
       
       column(

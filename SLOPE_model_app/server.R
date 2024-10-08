@@ -81,7 +81,8 @@ shinyServer(function(session,input,output){
     
   })
 
-  observeEvent(input$confirm_filters,{
+  
+  observeEvent(input$confirm_filters, {
     req(omicsData$obj_scaled)
     # pipeline
     omics_processed = omicsData$obj_scaled

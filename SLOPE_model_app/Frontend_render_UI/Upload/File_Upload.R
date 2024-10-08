@@ -64,13 +64,9 @@ output[["model_upload_UI"]] <- renderUI({
 
 output[["e_data_upload_UI"]] <- renderUI({
   
-  if(!is.null(reactive_dataholder$model)){
-    reactive_dataholder$model$datatype <- "Protein"  ### TEMP
-  }
+  dt <- class(reactive_dataholder$model$model$norm_omics)
   
-  reactive_dataholder$model$datatype <- "Protein"  ### TEMP
-  
-  fileinput_UI("e_data_upload", "e_data", is_RNA = reactive_dataholder$model$datatype == "RNA-seq")
+  fileinput_UI("e_data_upload", "e_data", is_RNA = dt == "RNA-seq")
 })
 
 output[["f_data_upload_UI"]] <- renderUI({
@@ -79,22 +75,16 @@ output[["f_data_upload_UI"]] <- renderUI({
         input$use_fdata == "Yes"
       )
   
-  if(!is.null(reactive_dataholder$model)){
-    reactive_dataholder$model$datatype <- "Protein"  ### TEMP
-  }
+  dt <- class(reactive_dataholder$model$model$norm_omics)
   
-  reactive_dataholder$model$datatype <- "Protein" ### TEMP
-  
-  fileinput_UI("f_data_upload", "f_data", is_RNA = reactive_dataholder$model$datatype == "RNA-seq")
+  fileinput_UI("f_data_upload", "f_data", is_RNA = dt == "RNA-seq")
 })
 
 output[["e_meta_upload_UI"]] <- renderUI({
   
-  if(!is.null(reactive_dataholder$model)){
-    reactive_dataholder$model$datatype <- "Protein"  ### TEMP
-  }
+  dt <- class(reactive_dataholder$model$model$norm_omics)
   
-  fileinput_UI("e_meta_upload", "e_meta", is_RNA = reactive_dataholder$model$datatype == "RNA-seq")
+  fileinput_UI("e_meta_upload", "e_meta", is_RNA = dt == "RNA-seq")
 })
 
 
@@ -138,12 +128,11 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
     req(label %in% input_data_types())
     req(!is.null(input[[paste0(label, "_file")]]$name))
     
-    
-    ##### TEMP #####
-    reactive_dataholder$model$datatype <- "Protein"
+    dt <- class(reactive_dataholder$model$model$norm_omics)
     
     tablabel <- switch(label,
-                       e_data = ifelse(reactive_dataholder$model$datatype == "RNA-seq", 
+                       e_data = ifelse(
+                         dt == "seqData", 
                                        "Expression data",
                                        "Abundance data"),
                        f_data = "Sample Information",
@@ -171,22 +160,25 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
       if(label == "model"){
         
         tryCatch({
+          
           reactive_dataholder[[label]]$model <- readRDS(
             input[[paste0(label, "_file")]]$datapath)
         
-        responses <- unique(reactive_dataholder[[label]]$model$pre$mold$outcomes[[1]])
-        og_train_size <- reactive_dataholder[[label]]$model$pre$mold$blueprint$recipe$tr_info[[1]]
-        n_predictors <- ncol(reactive_dataholder[[label]]$model$pre$mold$blueprint$ptypes$predictors)
+          model <- reactive_dataholder[[label]]$model$full_model
+          
+        responses <- unique(model$pre$mold$outcomes[[1]])
+        og_train_size <- model$pre$mold$blueprint$recipe$tr_info[[1]]
+        n_predictors <- ncol(model$pre$mold$blueprint$ptypes$predictors)
         
         
-        hyperparams <- reactive_dataholder[[label]]$model$fit$actions$model$spec$args
+        hyperparams <- model$fit$actions$model$spec$args
         hyperparams <- map_int(hyperparams, rlang::quo_get_expr)
         hp_df <- as.data.frame(hyperparams)
         colnames(hp_df) <- "Metrics"
         row.names(hp_df) <- paste0("Hyperparameter ", row.names(hp_df))
         
-        performance <- reactive_dataholder[[label]]$model$fit$fit$fit$confusion
-        per_df <- signif(as.data.frame(performance)[3])
+        performance <- as.data.frame(model$fit$fit$fit$confusion)
+        per_df <- signif(performance[ncol(performance)])
         colnames(per_df) <- "Metrics"
         row.names(per_df) <- paste0(row.names(per_df), " class error")
         
@@ -242,14 +234,20 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
   })
   
   ## If AWS, load it up
-  observeEvent(c(AWS, reactive_dataholder$model$datatype, input$data_select, input_data_types()), 
+  observeEvent(c(AWS, 
+                 reactive_dataholder$model$model, 
+                 input$data_select, 
+                 input_data_types()
+                 ), 
                ignoreInit = FALSE, {
                  
                  req(AWS)
-                 req(!is.null(reactive_dataholder$model$datatype))
+                 req(!is.null(reactive_dataholder$model$model))
+                 
+                 dt <- class(reactive_dataholder$model$model$norm_omics)
                  
                  tablabel <- switch(label,
-                                    e_data = ifelse(reactive_dataholder$model$datatype == "RNA-seq",
+                                    e_data = ifelse(dt == "seqData",
                                                     "Expression data",
                                                     "Abundance data"),
                                     f_data = "Sample Information",
