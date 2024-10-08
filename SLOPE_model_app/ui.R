@@ -35,10 +35,10 @@ ui <- function(request) {
       title = tags$span(tags$img(src = "slope_icon.png", style = "max-height:100%"), ""),
       id = "top_page",
       
-      tabPanel("Welcome",welcome_tab()),
-      tabPanel("Upload",upload_tab_overlord()),
-      tabPanel("Pre-processing",preprocessing_tab_overlord()),
-      tabPanel("Run Model", RM_tab_overlord()),
+      # tabPanel("Welcome",welcome_tab()),
+      tabPanel("Upload",upload_tab()),
+      tabPanel("Pre-processing", preprocess_UI()),
+      tabPanel("Run Model", RM_tab()),
       tabPanel("Downloads", downloads_tab_overlord())
 
     ),
@@ -46,6 +46,9 @@ ui <- function(request) {
     
     div(style="position:fixed;z-index:9999;bottom:10px;right:10px;",
         actionButton("Browser","whats wrong")
-    )
+    ),
+    
+    shinybusy::add_busy_spinner(position = "bottom-left")
+    
   )
 } # shinyUI + shinyjs tagList

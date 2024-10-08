@@ -3,7 +3,6 @@
 # Includes:
 ## Uploading files
 ## Loading example files
-## Disable clear for example data
 ## Clearing loaded files
 ## Generating preview datatables
 
@@ -40,7 +39,8 @@ fileinput_UI <- function(id, label = "e_data", is_RNA) {
                                      "Expression data .csv",
                                      "Abundance data .csv"),
                      f_data = "Sample Information .csv",
-                     e_meta = "Biomolecule information .csv"
+                     e_meta = "Biomolecule information .csv",
+                     model = "Model .RDS"
   )
   
   tagList(
@@ -56,15 +56,45 @@ fileinput_UI <- function(id, label = "e_data", is_RNA) {
 
 
 output[["model_upload_UI"]] <- renderUI({
-  fileinput_UI("model_upload", "model", is_RNA = F)
+  
+  fileinput_UI("model_upload", "model", 
+               is_RNA = F ## Doesn't matter yet
+               )
 })
 
 output[["e_data_upload_UI"]] <- renderUI({
-  fileinput_UI("e_data_upload", "e_data", is_RNA = F)
+  
+  if(!is.null(reactive_dataholder$model)){
+    reactive_dataholder$model$datatype <- "Protein"  ### TEMP
+  }
+  
+  reactive_dataholder$model$datatype <- "Protein"  ### TEMP
+  
+  fileinput_UI("e_data_upload", "e_data", is_RNA = reactive_dataholder$model$datatype == "RNA-seq")
 })
 
 output[["f_data_upload_UI"]] <- renderUI({
-  fileinput_UI("f_data_upload", "f_data", is_RNA = F)
+  
+  req(!is.null(input$use_fdata) &&
+        input$use_fdata == "Yes"
+      )
+  
+  if(!is.null(reactive_dataholder$model)){
+    reactive_dataholder$model$datatype <- "Protein"  ### TEMP
+  }
+  
+  reactive_dataholder$model$datatype <- "Protein" ### TEMP
+  
+  fileinput_UI("f_data_upload", "f_data", is_RNA = reactive_dataholder$model$datatype == "RNA-seq")
+})
+
+output[["e_meta_upload_UI"]] <- renderUI({
+  
+  if(!is.null(reactive_dataholder$model)){
+    reactive_dataholder$model$datatype <- "Protein"  ### TEMP
+  }
+  
+  fileinput_UI("e_meta_upload", "e_meta", is_RNA = reactive_dataholder$model$datatype == "RNA-seq")
 })
 
 
@@ -77,7 +107,7 @@ input_data_types <- reactive({
   all_input_data_types <- c(
     all_input_data_types,
     if (!is.null(input$use_fdata) &&
-        input$use_fdata) 
+        input$use_fdata == "Yes") 
       "f_data" 
     else 
       NULL
@@ -118,7 +148,7 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
                                        "Abundance data"),
                        f_data = "Sample Information",
                        e_meta = "Biomolecule information",
-                       model = "Predictive model (RDS file)"
+                       model = "Predictive model"
     )
     
     ## Remove prior
@@ -129,14 +159,69 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
       removeTab(preview_tabset, "Expression data", session = session)
     } else if(tablabel == "Expression data"){
       removeTab(preview_tabset, "Abundance data", session = session)
+    }  else if(tablabel == "Predictive model"){
+      removeTab(preview_tabset, "Predictive model", session = session)
     }
     
     data_select_val <- input_data_types()
     if(label %in% data_select_val){
       
       reactive_dataholder[[label]]$filename <- input[[paste0(label, "_file")]]$name
-      reactive_dataholder[[label]]$file <- default_factor(
-        read.csv(input[[paste0(label, "_file")]]$datapath))
+      
+      if(label == "model"){
+        
+        tryCatch({
+          reactive_dataholder[[label]]$model <- readRDS(
+            input[[paste0(label, "_file")]]$datapath)
+        
+        responses <- unique(reactive_dataholder[[label]]$model$pre$mold$outcomes[[1]])
+        og_train_size <- reactive_dataholder[[label]]$model$pre$mold$blueprint$recipe$tr_info[[1]]
+        n_predictors <- ncol(reactive_dataholder[[label]]$model$pre$mold$blueprint$ptypes$predictors)
+        
+        
+        hyperparams <- reactive_dataholder[[label]]$model$fit$actions$model$spec$args
+        hyperparams <- map_int(hyperparams, rlang::quo_get_expr)
+        hp_df <- as.data.frame(hyperparams)
+        colnames(hp_df) <- "Metrics"
+        row.names(hp_df) <- paste0("Hyperparameter ", row.names(hp_df))
+        
+        performance <- reactive_dataholder[[label]]$model$fit$fit$fit$confusion
+        per_df <- signif(as.data.frame(performance)[3])
+        colnames(per_df) <- "Metrics"
+        row.names(per_df) <- paste0(row.names(per_df), " class error")
+        
+        
+        df <- data.frame(
+          "Metrics" = c(
+            "Protein", ####### TEMP
+            toString(responses),
+            og_train_size,
+            n_predictors
+          ) )
+        
+        row.names(df) <- c(
+          "Datatype scope",
+          "Predicted outcomes", 
+          "Number of samples trained on",
+          "Number of predictors used")
+        
+        
+        
+        reactive_dataholder[[label]]$file <- rbind(df, hp_df, per_df)
+        
+        }, error = function(e){
+          shinyalert(title = "Something went wrong!", text = e$message)
+        })
+        
+        
+      } else {
+        tryCatch({
+          reactive_dataholder[[label]]$file <- default_factor(
+            read.csv(input[[paste0(label, "_file")]]$datapath))
+        }, error = function(e){
+          shinyalert(title = "Something went wrong!", text = e$message)
+        })
+      }
       
       appendTab(preview_tabset, 
                 select = T,
@@ -206,7 +291,8 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
     reset(paste0(label, "_file"))
     
     tablabel <- switch(label,
-                       e_data = ifelse(reactive_dataholder$model$datatype == "RNA-seq", 
+                       e_data = ifelse(
+                         reactive_dataholder$model$datatype == "RNA-seq", 
                                        "Expression data",
                                        "Abundance data"),
                        f_data = "Sample Information",
