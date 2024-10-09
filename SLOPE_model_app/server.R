@@ -313,6 +313,39 @@ shinyServer(function(session,input,output){
     
   })
   
+  output$transformation_backfill_text <- renderText({
+    req(!is.null(omicsData$rds_model) && !is.null(omicsData$obj))
+    num_in_og <- length(attributes(omicsData$rds_model$full_model)$feature_info$names_orig)
+    num_in_both <- sum(unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$rds_model$full_model)$feature_info$names_orig)
+    num_in_og_not_new <- num_in_og - num_in_both
+    num_in_just_new <- sum(!unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$rds_model$full_model)$feature_info$names_orig)
+    
+    paste0("The original model had ", num_in_og, " distinct molecules. Of those molecules, ", num_in_og_not_new,
+           " were not identified in the new dataset and will need to be backfilled as 0s for the model to run.", 
+           " Additionally, ", num_in_just_new, " molecules were identified in only the new dataset and therefore ",
+           "will be removed prior to running the model.")
+    
+  })
+  
+  output$transformation_backfill_plot <- renderPlot({
+    req(!is.null(omicsData$rds_model) && !is.null(omicsData$obj))
+    num_in_og <- length(attributes(omicsData$rds_model$full_model)$feature_info$names_orig)
+    num_in_both <- sum(unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$rds_model$full_model)$feature_info$names_orig)
+    num_in_og_not_new <- num_in_og - num_in_both
+    num_in_just_new <- sum(!unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$rds_model$full_model)$feature_info$names_orig)
+    
+    backfill_plot <- data.frame(Dataset = factor(c("Only Original","Both", "Only New"),levels = c("Only Original","Both", "Only New")),
+               Value = c(num_in_og_not_new,num_in_both,num_in_just_new)) %>%
+      ggplot(aes(x = Dataset, y = Value,fill = Dataset)) + 
+      geom_col() +
+      geom_text(aes(label = paste0("n = ",Value),y = Value + 200)) +
+      theme_bw() + 
+      labs(y = "Number of Distinct Proteins Identified",x = "") + 
+      guides(fill = "none")
+    backfill_plot
+    
+  })
+  
   # transformation
   output$transform_picker_UI <- renderUI({
     req(!is.null(omicsData$obj))
