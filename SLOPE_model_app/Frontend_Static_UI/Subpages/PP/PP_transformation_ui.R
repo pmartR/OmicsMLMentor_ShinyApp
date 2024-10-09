@@ -9,7 +9,9 @@ transformation_UI <- function() {
             "Backfilled",
           ),
           value = "backfill",
-          collapsed = F
+          collapsed = F,
+          textOutput("transformation_backfill_text"),
+          plotOutput("transformation_backfill_plot")
         ),
         # molecule filters
         collapseBox(
