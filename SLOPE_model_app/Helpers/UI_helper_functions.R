@@ -1,4 +1,4 @@
-#'@description Convenience function to assign a class to a tab in a shiny 
+#'@description Convenience function to assign a class to a tab in a shiny
 #'navbar.
 #'
 #'@param name The name of the navbar tab, given by the \code{value} argument in
@@ -36,7 +36,7 @@ collapseBoxGroup <- function(..., id = NULL) {
 }
 
 collapseBox <- function(titletext, value, ..., collapsed = TRUE,
-                        icon = NULL, icon_id = NULL, icon_style = NULL, 
+                        icon = NULL, icon_id = NULL, icon_style = NULL,
                         icon_hidden = TRUE, icon_tooltip_text = NULL) {
   div(
     id = value,
@@ -76,7 +76,7 @@ collapseBox <- function(titletext, value, ..., collapsed = TRUE,
 
 updateBoxCollapse <- function(session, id, open = NULL, close = NULL, toggle = NULL) {
   id <- if (id != "") paste0("#", id) else "*"
-  
+
   if (is.logical(open) || is.logical(close)) {
     runjs(sprintf("let e=$('%s').find('.box-body[value=\"%s\"]');if (e.css('overflow')=='hidden') {e.parent().toggleClass('collapsed-box');}", id, e))
     runjs(sprintf("let e=$('%s').find('.box-body[value=\"%s\"]');if (%se.parent().hasClass('collapsed-box')) {e.parent().toggleBox();}", id, e, isTRUE(open) ? "" : "!"))
@@ -85,15 +85,15 @@ updateBoxCollapse <- function(session, id, open = NULL, close = NULL, toggle = N
     for (e in c(open, close, toggle)) {
       runjs(sprintf("let e=$('%s').find('.box-body[data-panel=\"%s\"]');if (e.css('overflow')=='hidden') {e.parent().toggleClass('collapsed-box');}", id, e))
     }
-    
+
     for (e in open) {
       runjs(sprintf("let e=$('%s').find('.box-body[data-panel=\"%s\"]');if (e.parent().hasClass('collapsed-box')) {e.parent().toggleBox();}", id, e))
     }
-    
+
     for (e in close) {
       runjs(sprintf("let e=$('%s').find('.box-body[data-panel=\"%s\"]');if (!e.parent().hasClass('collapsed-box')) {e.parent().toggleBox();}", id, e))
     }
-    
+
     for (e in toggle) {
       runjs(sprintf("$('%s').find('.box-body[data-panel=\"%s\"]').parent().toggleBox();", id, e))
     }
@@ -141,7 +141,7 @@ show_add_tooltip <- function(session, id, condition, tooltip_text,
 # disable/enable sub-elements of a div and display a tooltip based on condition.
 ### NOTE:  THIS CANNOT ADD A TOOLTIP TO THE SAME ELEMENT IT DISABLES
 ### DISABLED ELEMENTS DO NOT LIKE HAVING TOOLTIPS ADDED TO THEM FOR SOME REASON.
-togglestate_add_tooltip <- function(session, id, condition, tooltip_text, 
+togglestate_add_tooltip <- function(session, id, condition, tooltip_text,
                                     selector=NULL, position="bottom") {
   toggleState(id = id, condition = condition, selector = selector)
   toggleTooltip(session, id, !condition, tooltip_text, selector = selector, position= position)
@@ -217,19 +217,19 @@ get_inputs <- function(session, names, prefix = "", postfix = "") {
 # note: if the prompter package gets updated, this may break
 addPrompter <- function(session, id, title, placement = "bottom", type = NULL, size = NULL, rounded = TRUE) {
   attributes <- paste0(" hint--", placement)
-  
+
   if (!is.null(type)) {
     attributes <- paste0(attributes, " hint--", type)
   }
-  
+
   if (!is.null(size)) {
     attributes <- paste0(attributes, " hint--", size)
   }
-  
+
   if (rounded) {
     attributes <- paste0(attributes, " hint--", "rounded")
   }
-  
+
   session$sendCustomMessage(type = "addPrompter", list(target = id, attributes = attributes, label = title))
 }
 
@@ -240,23 +240,23 @@ generate_warning_tooltip <- function(id, color = "red", icon = "exclamation-sign
 
 
 LVmol_filt <- function(omicsData){
-  
+
   df <- omicsData$e_data
   rm_col <- which(colnames(df) %in% pmartR::get_edata_cname(omicsData))
-  
+
   df <- df[-rm_col]
-  
+
   density(apply(df, 1, var, na.rm = T))
 }
 
 
 LVSam_filt <- function(omicsData){
-  
+
   df <- omicsData$e_data
   rm_col <- which(colnames(df) %in% pmartR::get_edata_cname(omicsData))
-  
+
   df <- df[-rm_col]
-  
+
   density(apply(df, 2, var, na.rm = T))
 }
 
@@ -265,26 +265,26 @@ LVSam_filt <- function(omicsData){
 # https://rpubs.com/TX-YXL/662586
 
 dendro_data_k <- function(hc, k = NULL, h = NULL, custom_color = NULL) {
-  
+
   hcdata    <-  ggdendro::dendro_data(hc, type = "rectangle")
   seg       <-  hcdata$segments
-  
+
   if(!is.null(k)){
     labclust  <-  cutree(hc, k = k)[hc$order]
   } else if(!is.null(h)){
     labclust  <-  cutree(hc, h = h)[hc$order]
   }
-  
+
   if(!is.null(custom_color)){
     labclust <- custom_color[names(labclust)]
   }
-  
+
   k <- max(as.numeric(labclust))
-  
+
   segclust  <-  rep(0L, nrow(seg))
   heights   <-  sort(hc$height, decreasing = TRUE)
   height    <-  mean(c(heights[k], heights[k - 1L]), na.rm = TRUE)
-  
+
   for (i in 1:k) {
     xi      <-  hcdata$labels$x[labclust == i]
     consecutive <- split(xi, cumsum(c(1, diff(xi) != 1)))
@@ -296,21 +296,21 @@ dendro_data_k <- function(hc, k = NULL, h = NULL, custom_color = NULL) {
       segclust[idx] <- i
     }
   }
-  
+
   idx                    <-  which(segclust == 0L)
   segclust[idx]          <-  segclust[idx + 1L]
   hcdata$segments$clust  <-  segclust
   hcdata$segments$line   <-  as.integer(segclust < 1L)
   hcdata$labels$clust    <-  labclust
-  
+
   hcdata
 }
 ###################################cluster
 set_labels_params <- function(nbLabels) {
-  
+
   angle       <-  rep(0, nbLabels) + 90
   hjust       <-  1
-  
+
   list(angle = angle, hjust = hjust, vjust = 0.5)
 }
 
@@ -319,10 +319,10 @@ plot_ggdendro_multi <- function(hcdata,
                                 label.size  = 3,
                                 nudge.label = 0.01,
                                 expand.y    = 0.1) {
-  
+
   ybreaks   <- pretty(segment(hcdata)$y, n = 5)
   ymax      <- max(segment(hcdata)$y)
-  
+
   ## branches
   p <- ggplot() +
     geom_segment(data         =  segment(hcdata),
@@ -335,19 +335,19 @@ plot_ggdendro_multi <- function(hcdata,
                  lineend      =  "round",
                  show.legend  =  FALSE,
                  size         =  branch.size)
-  
+
   ## orientation
   p <- p + scale_x_continuous(breaks = NULL)
   p <- p + scale_y_continuous(breaks = ybreaks)
   nudge.label <- -(nudge.label)
-  
-  
+
+
   # labels
   labelParams <- set_labels_params(nrow(hcdata$labels))
   hcdata$labels$angle <- labelParams$angle
-  
-  
-  
+
+
+
   p <- p +
     geom_text(data        =  label(hcdata),
               aes(x       =  x,
@@ -360,12 +360,12 @@ plot_ggdendro_multi <- function(hcdata,
               nudge_y     =  ymax * nudge.label,
               size        =  label.size,
               show.legend =  FALSE)
-  
+
   # colors and limits
-  
+
   ylim <- -round(ymax * expand.y, 1)
   p    <- p + expand_limits(y = ylim)
-  
+
   p + labs(x = "Samples", y = "Height") + theme_bw()
 }
 
