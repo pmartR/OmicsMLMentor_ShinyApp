@@ -2,23 +2,34 @@
 observeEvent(input$check_selections_upload, {
   
   edata <- reactive_dataholder$e_data$file
-  fdata <- reactive_dataholder$f_data$file
-  emeta <- reactive_dataholder$e_meta$file
-  
-  data_type <- class(reactive_dataholder$model$model$norm_omics)
-  
-  if(!is.null(input$pick_dt)){
-    data_type <- input$pick_dt
-  }
-  
   edata_cname <- input$e_data_id_col
-  fdata_cname <- input$f_data_id_col
-  emeta_cname <- input$e_meta_id_col
+  
+  if(input$use_fdata == "Yes"){
+    fdata <- reactive_dataholder$f_data$file
+    fdata_cname <- input$f_data_id_col
+  } else {
+    fdata <- NULL
+    fdata_cname <- NULL
+  }
   
   if(is.null(fdata)){
     fdata <- data.frame(SampleID = colnames(edata)[colnames(edata) != edata_cname],
                         Col1 = colnames(edata)[colnames(edata) != edata_cname])
     fdata_cname <- "SampleID"
+  }
+  
+  if(input$have_emeta == "Yes"){
+    emeta <- reactive_dataholder$e_meta$file
+    emeta_cname <- input$e_meta_id_col
+  } else {
+    emeta <- NULL
+    emeta_cname <- NULL
+  }
+  
+  data_type <- class(reactive_dataholder$model$model$norm_omics)
+  
+  if(!is.null(input$pick_dt)){
+    data_type <- input$pick_dt
   }
   
   data_scale <- input$datascale
@@ -85,5 +96,6 @@ observeEvent(input$check_selections_upload, {
   # })
   
   omicsData$obj <-  od
+  omicsData$model <- reactive_dataholder$model$model
   
 })

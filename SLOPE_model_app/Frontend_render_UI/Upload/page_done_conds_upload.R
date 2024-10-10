@@ -144,7 +144,7 @@ observeEvent(
 
 
 ## Confirm triggers the make data
-observeEvent(omicsData$obj, {
+observeEvent(omicsData$obj, once = T, {
   
   shinyalert(title = "Success!", "Continue to next page or review results?",
              showCancelButton = T, closeOnEsc = F, 

@@ -15,6 +15,8 @@ omicsData <- reactiveValues(obj = NULL,
                             objRM = NULL
 )
 
+zipped_file <- reactiveValues(fs = NULL)
+
 ## Peptide object specific variables
 pepQCData <- reactiveValues(
   objQCPro = NULL,
