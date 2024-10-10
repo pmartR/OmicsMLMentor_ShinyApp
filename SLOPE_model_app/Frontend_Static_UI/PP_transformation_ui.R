@@ -1,0 +1,54 @@
+preprocess_UI <- function() {
+  div(
+    column(
+      12,
+      collapseBoxGroup(
+        id = "preprocess_collapse", multiple = FALSE, open = c("transformation"),
+        # biomolecule filters
+        collapseBox(
+          div(
+            "Backfilled",
+          ),
+          value = "backfill",
+          collapsed = F,
+          textOutput("transformation_backfill_text"),
+          plotOutput("transformation_backfill_plot")
+        ),
+        # molecule filters
+        collapseBox(
+          div(
+            "Transformation",
+          ),
+          value = "transformation",
+          collapsed = F,
+          plotOutput("transformation_scaling_plot")
+          #plotOutput("transformation_norm_plot")
+          #uiOutput("molecule_filter_UI"),
+          #actionButton("check_processing_steps","Check Pre-Processing Steps"),
+          #actionButton("confirm_processing_steps","Confirm Pre-Processing Steps")
+        ),
+        collapseBox(
+          div(
+            "Filters",
+            checkboxInput("apply_filters","Apply Filters?"),
+            actionButton("confirm_filters","Confirm Filters")
+          ),
+          value = "filters",
+          collapsed = F
+          #actionButton("apply_filters","Apply Filters"),
+          #uiOutput("transformation_filters_UI")
+        ),
+        collapseBox(
+          div(
+            "Normalization",
+          ),
+          value = "normalization",
+          collapsed = F,
+          plotOutput("transformation_norm_plot")
+          #uiOutput("transformation_normalization_UI")
+        ),
+        uiOutput("protein_rollup_pp_UI")
+      )
+    )
+)
+}
