@@ -291,15 +291,20 @@ if (params$user_inputs$qc$missingdata_kept != "Yes") {
 ```{r Model Set-Up}
 text <- "Columns "
 text <- paste0(text, fixcomma(params$user_inputs$msu$tracked_cols))
-text <- paste0(text, " were selected to be tracked in the application, of which ")
+text <- paste0(text, " of the sample information were selected to be tracked in the application, of which ")
 text <- paste0(text, fixcomma(params$user_inputs$msu$categorical_cols))
 text <- paste0(text, " were marked as categorical. For model selection, ")
 text <- paste0(text, str_to_lower(params$user_inputs$msu$model_type))
 text <- paste0(text, " models were explored, with ")
 text <- paste0(text, str_to_lower(params$user_inputs$msu$model_priority))
-text <- paste0(text, " being the priority. The chosen model was ")
+text <- paste0(text, " being the priority.")
+if (str_to_lower(params$user_inputs$msu$model_type) == "supervised")
+{
+  text <- paste0(text, " The **", params$user_inputs$msu$response_var, "** column of the sample information was selected to be the response variable.")
+}
+text <- paste0(text, " The chosen model was **")
 text <- paste0(text, params$user_inputs$msu$model_selected)
-text <- paste0(text, " and was the #")
+text <- paste0(text, "** and was the #")
 text <- paste0(text, params$user_inputs$msu$model_selected_index)
 text <- paste0(text, " model recommended by Expert Mentor.")
 ```
@@ -572,28 +577,47 @@ if (!is.null(params$plots$table$PP__rollup)) {
 ## Run Model
 
 ```{r Run Model}
-if (params$user_inputs$msu$model_type == "Supervised") {
-text <- paste0("A ", params$user_inputs$msu$model_selected, " model was created with the purpose of running on ")
+if (str_to_lower(params$user_inputs$msu$model_type) == "supervised") {
+text <- paste0("A ", params$user_inputs$msu$model_selected, " model predicting the ")
+text <- paste0(text, params$user_inputs$msu$response_var, " value was created with the purpose of running on ")
 text <- paste0(text, switch(params$user_inputs$rm$model_scope,
                             "Current Data" = "the uploaded dataset only",
                             "the uploaded dataset and future datasets"), ". ")
-text <- paste0(text, "Hyperparameter values were sourced from ", switch(params$user_inputs$rm$hyperparam_source, "Default" = paste0("default values used for training ", params$user_inputs$msu$model_selected, " models"), paste0(str_to_lower(params$user_inputs$rm$hyperparam_source), " values")), ". \\\n")
+text <- paste0(text, "Hyperparameter values were sourced from ")
+if (params$user_inputs$rm$hyperparam_source == "Default")
+  text <- paste0(text, "default values used for training ", params$user_inputs$msu$model_selected, " models")
+else {
+  text <- paste0(text, str_to_lower(params$user_inputs$rm$hyperparam_source), " values")
+}
+text <- paste0(text, ". \\\n")
   text <- paste0(text, "The model was assessed using ", 
                  switch(
                         params$user_inputs$rm$subset_method,
                         "K-fold" = paste0(params$user_inputs$rm$nfolds, "-fold"),
                         "leave-one-out"
                  ),
-          " cross-validation")
-text <- paste0(text, ". ", paste0(
-        ifelse(params$user_inputs$rm$vi_choose == "value", "Features with an importance value above ", "The top "),
-        params$user_inputs$rm$vi_value,
-        " ",
-        switch(params$user_inputs$rm$vi_choose,
-                value = "",
-                count = " features",
-                percent = " percent of features")
-      ), " were used to create a reduced model.")
+          " cross-validation. ")
+  if (!is.null(params$plots$table$RM__model_eval__reduced__roc_curve))
+  {
+    text <- paste0(text, 
+          ifelse(params$user_inputs$rm$vi_choose == "value", "Features with an importance value above ", "The top "),
+          params$user_inputs$rm$vi_value,
+          " ",
+          switch(params$user_inputs$rm$vi_choose,
+                  value = "",
+                  count = " features",
+                  percent = " percent of features"),
+          " were used to create a reduced model.")
+  }
+} else {
+  text <- paste0("A ", params$user_inputs$msu$model_selected, " model was created ")
+  text <- paste0(text, "using hyperparameter values were sourced from ")
+  if (params$user_inputs$rm$hyperparam_source == "Default")
+    text <- paste0(text, "default values used for training ", params$user_inputs$msu$model_selected, " models")
+  else {
+    text <- paste0(text, str_to_lower(params$user_inputs$rm$hyperparam_source), " values")
+  }
+  text <- paste0(text, ". \\\n")
 }
 ```
 

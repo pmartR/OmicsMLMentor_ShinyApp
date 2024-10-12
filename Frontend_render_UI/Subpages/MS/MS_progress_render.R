@@ -10,6 +10,7 @@ output$MSetup_progress_next_steps <- renderUI({
   user_inputs$msu <- list(
     tracked_cols = paste(input$f_data_track, collapse = ", "),
     categorical_cols = paste(input$f_data_cats, collapse = ", "),
+    response_var = input$f_data_response_picker,
     model_type = str_to_title(input$ag_prompts),
     model_priority = ifelse(
       is.null(input$ag_prompts_supervised),
