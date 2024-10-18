@@ -546,7 +546,14 @@ if (params$user_inputs$pp$norm_method != "No Normalization") {
 
 ```{r Normalized Boxplots}
 if (params$user_inputs$pp$norm_method != "No Normalization") {
+  if (is.null(
   params$plots$table$PP__normalization__post
+  ))
+{
+  "Plot was not generated in the SLOPE session."
+} else {
+  params$plots$table$PP__normalization__post
+}
 }
 ```
 
