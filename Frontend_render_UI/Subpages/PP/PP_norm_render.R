@@ -981,8 +981,7 @@ load_norm_observers <- function(tab) {
                      }
                      
           )
-          
-          browser()
+
           updatePrettySwitch(inputId = paste0(tab, "_lock_norm"), value = F)
           return()
         }
@@ -2166,9 +2165,9 @@ assign_norm_output <- function(tab) {
       
       req(!is.null(input[[paste0(tab, "_normalize_option")]]))
       
-      bool <- if(is.null(omicsData$objNorm)) FALSE else TRUE
+      norm_applied <- if(is.null(omicsData$objNorm)) FALSE else TRUE
       
-      lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = bool)
+      lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = norm_applied)
       # preview <- actionButton(paste0(tab, "_preview_normalization"), "Preview")
       
       cond_sup <- input$pick_model_EM %in% models_supervised

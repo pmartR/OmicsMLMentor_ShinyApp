@@ -2102,8 +2102,6 @@ map(c("imputefilt", "NZfilt", "cvfilt", "molfilt",
       
       isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
       isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-      filter_obj <- filters[[tabname]][[filter_tag]]
       
       p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
                       settings))
