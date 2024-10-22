@@ -539,11 +539,12 @@ unsupervised_tab <- function() {
             value = "select_sl",
             
             div(
-              "Selected model summary",
-              uiOutput("model_summary")
+              "Selected model summary"
             ),
             
-            div(),
+            div(
+              uiOutput("model_summary")
+            ),
             hr(),
             numericInput(
               "the_seed",
@@ -604,6 +605,7 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
+                br(),
                 uiOutput("unsup_plot_type_UI"),
                 br(),
                   withSpinner(plotOutput("structure_plot")),
@@ -733,7 +735,8 @@ observeEvent(input$run_sl, {
       cvMethod = cvMethod,
       nFolds = nFolds,
       pTest = ptest,
-      return_cv = T
+      return_cv = T,
+      seed = input$the_seed
     )
     
     list_args <- c(list_args, custom_args)
@@ -789,7 +792,8 @@ observeEvent(input$run_sl, {
                                                 ## Not supported at the moment
                                                 #,
                                                 cut_height = cut_height,
-                                                linkage_method = linkage_method
+                                                linkage_method = linkage_method,
+                                                seed = input$the_seed
       )
 
     } else {
@@ -806,7 +810,7 @@ observeEvent(input$run_sl, {
         args[['num_comp']] = input$ppca_num_comp
       }
       
-      
+      set.seed(input$the_seed)
       omicsData$objRM <- do.call(
         slopeR:::embed_unsup,
         args
