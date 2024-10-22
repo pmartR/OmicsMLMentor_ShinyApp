@@ -14,7 +14,7 @@ output$Upload_progress_next_steps <- renderUI({
       tags$li("Reference Normalization"),
       tags$li("Single Observation Biomolecule Removal"),
       tags$li("Outlier Detection"),
-      tags$li("Data Missingness Handling")
+      tags$li("Data Incomplete Detection Handling")
     )
   )
 })

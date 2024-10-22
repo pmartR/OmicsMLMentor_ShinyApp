@@ -46,7 +46,7 @@ plot_table_current <- reactiveValues(
     QC__rmd_overall = "Outlier plot: All",
     QC__rmd_outliers = "Outlier plot: Selected",
     QC__missing_samples = "Missingness by sample",
-    QC__missing_features = "Missingness handling thresholds",
+    QC__missing_features = "Incomplete detection handling thresholds",
     
     PP__transform = "Transformed boxplots",
     # PP__filters__* added via code

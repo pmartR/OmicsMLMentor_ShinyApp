@@ -13,7 +13,7 @@ output$missing_options_UI <- renderUI({
   
   pickerInput(
     "missing_options",
-    "Preview biomolecule detection handling:",
+    "Preview biomolecule incomplete detection handling:",
     choices = c(
       # "Keep data as-is" = "keep",
       "🟩 Estimate values in samples with no biomolecule detection" = "impute",

@@ -646,7 +646,7 @@ observeEvent(omicsData$objPP, {
         "filter_previews",
         select = TRUE,
         tabPanel(
-          title = "Missingness handling filter",
+          title = "Incomplete detection handling filter",
           value = "imputefilt_plot_tab",
           br(),
           uiOutput("imputefilt_plot_render")
@@ -689,7 +689,7 @@ observeEvent(omicsData$objPP, {
       "filter_previews",
       select = TRUE,
       tabPanel(
-        title = "Missingness handling filter",
+        title = "Incomplete detection handling filter",
         value = "imputefilt_plot_tab",
         br(),
         withSpinner(plotlyOutput("imputefilt_plot"))
@@ -1165,16 +1165,26 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     
   ){
     
+    # shinyalert(
+    #   title = "Please select a missingness handling strategy",
+    #   text = paste0("The selected model, '", 
+    #                 names(models_long_name)[models_long_name == input$pick_model_EM], 
+    #                 "', does not allow for missing values.",
+    #                 " Please select a missingness handling strategy using",
+    #                 " the designated filter in the sidebar."),
+    #   type = "error"
+    # )
+    
     shinyalert(
-      title = "Please select a missingness handling strategy",
+      title = "Incomplete detection handling strategy",
       text = paste0("The selected model, '", 
                     names(models_long_name)[models_long_name == input$pick_model_EM], 
                     "', does not allow for missing values.",
-                    " Please select a missingness handling strategy using",
-                    " the designated filter in the sidebar."),
-      type = "error"
+                    " Zero-to-one normalization will be enforced on the next page."),
+      type = "info"
     )
-    return()
+    
+    # return()
     
   }
   

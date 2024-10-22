@@ -109,32 +109,38 @@ missing_data <- function(){
                  hidden(div(
                    id = "qc_biomolecule_detect",
                    br(),
-                   "Some biomolecules may not be detected in all samples.",
+                   "Observed biomolecules may not be detected in all samples.",
+                   paste0("Observed biomolecules may not be detected in all samples.",
+                          "Most supported models in SLOPE do not handle incomplete detection of biomolecules",
+                          "The following models can handle incomplete detection: ",
+                          toString(names(missing_designation[missing_designation])),
+                          "."),
                    br(),
                    br(),
-                   paste0("Some unsupervised models accept incomplete detection of biomolecules, however",
-                          " currently supported supervised models cannot. To use these models, biomolecules with incomplete detection can be handled in the following ways:"),
-                   
+                   "To use other models, biomolecules with incomplete detection can be handled in the following ways:",
                    br(),
                    br(),
                    tags$div(
                      tags$ul(
                        tags$li("Removing the biomolecule"),
                        tags$li("Estimating the undectected biomolecule values from other values"),
-                       tags$li("Convert biomolecule values to 0s where undetected across samples, while dectected biomolecule values are set to 1")
+                       tags$li("Convert biomolecule values to 0s where undetected across samples, while dectected biomolecule values are set to 1"),
+                       tags$li("Scaling all values between zero and one, where missing values are assigned to zero"),
                      )
                    ),
                    
                    br(),
-                   
+                   "The zero-to-one scaling (or normalization) method must be called on all ",
+                   "biomolecules in each sample, but other missingness methods can be applied to ",
+                   "biomolecules differently based on the amount of missingness observed. ",
                    "Refer to graphs and summary on the right for assistance in determining",
-                   " whether or not to keep undetected biomolecule values.",
+                   " whether or not to keep undetected biomolecule values and what thresholds different methods should be applied at.",
                    br(),
                    strong("Note: percentage of biomolecule detection may change in further processing steps."),
                    br(),
                    br(),
                    
-                   radioGroupButtons("keep_missing", "Keep data as-is?",
+                   radioGroupButtons("keep_missing", "Skip non-scaling incomplete detection handling?",
                                      choices = c("No", "Yes"), selected = "No"),
                    
                    uiOutput("missing_options_UI"),
