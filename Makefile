@@ -33,6 +33,7 @@ ECR_REGISTRY = ${ECS_SERVER}
 
 BAMBOO := false
 ARTIFACT_DIR := $(realpath ..)
+CLOUD_VERSION := aws
 
 PORT := 2800
 export DOCKER_BUILDKIT := 1
@@ -54,8 +55,28 @@ deploy:
 	fi
 	$(MAKE) push-image
 
+build_base:
+	docker build \
+		-f Dockerfile-base \
+		-t ${IMAGE}-base:${TAG} \
+		--build-arg CLOUD_VERSION=${CLOUD_VERSION} \
+		.
+		
+build_top:
+	docker build \
+		-t ${IMAGE}:${TAG} \
+		--build-arg BASE_IMAGE=${IMAGE}-base \
+		--build-arg BASE_TAG=${TAG} \
+		--build-arg PORT=${PORT} \
+		.
+
 build:
-	docker build -f Dockerfile-base -t ${IMAGE}-base:${TAG} .
+	docker build \
+		-f Dockerfile-base \
+		-t ${IMAGE}-base:${TAG} \
+		--build-arg CLOUD_VERSION=${CLOUD_VERSION} \
+		.
+		
 	docker build \
 		-t ${IMAGE}:${TAG} \
 		--build-arg BASE_IMAGE=${IMAGE}-base \
