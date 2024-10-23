@@ -132,7 +132,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
       
       reactive_dataholder[[label]]$filename <- input[[paste0(label, "_file")]]$name
       reactive_dataholder[[label]]$file <- default_factor(
-        read.csv(input[[paste0(label, "_file")]]$datapath))
+        read.csv(input[[paste0(label, "_file")]]$datapath, check.names = F))
       
       appendTab(preview_tabset, 
                 select = T,
