@@ -1205,7 +1205,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
           tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
         }
         
-        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
+        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt",
+                                                                  thresholds = thresholds)))
         # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
 
         # tmp$e_data <- sldata_temp$e_data

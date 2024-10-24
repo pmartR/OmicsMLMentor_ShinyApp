@@ -53,6 +53,8 @@ load_rollup_observers <- function(tab) {
                                                   parallel = TRUE
         )
         
+        attr(omicsData$objPP,"pro_quant_info")$combine_fn = input$qc_which_combine_fn
+        
         attr(omicsData$objPP,"data_info")$norm_info$norm_fn <- norm_attr
         
         if (input$keep_missing != "Yes") {
