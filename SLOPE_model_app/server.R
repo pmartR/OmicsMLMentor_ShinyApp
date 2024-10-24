@@ -29,7 +29,7 @@ shinyServer(function(session,input,output){
     
   })
   
-  output$transformation_backfill_plot <- renderPlot({
+  output$transformation_backfill_plot <- renderPlotly({
     
     req(!is.null(omicsData$model) && !is.null(omicsData$obj))
     num_in_og <- length(attributes(omicsData$model$full_model)$feature_info$names_orig)
@@ -45,7 +45,7 @@ shinyServer(function(session,input,output){
       theme_bw() + 
       labs(y = "Number of Distinct Proteins Identified",x = "") + 
       guides(fill = "none")
-    backfill_plot
+    ggplotly(backfill_plot)
     
   })
   
@@ -148,101 +148,158 @@ shinyServer(function(session,input,output){
     }
   })
   
+  observeEvent(input$apply_filters,{
+    if(input$apply_filters){
+      showModal(
+        modalDialog(
+          title = "Alert!",
+          "Any filters (molecule, cv, etc.) performed on the original dataset will also be performed on this new data. Any molecules used for predictions will remain regardless.",
+          easyClose = TRUE,
+          footer = modalButton("OK")
+        )
+      )
+      enable(id = "confirm_filters")
+    }
+  })
   
   observeEvent(input$confirm_filters,{
     req(omicsData$obj_scaled)
+    
     # pipeline
     omics_processed <- omicsData$obj_scaled
     model <- omicsData$model$full_model
     norm_data <- omicsData$model$norm_omics
     pp_data <- omicsData$model$pp_omics
     
-    # this will be used in all scenarios - will need to build this up
-    # more with more filters in the future
-    all_filter_functions <- c("custom_filter","molecule_filter","cv_filter")
-    names(all_filter_functions) <- c("customFilt","moleculeFilt","cvFilt")
-    # imdanova filter()
-    # rmd_filter()
-    
-    # arguments needed for those functions
-    all_filter_requirements <- list(
-      "moleculeFilt" = list("threshold" = NA,method = list("use_groups" = NA,"use_batch" = NA)),
-      "cvFilt" = list("threshold" = NA,method = list("use_groups" = NA)))
-    
-    # get the different filters used in omics object from original model
-    filter_info <- pmartR::get_filters(norm_data)
-    filter_types <- unlist(sapply(filter_info,function(x) x['type']))
-    filter_types <- filter_types[filter_types != "customFilt"]
-    
-    # subset to ones present in this specific analysis
-    all_filter_requirements_specific <- all_filter_requirements[
-      which(names(all_filter_requirements) %in% filter_types)]
-    
-    # iterate through the specific filters for this dataset
-    for(i in 1:length(all_filter_requirements_specific)){
+    if(input$apply_filters){
+      # this will be used in all scenarios - will need to build this up
+      # more with more filters in the future
+      all_filter_functions <- c("custom_filter","molecule_filter","cv_filter","imputation_filter")
+      names(all_filter_functions) <- c("customFilt","moleculeFilt","cvFilt","imputationFilt")
+      # imdanova filter()
+      # rmd_filter()
       
-      # molecule filter
-      if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
+      # arguments needed for those functions
+      all_filter_requirements <- list(
+        "moleculeFilt" = list("threshold" = NA,method = list("use_groups" = NA,"use_batch" = NA)),
+        "cvFilt" = list("threshold" = NA,method = list("use_groups" = NA)),
+        "imputationFilt" = list("thresholds" = list("keep" = NA,"impute" = NA,"convert" = NA, "remove" = NA)))
+      
+      # get the different filters used in omics object from original model
+      filter_info <- pmartR::get_filters(norm_data)
+      filter_types <- unlist(sapply(filter_info,function(x) x['type']))
+      filter_types <- filter_types[filter_types != "customFilt"]
+      
+      # subset to ones present in this specific analysis
+      all_filter_requirements_specific <- all_filter_requirements[
+        which(names(all_filter_requirements) %in% filter_types)]
+      
+      # determine what molecules will stay regardless, because they are
+      # found in the predictions dataset
+      # edata of new dataset is emeta of pp omics dataset
+      og_edata_cname = pmartR::get_emeta_cname(omicsData$obj_scaled)
+      # peptide cname for new data
+      new_edata_cname = pmartR::get_edata_cname(omicsData$obj_scaled)
+      og_proteins = as.character(omicsData$model$pp_omics$e_data[[og_edata_cname]])
+      og_peptides = as.character(omicsData$model$norm_omics$e_data$Sequence)
+      
+      # iterate through the specific filters for this dataset
+      # do everything except imputation (that is done last)
+      for(i in 1:length(all_filter_requirements_specific)){
         
-        
-        # which filter in original matches this ?
-        ## This can be applied multiple times potentially
-        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
-        
-        use_groups <- any(map_lgl(og_filter_id, function(x) 
-          attr(norm_data,"filters")[[x]]$method$use_groups))
-        threshold <- max(map_int(og_filter_id, function(x) 
-          attr(norm_data,"filters")[[x]]$threshold))
-        use_batch <- any(map_lgl(og_filter_id, function(x)
-          attr(norm_data,"filters")[[x]]$method$use_batch))
-        
-        # add in attributes
-        all_filter_requirements_specific[[i]]$threshold = threshold
-        all_filter_requirements_specific[[i]]$method$use_groups = use_groups
-        all_filter_requirements_specific[[i]]$method$use_batch = use_batch
-        
-        filtObj = pmartR::molecule_filter(
-          omics_processed,
-          ifelse(is.null(use_groups), FALSE, use_groups),
-          ifelse(is.null(use_batch), FALSE, use_batch)
+        # molecule filter
+        if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
+          
+          
+          # which filter in original matches this ?
+          ## This can be applied multiple times potentially
+          og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
+          
+          use_groups <- any(map_lgl(og_filter_id, function(x) 
+            attr(norm_data,"filters")[[x]]$method$use_groups))
+          threshold <- max(map_int(og_filter_id, function(x) 
+            attr(norm_data,"filters")[[x]]$threshold))
+          use_batch <- any(map_lgl(og_filter_id, function(x)
+            attr(norm_data,"filters")[[x]]$method$use_batch))
+          
+          # add in attributes
+          all_filter_requirements_specific[[i]]$threshold = threshold
+          all_filter_requirements_specific[[i]]$method$use_groups = use_groups
+          all_filter_requirements_specific[[i]]$method$use_batch = use_batch
+          
+          filtObj = pmartR::molecule_filter(
+            omics_processed,
+            ifelse(is.null(use_groups), FALSE, use_groups),
+            ifelse(is.null(use_batch), FALSE, use_batch)
           )
+          
+          filtObj_custom <- filtObj %>% data.frame() %>%
+            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_peptides)) %>%
+            dplyr::filter(Num_Observations < threshold)
+          
+          if(nrow(filtObj_custom) > 0){
+            molfilt_customFilt <- custom_filter(omics_processed,e_data_remove = as.character(filtObj_custom[[new_edata_cname]]))
+            omics_processed = pmartR::applyFilt(
+              molfilt_customFilt,
+              omics_processed)
+          }
+        }
         
-        omics_processed = pmartR::applyFilt(
-          filtObj,
-          omics_processed,
-          min_num = all_filter_requirements_specific[[i]]$threshold)
+        # cv filter
+        if(names(all_filter_requirements_specific)[i] == "cvFilt"){
+          # which filter in original matches this ?
+          og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
+          # add in attributes
+          all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
+          all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
+          
+          threshold = all_filter_requirements_specific[[i]]$threshold
+          use_groups = all_filter_requirements_specific[[i]]$method$use_groups
+          
+          filtObj = pmartR::cv_filter(omics_processed,
+                                      use_groups)
+          
+          filtObj_custom <- filtObj %>% data.frame() %>%
+            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_peptides)) %>%
+            dplyr::filter(CV < threshold)
+          
+          if(nrow(filtObj_custom) > 0){
+            cv_customFilt <- custom_filter(omics_processed,e_data_remove = as.character(filtObj_custom[[new_edata_cname]]))
+            omics_processed = pmartR::applyFilt(
+              cv_customFilt,
+              omics_processed)
+          }
+        }
       }
       
-      # cv filter
-      if(names(all_filter_requirements_specific)[i] == "cvFilt"){
-        # which filter in original matches this ?
-        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
-        # add in attributes
-        all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
-        all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
-        
-        filtObj = pmartR::cv_filter(omics_processed,
-                                    all_filter_requirements_specific[[i]]$method$use_groups)
-        
-        omics_processed = pmartR::applyFilt(
-          filtObj,
-          omics_processed,
-          cv_threshold = all_filter_requirements_specific[[i]]$threshold)
+      # need to filter out molecules that are never identified (which should not affect the process at all)
+      molfilt_zero <- pmartR::molecule_filter(omics_processed)
+      omics_processed <- pmartR::applyFilt(molfilt_zero,omics_processed, min_num = 1)
+      
+      omics_processed_sl <- as.slData(omics_processed)
+      
+      # separate step for imputation
+      if(("imputationFilt" %in% names(all_filter_requirements_specific)) & (!"pepData" %in% class(omicsData$model$norm_omics))){
+        omics_processed_sl <- slopeR::imputation(omics_processed_sl)
       }
     }
+    
+    # for normalization have to convert back to not sl object
+    class(omics_processed_sl) <- class(omics_processed)
     
     # convert to normalization immediately
     if((attributes(omicsData$obj)$data_info$norm_info$is_normalized == FALSE)|
        (!is.null(attributes(omicsData$obj)$data_info$norm_info$norm_fn) && 
         attributes(omicsData$obj)$data_info$norm_info$norm_fn != norm_method)){
-      omicsData$obj_norm <- pmartR::normalize_zero_one_scaling(omics_processed)
+      omicsData$obj_norm <- pmartR::normalize_zero_one_scaling(omics_processed_sl)
     } else {
-      omicsData$obj_norm <- omics_processed
+      omicsData$obj_norm <- omics_processed_sl
     }
     
     # convert to sl object
-    omics_sl <- as.slData(omicsData$obj_norm)
+    omics_sl <- as.slData(omics_processed_sl)
     omicsData$obj_sl <- omics_sl
+
     
     # rollup
     # if we have pepdata in normalized object but prodata in pp omics object
@@ -264,7 +321,7 @@ shinyServer(function(session,input,output){
         ),
         value = "rollup",
         collapsed = F,
-        plotOutput("transformation_rollup_plot")
+        plotlyOutput("transformation_rollup_plot")
       )
     }
   })
@@ -366,53 +423,53 @@ shinyServer(function(session,input,output){
   })
   
   # log 2 plot
-  output$transformation_scaling_plot <- renderPlot({
+  output$transformation_scaling_plot <- renderPlotly({
     req(!is.null(omicsData$obj_scaled))
     if(!is.null(attributes(omicsData$obj_scaled)$group_DF)){
       plot(omicsData$obj_scaled, use_VizSampNames = T,
-           color_by = "Group", order_by = "Group")
+           color_by = "Group", order_by = "Group",interactive = TRUE)
     } else {
       plot(omicsData$obj_scaled, use_VizSampNames = T, 
-           color_by = "Group", order_by = "Group")
+           color_by = "Group", order_by = "Group",interactive = TRUE)
     }
   })
   
   # norm plot
-  output$transformation_norm_plot <- renderPlot({
+  output$transformation_norm_plot <- renderPlotly({
     req(!is.null(omicsData$obj_norm))
     if(!is.null(attributes(omicsData$obj_norm)$group_DF)){
-      plot(omicsData$obj_norm, use_VizSampNames = T,color_by = "Group", order_by = "Group")
+      plot(omicsData$obj_norm, use_VizSampNames = T,color_by = "Group", order_by = "Group",interactive = TRUE)
     } else {
-      plot(omicsData$obj_norm, use_VizSampNames = T)
+      plot(omicsData$obj_norm, use_VizSampNames = T,interactive = TRUE)
     }
   })
   
   # rollup plot
-  output$transformation_rollup_plot <- renderPlot({
+  output$transformation_rollup_plot <- renderPlotly({
     req(!is.null(omicsData$obj_sl_rollup))
     if(!is.null(attributes(omicsData$obj_sl_rollup)$group_DF)){
       plot(omicsData$obj_sl_rollup, use_VizSampNames = T,
-           color_by = "Group", order_by = "Group")
+           color_by = "Group", order_by = "Group",interactive = TRUE)
     } else {
-      plot(omicsData$obj_sl_rollup, use_VizSampNames = T)
+      plot(omicsData$obj_sl_rollup, use_VizSampNames = T,interactive = TRUE)
     }
   })
   
-  output$predict_plot_ROC <- renderPlot({
+  output$predict_plot_ROC <- renderPlotly({
     req(!is.null(omicsData$obj_predictions))
-    plot(omicsData$obj_predictions, plotType = "roc_curve")
+    ggplotly(plot(omicsData$obj_predictions, plotType = "roc_curve"))
   })
-  output$predict_plot_predictBar <- renderPlot({
+  output$predict_plot_predictBar <- renderPlotly({
     req(!is.null(omicsData$obj_predictions))
-    plot(omicsData$obj_predictions, plotType = "prediction_bar")
+    ggplotly(plot(omicsData$obj_predictions, plotType = "prediction_bar"))
   })
-  output$predict_plot_confusionHeatmap <- renderPlot({
+  output$predict_plot_confusionHeatmap <- renderPlotly({
     req(!is.null(omicsData$obj_predictions))
-    plot(omicsData$obj_predictions, plotType = "confusion_heatmap")
+    ggplotly(plot(omicsData$obj_predictions, plotType = "confusion_heatmap"))
   })
-  output$predict_plot_confidenceScatter <- renderPlot({
+  output$predict_plot_confidenceScatter <- renderPlotly({
     req(!is.null(omicsData$obj_predictions))
-    plot(omicsData$obj_predictions, plotType = "confidence_scatter")
+    ggplotly(plot(omicsData$obj_predictions, plotType = "confidence_scatter"))
   })
   
   output$download_processed_data <- downloadHandler(
