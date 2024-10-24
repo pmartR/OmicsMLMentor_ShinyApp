@@ -12,7 +12,7 @@ preprocess_UI <- function() {
           value = "backfill",
           collapsed = F,
           textOutput("transformation_backfill_text"),
-          plotOutput("transformation_backfill_plot")
+          plotlyOutput("transformation_backfill_plot")
         ),
         # molecule filters
         collapseBox(
@@ -21,7 +21,7 @@ preprocess_UI <- function() {
           ),
           value = "transformation",
           collapsed = F,
-          plotOutput("transformation_scaling_plot")
+          plotlyOutput("transformation_scaling_plot")
           #plotOutput("transformation_norm_plot")
           #uiOutput("molecule_filter_UI"),
           #actionButton("check_processing_steps","Check Pre-Processing Steps"),
@@ -30,8 +30,9 @@ preprocess_UI <- function() {
         collapseBox(
           div(
             "Filters",
-            checkboxInput("apply_filters","Apply Filters?"),
-            actionButton("confirm_filters","Confirm Filters")
+            checkboxInput("apply_filters","Apply Filters",value = FALSE),
+            checkboxInput("apply_without_filters","Continue without applying filters",value = FALSE),
+            disabled(actionButton("confirm_filters","Confirm"))
           ),
           value = "filters",
           collapsed = F
@@ -44,7 +45,7 @@ preprocess_UI <- function() {
           ),
           value = "normalization",
           collapsed = F,
-          plotOutput("transformation_norm_plot")
+          plotlyOutput("transformation_norm_plot")
           #uiOutput("transformation_normalization_UI")
         ),
         uiOutput("protein_rollup_pp_UI")
