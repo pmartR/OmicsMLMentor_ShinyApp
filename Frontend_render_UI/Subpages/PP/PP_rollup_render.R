@@ -45,6 +45,14 @@ load_rollup_observers <- function(tab) {
         
         norm_attr <- attr(pep,"data_info")$norm_info$norm_fn 
         
+        if(is.null(pep$f_data)){
+          pep$f_data <- data.frame(
+            SampleID = colnames(pep$e_data)[
+              colnames(pep$e_data) != pmartR::get_edata_cname(pep)],
+            Temp_col_all = "All"
+          )
+        }
+        
         unregister()
         omicsData$objPP <- protein_quant(pep,
                                                   method = input$qc_which_rollup,
@@ -54,6 +62,7 @@ load_rollup_observers <- function(tab) {
                                                   combine_fn = input$qc_which_combine_fn,
                                                   parallel = TRUE
         )
+        
         unregister()
         attr(omicsData$objPP,"data_info")$norm_info$norm_fn <- norm_attr
         
@@ -76,6 +85,10 @@ load_rollup_observers <- function(tab) {
             transforms_df$Handling[which(transforms_df$`Percentage missing` > 0)] <- "Remove"
             omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
           }
+        }
+        
+        if(is.null(pep$f_data)){
+          omicsData$objPP$f_data <- NULL
         }
         
         updateTabsetPanel(session, paste0(tab, "_rollup_res_tabpanel"),

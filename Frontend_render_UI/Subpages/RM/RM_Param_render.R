@@ -9,11 +9,36 @@ observeEvent(input$done_param_option, {
 output$param_preview_plot_ui <- renderUI({
   
   if(!is.null(omicsData$objHP)){
-    withSpinner(plotlyOutput("param_preview_plot"))
+    
+    hp_res <- attr(omicsData$objHP, "hp_info")
+    
+    p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
+      ggplot2::theme_bw()
+    
+    if(which(colnames(p$data) == "mean") < 3){
+      withSpinner(plotlyOutput("param_preview_plotly"))
+    } else {
+      withSpinner(plotlyOutput("param_preview_plot"))
+    }
     
   } else {
     "No parameters have been optimized."
   }
+})
+
+output$param_preview_plotly <- renderPlotly({
+  
+  req(!is.null(omicsData$objHP), cancelOutput = T)
+  
+  hp_res <- attr(omicsData$objHP, "hp_info")
+  
+  p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
+    ggplot2::theme_bw()
+  
+  isolate(plot_table_current$table$RM__param_optim <- p)
+  isolate(table_table_current$table$RM__param_optim <- unnest(
+    hp_res[2:3], cols = c(".metrics")))
+  
 })
 
 output$param_preview_plot <- renderPlotly({
@@ -21,8 +46,6 @@ output$param_preview_plot <- renderPlotly({
   req(!is.null(omicsData$objHP), cancelOutput = T)
   
   hp_res <- attr(omicsData$objHP, "hp_info")
-  
-  
   
   p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
     ggplot2::theme_bw()
@@ -60,6 +83,7 @@ observeEvent(c(omicsData$objHP, input$rec_param_option), {
   if(!is.null(omicsData$objHP)){
     hp_res <- attr(omicsData$objHP, "hp_info")
     
+    ## DF terminology doesn't always match ours fyi
     best_df <- hp_res %>% select_best(metric = "roc_auc")
     
     suppressWarnings({
@@ -82,6 +106,10 @@ observeEvent(c(omicsData$objHP, input$rec_param_option), {
         sample_prop = best_df$sample_size
       )
     })
+    
+    if(input$pick_model_EM == "svm"){
+      list_hp$svm_margin <- list_hp$margin
+    }
     
     list_hp_non_null <- Filter(Negate(is.null), list_hp)
     list_hp_null <- list_hp[!(names(list_hp) %in% names(list_hp_non_null))]

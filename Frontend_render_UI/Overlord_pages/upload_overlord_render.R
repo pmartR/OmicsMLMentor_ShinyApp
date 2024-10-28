@@ -73,7 +73,7 @@ observeEvent(c(input$check_group_cols), ignoreInit = T, priority = -1, {
   
   
   tryCatch({
-    if(!inherits(omicsData$obj, "seqData")){
+    if(!inherits(omicsData$obj, "seqData") && !get_data_norm(omicsData$obj)){
       print(attr(omicsData$obj, "data_info")$data_scale_orig)
       cv_filter(omicsData$obj)
     }
@@ -117,8 +117,10 @@ observeEvent(c(input$check_group_cols), ignoreInit = T, priority = -1, {
                      updatePickerInput(session, "datascale", selected = "abundance")
                      
                      tryCatch({
-                       print(attr(omicsData$obj, "data_info")$data_scale_orig)
-                       cv_filter(omicsData$obj)
+                       if(!inherits(omicsData$obj, "seqData") && !get_data_norm(omicsData$obj)){
+                         print(attr(omicsData$obj, "data_info")$data_scale_orig)
+                         cv_filter(omicsData$obj)
+                       }
                        
                        shinyalert(title = "Success!", 
                                   "Continue to next page or review results?",
