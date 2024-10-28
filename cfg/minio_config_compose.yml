@@ -1,5 +1,5 @@
 type: minio
-endpoint: minio-map:9000
+endpoint: minio-slope:9000
 access_key: minioadmin
 secret_key: minioadmin
 bucket: map

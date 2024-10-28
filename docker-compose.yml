@@ -1,0 +1,23 @@
+version: "3" 
+services:
+    slope-app: 
+        profiles: ['', 'map']
+        image: slope:latest
+        container_name: slope-app
+        volumes:
+            - "./cfg/minio_config_compose.yml:/srv/shiny-server/slope/cfg/minio_config.yml"
+        ports:
+            - "8300:${SHINY_PORT:-2800}"
+            - "8301:2801"
+    minio:
+        profiles: ['map']
+        image: minio/minio
+        container_name: minio-slope
+        ports:
+          - "9000:9000"
+          - "9001:9001"
+        command: server --console-address ":9001" /data
+    
+networks:
+  default:
+    name: sloper-net
