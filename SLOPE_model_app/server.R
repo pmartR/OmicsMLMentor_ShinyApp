@@ -309,6 +309,13 @@ shinyServer(function(session,input,output){
       rollup_method = attr(pp_data,"pro_quant_info")$method
       omicsData$obj_sl_rollup <- slopeR::protein_rollup(omics_sl,method = rollup_method)
     }
+    
+    if(!is.null(omicsData$obj_sl_rollup)){
+      omicsData$obj_pp <- omicsData$obj_sl_rollup
+    } else {
+      omicsData$obj_pp <- omicsData$obj_sl
+    }
+    
   })
   
   output$protein_rollup_pp_UI <- renderUI({
@@ -338,15 +345,11 @@ shinyServer(function(session,input,output){
   # run model
   observeEvent(input$run_model,{
     
-    req(!is.null(omicsData$obj_sl)|!is.null(omicsData$obj_sl_rollup))
+    req(!is.null(omicsData$obj_pp))
     req(!is.null(omicsData$model$full_model))
     
     # if the data is rolled up use that version, otherwise use OG slope version
-    if(!is.null(omicsData$obj_sl_rollup)){
-      omicsNewdata = omicsData$obj_sl_rollup
-    } else {
-      omicsNewdata = omicsData$obj_sl
-    }
+    omicsNewdata = omicsData$obj_pp
     
     orig_names <- attr(omicsData$model$full_model,"feature_info")
     # remove columns not found in training data
