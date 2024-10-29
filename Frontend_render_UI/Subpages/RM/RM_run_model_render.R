@@ -605,7 +605,6 @@ unsupervised_tab <- function() {
                 "Structure plot",
                 # splitLayout(
                   # DTOutput("train_metrics"),
-                uiOutput("unsup_plot_type_UI"),
                 br(),
                   withSpinner(plotOutput("structure_plot")),
                 br(),
@@ -1117,7 +1116,7 @@ output$unsup_res_aes_UI <- renderUI({
   
   # req(method %in% c())
 
-  if(input$pick_axis == "samples"){
+  if(attr(omicsData$objRM, "axis") == "samples"){
     colors <- colnames(omicsData$objPP$f_data)
   } else {
     colors <- colnames(omicsData$objPP$e_meta)
@@ -1151,10 +1150,12 @@ output$unsup_res_aes_UI <- renderUI({
     
     element_list[[length(element_list) + 1]] <- num_clusts_picker
     
+    color_by_picker <- pickerInput("color_by_unsup", "Color by:", choices = choices)
     vjust_input = numericInput("dendro_vjust", "Vertical adjustment", value = 0.5, min = 0, max = 1, step = 0.1)
     hjust_input = numericInput("dendro_hjust", "Horizontal adjustment", value = 1.5, min = 0, max = 1, step = 0.1)
     label_size_input = numericInput("dendro_label_size", "Label size", value = 5, min = 0.1, max = 20, step = 0.1)
     
+    element_list[[length(element_list) + 1]] <- color_by_picker
     element_list[[length(element_list) + 1]] <- vjust_input
     element_list[[length(element_list) + 1]] <- hjust_input
     element_list[[length(element_list) + 1]] <- label_size_input
@@ -1214,8 +1215,7 @@ output$pc_yaxis_UI <- renderUI({
 # 
 
 output$structure_plot <- renderPlot({
-
-  input$redraw_unsup_structure_plot
+  req(input$redraw_unsup_structure_plot > 0)
   omicsData$objRM
   
   isolate({
@@ -1264,6 +1264,7 @@ output$structure_plot <- renderPlot({
           slData = omicsData$objPP,
           label_obs = TRUE,
           k = input$dendro_num_k,
+          color_by = color_by,
           label.vjust = input$dendro_vjust,
           label.hjust = input$dendro_hjust,
           label_size = input$dendro_label_size
@@ -1287,7 +1288,10 @@ output$structure_plot <- renderPlot({
           plot_call,
           components = c(xvar, yvar),
           slData = runner,
-          color_by = color_by
+          color_by = color_by,
+          alpha = 1,
+          add_stroke = FALSE,
+          pch = 19
         )
       }
       
