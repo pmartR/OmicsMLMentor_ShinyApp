@@ -2615,9 +2615,8 @@
     },
     "pmartR": {
       "Package": "pmartR",
-      "Version": "2.4.5",
-      "Source": "Bioconductor",
-      "Repository": "CRAN",
+      "Version": "2.4.6",
+      "Source": "./renv/local/pmartR.zip",
       "Requirements": [
         "BH",
         "R",
