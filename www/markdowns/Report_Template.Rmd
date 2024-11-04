@@ -1,0 +1,731 @@
+---
+params:
+  titleName: NULL
+  user_inputs: NULL
+  omicsData: NULL
+  tables: NULL
+  plots: NULL
+  
+title: "`r params$titleName`"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+always_allow_html: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(shiny)
+library(pmartR)
+library(knitr)
+library(stringi)
+fixcomma <- function(x) {
+  if (str_count(x, ",") > 1) {
+    stri_replace_last(x, ", and ", fixed = ", ")
+  } else if (str_count(x, ",") > 0) {
+    stri_replace_last(x, " and ", fixed = ", ")
+  } else {
+    x
+  }
+}
+condense <- function(x) {
+  wordcount <- str_count(x, ", ")
+  wordcount <- wordcount + 1
+  if (wordcount < 6)
+    return(fixcomma(x))
+  elements <- str_split(x, ", ")[[1]]
+  paste0(elements[1], ", ", elements[2], ", ", elements[3], ", and ", wordcount - 3, " more")
+}
+```
+
+## Initial Data Upload
+
+```{r Upload}
+text <- "A "
+text <- paste0(text, params$user_inputs$upload$data_type)
+text <- paste0(text, " abundance data file sourced from ")
+text <- paste0(text, params$user_inputs$upload$edata_source) 
+
+if (params$user_inputs$upload$edata_source == "Uploaded Data") {
+  text <- paste0(text, " called ", params$user_inputs$upload$edata_filename)
+}
+
+text <- paste0(text, " was uploaded to the SLOPE application. This file contains ")
+text <- paste0(text, length(params$omicsData$obj$e_data) - 1)
+text <- paste0(text, " samples and ")
+text <- paste0(text, length(unique(params$omicsData$obj$e_data[[params$user_inputs$upload$edata_idcol]])))
+text <- paste0(text, " biomolecules designated by the **")
+text <- paste0(text, params$user_inputs$upload$edata_idcol)
+text <- paste0(text, "** column. The data were imported as ")
+text <- paste0(text, switch(params$user_inputs$upload$edata_datascale, 
+                            abundance = "raw intensity",
+                            log2 = "log base 2 scaled",
+                            log10 = "log base 10 scaled",
+                            log = "natural log scaled"))
+text <- paste0(text, " ")
+text <- paste0(text, if (params$user_inputs$upload$edata_norm == "No") "unnormalized" else "normalized")
+text <- paste0(text, " data, with \"")
+text <- paste0(text, params$user_inputs$upload$edata_nasymbol)
+text <- paste0(text, "\" denoting missing values.")
+
+if (!is.null(params$user_inputs$upload$fdata_source) && params$user_inputs$upload$fdata_source != "None") {
+  text <- paste0(text, "\\\n")
+  text <- paste0(text, "An associated sample information file sourced from ")
+  text <- paste0(text, params$user_inputs$upload$fdata_source)
+  
+  if (params$user_inputs$upload$fdata_source == "Uploaded Data") {
+    text <- paste0(text, " called ", params$user_inputs$upload$fdata_filename)
+  }
+  
+  text <- paste0(text, " was also uploaded to the SLOPE application. The sample identifier column was designated as **")
+  text <- paste0(text, params$user_inputs$upload$fdata_idcol)
+  text <- paste0(text, "**. The file contains ")
+  text <- paste0(text, length(params$omicsData$obj$f_data))
+  text <- paste0(text, " columns of sample information.")
+}
+
+if (!is.null(params$user_inputs$upload$emeta_source) && params$user_inputs$upload$emeta_source != "None") {
+  text <- paste0(text, "\\\n")
+  text <- paste0(text, "An associated biomolecule information file sourced from ")
+  text <- paste0(text, params$user_inputs$upload$emeta_source)
+  
+  if (params$user_inputs$upload$emeta_source == "Uploaded Data") {
+    text <- paste0(text, " called ", params$user_inputs$upload$emeta_filename)
+  }
+  
+  text <- paste0(text, " was also uploaded to the SLOPE application. The molecule identifier column was designated as **")
+  text <- paste0(text, params$user_inputs$upload$emeta_idcol)
+  text <- paste0(text, "**. The file contains ")
+  text <- paste0(text, length(params$omicsData$obj$e_meta))
+  text <- paste0(text, " columns of biomolecule information.")
+}
+```
+
+`r text`
+\
+
+Below is a truncated portion containing the first 3 columns and 10 rows of each of the files. The full files are available in the zip archive.
+\
+
+
+Abundance Data: \
+
+```{r Upload abundance data}
+trunc <- params$tables$table$Upload__e_data
+trunc <- trunc[,1:min(dim(trunc)[2],3)]
+trunc <- trunc[1:min(dim(trunc)[1], 10),]
+trunc <- data.frame(lapply(trunc, \(x) sapply(x, \(x2) if (is.na(x2)) NA else if (nchar(as.character(x2)) > 18) paste0(strtrim(as.character(x2), 18), "...") else as.character(x2))))
+kable(trunc)
+```
+\
+
+
+Sample Information: \
+
+```{r Upload sample info}
+trunc <- params$tables$table$Upload__f_data
+trunc <- trunc[,1:min(dim(trunc)[2],3)]
+trunc <- trunc[1:min(dim(trunc)[1], 10),]
+trunc <- data.frame(lapply(trunc, \(x) sapply(x, \(x2) if (is.na(x2)) NA else if (nchar(as.character(x2)) > 18) paste0(strtrim(as.character(x2), 18), "...") else as.character(x2))))
+kable(trunc)
+```
+\
+
+`r if (!is.null(params$tables$table$Upload__e_meta)) "\nBiomolecule Information: \\newline"`
+```{r Upload biomolecule info}
+if (!is.null(params$tables$table$Upload__e_meta)) {
+  trunc <- params$tables$table$Upload__e_meta
+  trunc <- trunc[,1:min(dim(trunc)[2],3)]
+  trunc <- trunc[1:min(dim(trunc)[1], 10),]
+  trunc <- data.frame(lapply(trunc, \(x) sapply(x, \(x2) if (is.na(x2)) NA else if (nchar(as.character(x2)) > 18) paste0(strtrim(as.character(x2), 18), "...") else as.character(x2))))
+  kable(trunc)
+}
+```
+`r if (!is.null(params$tables$table$Upload__e_meta)) "\\"`
+
+Abundance Data Boxplots: \
+
+```{r Upload boxplot}
+if (is.null(params$plots$table$Upload__boxplot))
+{
+  "Plot was not generated in the SLOPE session."
+} else {
+  params$plots$table$Upload__boxplot
+}
+```
+\
+
+\newpage
+
+## Quality Control
+
+```{r QC}
+text <- ""
+
+if (inherits(params$omicsData$obj, "nmrData") && !is.null(params$user_inputs$refnorm_applied) && params$user_inputs$refnorm_applied == "Yes") {
+  text <- paste0(text, "The data was referenced normalized using the ")
+  text <- paste0(text, params$user_inputs$refnorm_identifier, " identifier from ")
+  text <- paste0(text, params$user_inputs$refnorm_source, ".")
+}
+
+if (inherits(params$omicsData$obj, "isobaricpepData")) {
+  text <- paste0(text, "The data was referenced normalized using ")
+  text <- paste0(text, params$user_inputs$qc$ref_group, " as the group, and ")
+  text <- paste0(text, params$user_inputs$qc$ref_notation, " values in the ")
+  text <- paste0(text, params$user_inputs$qc$ref_col, " column as the reference sample identifiers.\\\n")
+}
+
+if (params$user_inputs$qc$single_obs_removed == "Yes") {
+  text <- paste0(text, params$user_inputs$filters$single_molfilt, " biomolecules for which only a single observation was detected were discarded. ")
+}
+```
+
+`r text`
+\
+
+Single Observation Biomolecules: \
+
+```{r Single Obs}
+if (is.null(params$plots$table$QC__single_obs))
+{
+  "Plot was not generated in the SLOPE session."
+} else {
+  params$plots$table$QC__single_obs
+}
+```
+\
+
+\newpage
+
+```{r QC RMD}
+text <- ""
+if (params$user_inputs$qc$outliers_removed != "None") {
+  text <- paste0(text, "Samples ", condense(params$user_inputs$qc$outliers_removed), " were marked as outliers and removed. ")
+}
+```
+
+`r text`
+
+`r if(!inherits(omicsData$objQC, "seqData")) "Robust Mahalanobis Distance Outlier Detection: \\" else ""`
+
+```{r RMD outliers}
+if(!inherits(omicsData$objQC, "seqData")) {
+  if (is.null(
+    params$plots$table$QC__rmd_overall
+  ))
+  {
+    "Plot was not generated in the SLOPE session."
+  } else {
+    params$plots$table$QC__rmd_overall
+  }
+}
+```
+
+\newpage
+
+```{r QC Missingness}
+text <- paste0(text, "Samples with more than ", params$user_inputs$qc$min_pct_sample, "% missingness were removed. Missing data was chosen to be ")
+
+if (params$user_inputs$qc$missingdata_kept == "Yes") {
+  text <- paste0(text, "kept.")
+} else {
+  if (params$user_inputs$qc$handle_impute != "None") {
+    text <- paste0(text, "estimated for biomolecules with ", params$user_inputs$qc$handle_impute, "% missingness")
+  }
+  
+  if (params$user_inputs$qc$handle_convert != "None") {
+    if (params$user_inputs$qc$handle_impute != "None" && params$user_inputs$qc$handle_remove == "None") {
+      text <- paste0(text, " and ")
+    } else if (params$user_inputs$qc$handle_impute != "None" && params$user_inputs$qc$handle_remove != "None") {
+      text <- paste0(text, ", ")
+    }
+    
+    text <- paste0(text, "converted to presence/absence for biomolecules with ", params$user_inputs$qc$handle_convert, "% missingness")
+  }
+  
+  if (params$user_inputs$qc$handle_remove != "None") {
+    if (params$user_inputs$qc$handle_impute != "None" && params$user_inputs$qc$handle_convert == "None") {
+      text <- paste0(text, " and ")
+    } else if (params$user_inputs$qc$handle_impute != "None" && params$user_inputs$qc$handle_convert != "None") {
+      text <- paste0(text, ", and ")
+    }
+    
+    text <- paste0(text, "removed for biomolecules with ", params$user_inputs$qc$handle_remove, "% missingness. ")
+  }
+}
+```
+
+Sample Missingness: \
+
+```{r Sample Missingness}
+if (is.null(
+  params$plots$table$QC__missing_samples
+  ))
+{
+  "Plot was not generated in the SLOPE session."
+} else {
+  params$plots$table$QC__missing_samples
+}
+```
+
+`r if (params$user_inputs$qc$missingdata_kept != "Yes") "Biomolecule Missingness: \\"`
+
+```{r QC Missingness Plot}
+if (params$user_inputs$qc$missingdata_kept != "Yes") {
+  if (is.null(
+    params$plots$table$QC__missing_features
+    ))
+  {
+    "Plot was not generated in the SLOPE session."
+  } else {
+    suppressWarnings(
+      params$plots$table$QC__missing_features
+    )
+  }
+}
+```
+\
+
+\newpage
+
+## Model Set-Up
+
+```{r Model Set-Up}
+text <- "Columns "
+text <- paste0(text, fixcomma(params$user_inputs$msu$tracked_cols))
+text <- paste0(text, " of the sample information were selected to be tracked in the application, of which ")
+text <- paste0(text, fixcomma(params$user_inputs$msu$categorical_cols))
+text <- paste0(text, " were marked as categorical. For model selection, ")
+text <- paste0(text, str_to_lower(params$user_inputs$msu$model_type))
+text <- paste0(text, " models were explored, with ")
+text <- paste0(text, str_to_lower(params$user_inputs$msu$model_priority))
+text <- paste0(text, " being the priority.")
+if (str_to_lower(params$user_inputs$msu$model_type) == "supervised")
+{
+  text <- paste0(text, " The **", params$user_inputs$msu$response_var, "** column of the sample information was selected to be the response variable.")
+}
+text <- paste0(text, " The chosen model was **")
+text <- paste0(text, params$user_inputs$msu$model_selected)
+text <- paste0(text, "** and was the #")
+text <- paste0(text, params$user_inputs$msu$model_selected_index)
+text <- paste0(text, " model recommended by Expert Mentor.")
+```
+
+`r text`
+\
+
+Expert Mentor Summary:
+```{r Expert Mentor Summary}
+kable(params$tables$table$MSU__expert_mentor_summary[,1:2])
+```
+\
+
+\newpage
+
+## Pre-processing
+
+### Transform
+
+```{r PP Transform}
+text <- "The data was transformed to "
+text <- paste0(text, switch(params$user_inputs$pp$transform, 
+                            abundance = "raw intensity",
+                            log2 = "log base 2",
+                            log10 = "log base 10",
+                            log = "natural log"))
+text <- paste0(text, " scale. \\\n\\\n")
+```
+
+`r text`
+
+Transformed Boxplots: \
+
+```{r PP Transform Plot}
+if (is.null(
+  params$plots$table$PP__transform
+  ))
+{
+  "Plot was not generated in the SLOPE session."
+} else {
+  params$plots$table$PP__transform
+}
+```
+
+\newpage
+
+### Filters
+
+```{r PP Molfilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$molfilt) && params$user_inputs$pp$molfilt)  {
+  text <- paste0(text, "A molecule filter was applied with a minimum threshold of ")
+  text <- paste0(text, params$user_inputs$pp$molfilt_min_num)
+  text <- paste0(text, " observations. The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$molfilt, " biomolecule", ifelse(params$user_inputs$filters$molfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__molfilt)) "Molecule Filter: \\"`
+```{r Molecule Filter}
+if (!is.null(params$plots$table$PP__filters__molfilt)) {
+  params$plots$table$PP__filters__molfilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__molfilt)) "\\"`
+
+\newpage
+
+```{r PP imputeFilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$imputefilt) && params$user_inputs$pp$imputefilt) {
+  text <- paste0(text, "An imputation filter was applied which ")
+  if (params$user_inputs$pp$handle_impute != "None") {
+    text <- paste0(text, "estimated missing data for biomolecules with ", params$user_inputs$pp$handle_impute, "% missingness")
+  }
+  
+  if (params$user_inputs$pp$handle_convert != "None") {
+    if (params$user_inputs$pp$handle_impute != "None" && params$user_inputs$pp$handle_remove == "None") {
+      text <- paste0(text, " and ")
+    } else if (params$user_inputs$pp$handle_impute != "None" && params$user_inputs$pp$handle_remove != "None") {
+      text <- paste0(text, ", ")
+    }
+    
+    text <- paste0(text, "converted biomolecules with ", params$user_inputs$pp$handle_convert, "% missingness to presence/absence")
+  }
+  
+  if (params$user_inputs$pp$handle_remove != "None") {
+    if (params$user_inputs$pp$handle_impute != "None" && params$user_inputs$pp$handle_convert == "None") {
+      text <- paste0(text, " and ")
+    } else if (params$user_inputs$pp$handle_impute != "None" && params$user_inputs$pp$handle_convert != "None") {
+      text <- paste0(text, ", and ")
+    }
+    
+    text <- paste0(text, "removed biomolecules with ", params$user_inputs$pp$handle_remove, "% missingness")
+  }
+  
+  text <- paste0(text, ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__imputefilt)) "Imputation Filter: \\"`
+
+```{r Imputation Filter}
+if (!is.null(params$plots$table$PP__filters__imputefilt)) {
+  params$plots$table$PP__filters__imputefilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__imputefilt)) "\\"`
+
+\newpage
+
+```{r PP CVFilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$cvfilt) && params$user_inputs$pp$cvfilt) {
+  text <- paste0(text, "A coefficient of variation filter was applied with a CV threshold of ")
+  text <- paste0(text, params$user_inputs$pp$cvfilt_threshold)
+  if (params$user_inputs$pp$cvfilt_use_groups) {
+    text <- paste0(text, " using groups")
+  }
+  text <- paste0(text, ". The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$cvfilt, " biomolecule", ifelse(params$user_inputs$filters$cvfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__cvfilt)) "CV Filter: \\"`
+
+```{r CV Filter}
+if (!is.null(params$plots$table$PP__filters__cvfilt)) {
+  params$plots$table$PP__filters__cvfilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__cvfilt)) "\\"`
+
+\newpage
+
+```{r PP TCFilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$tcfilt) && params$user_inputs$pp$tcfilt) {
+  text <- paste0(text, "A total count filter was applied with a minimum count of ")
+  text <- paste0(text, params$user_inputs$pp$tcfilt_min_count)
+  text <- paste0(text, ". The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$tcfilt, " biomolecule", ifelse(params$user_inputs$filters$tcfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__totalCountFilt)) "Total Count Filter: \\"`
+
+```{r TC Filter}
+if (!is.null(params$plots$table$PP__filters__totalCountFilt)) {
+  params$plots$table$PP__filters__totalCountFilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__totalCountFilt)) "\\"`
+
+\newpage
+
+```{r PP Libfilt}
+text <- ""
+if (!is.null(params$user_inputs$pp$libfilt) && params$user_inputs$pp$libfilt) {
+  text <- paste0(text, "A library size filter was applied with a minimum library size of ")
+  text <- paste0(text, params$user_inputs$pp$libfilt_min_libsize)
+  text <- paste0(text, ". The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$libfilt, " sample", ifelse(params$user_inputs$filters$libfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__filters__Libfilt)) "Library Size Filter: \\"`
+
+```{r Lib Filter}
+if (!is.null(params$plots$table$PP__filters__Libfilt)) {
+  params$plots$table$PP__filters__Libfilt
+}
+```
+`r if (!is.null(params$plots$table$PP__filters__Libfilt)) "\\"`
+
+\newpage
+
+```{r PP Customfilt}
+text <- ""
+if (params$user_inputs$pp$customfilt) {
+  text <- paste0(text, "A custom filter was applied which ")
+  if (params$user_inputs$pp$customfilt_handling == "keep") {
+    text <- paste0(text, "kept the following biomolecules: ")
+  } else {
+    text <- paste0(text, "removed the following biomolecules: ")
+  }
+  text <- paste0(text, condense(paste(params$user_inputs$pp$customfilt_regex, collapse = ", ")))
+  text <- paste0(text, ". The filter removed ")
+  text <- paste0(text, params$user_inputs$filters$customfilt, " biomolecule", ifelse(params$user_inputs$filters$customfilt != 1, "s", ""), ". \\\n")
+}
+```
+
+`r text`
+
+\newpage
+
+### Normalization
+
+```{r PP Normalization}
+text <- ""
+if (params$user_inputs$pp$norm_method != "No Normalization") {
+  text <- paste0(text, "\\\nThe data was then normalized using ")
+  text <- paste0(text, params$user_inputs$pp$norm_method)
+  text <- paste0(text, ". ")
+  
+  if (params$user_inputs$pp$norm_method == "Global Normalization") {
+    text <- paste0(text, "The ")
+    text <- paste0(text, params$user_inputs$pp$norm_fn)
+    text <- paste0(text, " normalization function was used and the ")
+    text <- paste0(text, params$user_inputs$pp$norm_subset_fn)
+    text <- paste0(text, " subset function was used. ")
+    
+    if (params$user_inputs$pp$norm_subset_fn == "Percentage present and rank invariant (ppp+rip)") {
+      text <- paste0(text, "The percentage present threshold used was ")
+      text <- paste0(text, params$user_inputs$pp$norm_ppp)
+      text <- paste0(text, " and the rank invariant p-value threshold used was ")
+      text <- paste0(text, params$user_inputs$pp$norm_rip)
+      text <- paste0(text, ". ")
+    }
+  }
+} else {
+  text <- "Normalization was not applied."
+}
+```
+
+`r text`
+
+`r if(params$user_inputs$pp$norm_method != "No Normalization") "Normalized Data Boxplots: \\" else ""`
+
+```{r Normalized Boxplots}
+if (params$user_inputs$pp$norm_method != "No Normalization") {
+  if (is.null(
+  params$plots$table$PP__normalization__post
+  ))
+{
+  "Plot was not generated in the SLOPE session."
+} else {
+  params$plots$table$PP__normalization__post
+}
+}
+```
+
+```{r PP Rollup}
+text <- ""
+
+if (!is.null(params$user_inputs$pp$rollup_method)) {
+  text <- paste0(text, "\\newpage\n\n### Rollup\n\\\nThe data was then rolled up to the protein level using the ")
+  text <- paste0(text, params$user_inputs$pp$rollup_method, " rollup method, centered by ")
+  text <- paste0(text, params$user_inputs$pp$rollup_combine_fn)
+  text <- paste0(text, ". ")
+}
+```
+
+`r text`
+
+`r if (!is.null(params$plots$table$PP__rollup)) "Post-rollup Boxplots: \\"`
+
+```{r Rollup Boxplots}
+if (!is.null(params$plots$table$PP__rollup)) {
+  params$plots$table$PP__rollup
+}
+```
+`r if (!is.null(params$plots$table$PP__rollup)) "\\"`
+
+\newpage
+
+## Run Model
+
+```{r Run Model}
+if (str_to_lower(params$user_inputs$msu$model_type) == "supervised") {
+text <- paste0("A ", params$user_inputs$msu$model_selected, " model predicting the ")
+text <- paste0(text, params$user_inputs$msu$response_var, " value was created with the purpose of running on ")
+text <- paste0(text, switch(params$user_inputs$rm$model_scope,
+                            "Current Data" = "the uploaded dataset only",
+                            "the uploaded dataset and future datasets"), ". ")
+text <- paste0(text, "Hyperparameter values were sourced from ")
+if (params$user_inputs$rm$hyperparam_source == "Default")
+  text <- paste0(text, "default values used for training ", params$user_inputs$msu$model_selected, " models")
+else {
+  text <- paste0(text, str_to_lower(params$user_inputs$rm$hyperparam_source), " values")
+}
+text <- paste0(text, ". \\\n")
+  text <- paste0(text, "The model was assessed using ", 
+                 switch(
+                        params$user_inputs$rm$subset_method,
+                        "K-fold" = paste0(params$user_inputs$rm$nfolds, "-fold"),
+                        "leave-one-out"
+                 ),
+          " cross-validation. ")
+  if (!is.null(params$plots$table$RM__model_eval__reduced__roc_curve))
+  {
+    text <- paste0(text, 
+          ifelse(params$user_inputs$rm$vi_choose == "value", "Features with an importance value above ", "The top "),
+          params$user_inputs$rm$vi_value,
+          " ",
+          switch(params$user_inputs$rm$vi_choose,
+                  value = "",
+                  count = " features",
+                  percent = " percent of features"),
+          " were used to create a reduced model.")
+  }
+} else {
+  text <- paste0("A ", params$user_inputs$msu$model_selected, " model was created ")
+  text <- paste0(text, "using hyperparameter values were sourced from ")
+  if (params$user_inputs$rm$hyperparam_source == "Default")
+    text <- paste0(text, "default values used for training ", params$user_inputs$msu$model_selected, " models")
+  else {
+    text <- paste0(text, str_to_lower(params$user_inputs$rm$hyperparam_source), " values")
+  }
+  text <- paste0(text, ". \\\n")
+}
+```
+
+`r text`
+\
+
+`r if (!is.null(params$plots$table$RM__rec_folds)) "Training Structure Recommendation: \\"`
+
+```{r Fold optimization}
+if (!is.null(params$plots$table$RM__rec_folds)) {
+  params$plots$table$RM__rec_folds
+}
+```
+`r if (!is.null(params$plots$table$RM__rec_folds)) "\\"`
+
+```{r}
+if (params$user_inputs$msu$model_type == "Supervised") {
+  text <- "Training Structure: \\"
+}
+```
+
+`r text`
+
+```{r Training Structure}
+if (params$user_inputs$msu$model_type == "Supervised") {
+  params$plots$table$RM__training_structure
+}
+```
+\
+
+Model Hyperparameters: \
+
+```{r Hyperparams}
+kable(params$user_inputs$rm$hyperparams)
+```
+\
+
+```{r}
+if (params$user_inputs$msu$model_type == "Supervised") {
+  text <- "Model ROC Curve: \\"
+} else {
+  text <- "Model Result: \\"
+}
+```
+
+`r text`
+
+```{r Accuracy}
+if (params$user_inputs$msu$model_type == "Supervised") {
+  if (is.null(params$plots$table$RM__model_eval__reduced__roc_curve)) {
+    params$plots$table$RM__model_eval__full__roc_curve
+  } else {
+    params$plots$table$RM__model_eval__reduced__roc_curve
+  }
+} else {
+  params$plots$table[[length(params$plots$table)]]
+}
+```
+\
+
+```{r}
+# Reduced
+```
+
+```{r}
+text <- ""
+if (params$user_inputs$msu$model_type == "Supervised") {
+  text <- "ROC Details: \\"
+}
+```
+
+`r text`
+
+```{r}
+if (params$user_inputs$msu$model_type == "Supervised") {
+  pred_df <- attr(params$omicsData$objRM, "prediction_train")
+  
+  if (!is.null(omicsData$objRM_reduced)) {
+    pred_df <- attr(params$omicsData$objRM_reduced, "prediction_train")
+  }
+  
+  if (length(unique(pred_df$response)) == 2) {
+    pos_class <- names(pred_df)[3]
+    p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))  
+    p[".level"] <- gsub(".pred_", "", pos_class)
+  } else {
+    pos_class <- names(pred_df)[3:(2+length(unique(pred_df$response)))]
+    p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))   
+  }
+  
+  auc_by_level <- p %>%
+    dplyr::group_by(.level) %>%
+    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity),
+                  sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
+    dplyr::summarise(sum(spc_diff*sens_avg, na.rm=T))
+  
+  names(auc_by_level)[1] <- "Group"
+  names(auc_by_level)[2] <- "AUC of ROC"
+  
+  auc_by_level
+  
+  kable(auc_by_level)
+}
+```

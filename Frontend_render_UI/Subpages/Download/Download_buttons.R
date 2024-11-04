@@ -1,5 +1,5 @@
 
-## Download behavoir
+## Download behavior
 
 observeEvent(input$makezipfile, {
   disable("makezipfile")
@@ -106,11 +106,19 @@ observeEvent(input$makezipfile, {
   } else file_names_tables <- NULL
   
   # Write .Rdata
-  
+
   # Write report
+  if (input$include_report) {
+    tryCatch({
+      withProgress(message = "Writing report file...", {
+        params <- list(user_inputs = reactiveValuesToList(user_inputs), omicsData = reactiveValuesToList(omicsData), tables = reactiveValuesToList(table_table_current), plots = reactiveValuesToList(plot_table_current), titleName = "SLOPE Report")
+        rmarkdown::render(paste0(orig_wd, "/www/markdowns/Report_Template.Rmd"), output_dir = getwd(), output_file = fs::path_sanitize(input$report_name), params = params, envir = new.env())
+      })
+    }, error = print)
+  }
   
   zip(zipfile = paste0(fname, ".zip"), 
-      files = c(file_names_tables, file_names_plots), 
+      files = c(file_names_tables, file_names_plots, fs::path_sanitize(input$report_name)), 
       flags = "-r")
   
   zipped_file$fs <- paste0(fname, ".zip")

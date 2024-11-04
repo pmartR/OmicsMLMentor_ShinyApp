@@ -38,6 +38,7 @@ observeEvent(c(input$holdout_done, input$cv_perform_done, input$cv_hp_done), {
 
 output$TS_preview_plot <- renderPlotly({
   
+  update <- omicsData$objRM
   data <- omicsData$objPP
   
   req(!is.null(input$cv_perform_option) || !is.null(input$numb_test) || 

@@ -2203,7 +2203,7 @@ assign_norm_output <- function(tab) {
       
       cond_fdata <- !is.null(input$use_fdata) && input$use_fdata == "fdata"
       
-      if(!cond_global) bias <- disabled(bias)
+      if(!cond_global && !cond_zero_one) bias <- disabled(bias)
       
       if ( # !cond_loess &&
         (!cond_zero_one && !cond_global) ||
