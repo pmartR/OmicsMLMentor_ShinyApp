@@ -471,6 +471,7 @@ observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVal
     # Sys.sleep(0.5) ## I think the debounce covers this
 
     isolate(try({
+
       thresholds <- list(
         keep = missingHandleSliderVals()$md_keep,
         impute = missingHandleSliderVals()$md_impute,
