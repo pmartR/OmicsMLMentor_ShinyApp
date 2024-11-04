@@ -155,7 +155,7 @@ observeEvent(
   }
   
   supervised <- supervised()
-  
+
   req(!is.null(supervised) && !is.na(supervised) &&
         ((!supervised && is.null(attr(temp_omic, "response_info"))) || 
            (supervised && !is.null(attr(temp_omic, "response_info"))))
@@ -818,6 +818,7 @@ output$pick_EM_model_UI <- renderUI({
     types_supported <- types_dashboard[types_dashboard %in% names(models_long_name)]
     
     choices <- models_long_name[types_supported]
+
   }
 
   pickerInput("pick_model_EM", label = "Select a model:",
