@@ -156,6 +156,8 @@ observeEvent(
   
   supervised <- supervised()
   
+  req(!is.null(supervised) && !is.na(supervised))
+  
   handles_regression <- if('continuous' %in% response_types_ag()) {
     TRUE
   } else {
@@ -548,6 +550,7 @@ observeEvent(
   )
   
   ## Add Rank column
+  browser()
   df$Rank <- 1:nrow(df)
   df <- df[c(ncol(df), 1:(ncol(df) - 1))]
   
@@ -681,14 +684,16 @@ get_em_column_info <- function() {
 observeEvent(input$em_column_hover, {
   req(!is.null(input$em_column_hover))
   
+  get_em <- get_em_column_info()
+  
   addPrompter(
     session, 
     paste0("em_info_", input$em_column_hover),
     title = paste0(
-        get_em_column_info()[["titles"]][[input$em_column_hover]],
+      get_em[["titles"]][[input$em_column_hover]],
         "\n\n",
         paste(
-          strwrap(get_em_column_info()[["summary"]][[input$em_column_hover]], width = 64),
+          strwrap(get_em[["summary"]][[input$em_column_hover]], width = 64),
           collapse = "\n"
         ),
         "\n\n",
@@ -701,15 +706,17 @@ observeEvent(input$em_column_hover, {
 observeEvent(input$em_column_info, {
   req(!is.null(input$em_column_info))
   
+  get_em <- get_em_column_info()
+  
   showModal(
     modalDialog(
-      title = get_em_column_info()[["titles"]][[input$em_column_info$name]],
-      get_em_column_info()[["summary"]][[input$em_column_info$name]],
+      title = get_em[["titles"]][[input$em_column_info$name]],
+      get_em[["summary"]][[input$em_column_info$name]],
       br(),
-      get_em_column_info()[["contents"]][[input$em_column_info$name]],
+      get_em[["contents"]][[input$em_column_info$name]],
       hr(),
       h4("Citations:"),
-      get_em_column_info()[["citations"]][[input$em_column_info$name]]
+      get_em[["citations"]][[input$em_column_info$name]]
     )
   )
 })
@@ -766,7 +773,11 @@ output$pick_EM_model_UI <- renderUI({
   
   selected <- isolate(input$pick_model_EM)
   
-  choices <- models_long_name[dashboard()$Method]
+  if(input$skip_ag && !is.null(input$pick_model)){
+    choices <- models_long_name[models_long_name == input$pick_model]
+  } else {
+    choices <- models_long_name[dashboard()$Method]
+  }
 
   pickerInput("pick_model_EM", label = "Select a model:",
               choices = choices[!is.na(choices)], 
@@ -777,26 +788,25 @@ output$pick_EM_model_UI <- renderUI({
 
 output$em_model_display_slider <- renderUI({
   
+  req(!input$skip_ag)
+  
+  max <- if(supervised()){
+    length(models_supervised)
+  } else length(models_unsupervised)
+  
+  value <- switch(
+    input$user_level_pick,
+    beginner = 3,
+    familiar = 5,
+    expert = max
+  )
+  
   sliderInput(
     "em_model_count",
     "How many top models to show?",
     min = 3,
-    max = ifelse(
-      input$ag_prompts == "supervised",
-      length(models_supervised),
-      length(models_unsupervised)
-    ), 
-    value = 
-      switch(
-        input$user_level_pick,
-        beginner = 3,
-        familiar = 5,
-        expert = ifelse(
-          input$ag_prompts == "supervised",
-          length(models_supervised),
-          length(models_unsupervised)
-        )
-      ),
+    max = max, 
+    value = value,
     step = 1
   )
   

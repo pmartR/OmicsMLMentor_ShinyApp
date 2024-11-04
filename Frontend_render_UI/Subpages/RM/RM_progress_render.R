@@ -1,5 +1,12 @@
 output$RM_progress_summary <- renderUI({
-  DTOutput("RM_progress_summary_table")
+  p1 <- DTOutput("RM_progress_summary_table")
+  p2 <- if(!is.null(omicsData$objRM_reduced)){
+    radioGroupButtons("reduced_full_summary", 
+                         choices = c("Full model", "Reduced model")
+                         )
+  } else NULL
+    
+  div(p1, br(), br(), p2)
 })
 
 output$RM_progress_summary_table <- renderDT({
@@ -7,31 +14,12 @@ output$RM_progress_summary_table <- renderDT({
     return(data.frame(Value = c("No data summary available for unsupervised models.", "Please see the plots available to the right.")))
   }
   
-  pred_df <- attr(omicsData$objRM, "prediction_train")
-  
-  if (!is.null(omicsData$objRM_reduced)) {
-    pred_df <- attr(omicsData$objRM_reduced, "prediction_train")
-  }
-  
-  if (length(unique(pred_df$response)) == 2) {
-    pos_class <- names(pred_df)[3]
-    p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))  
-    p[".level"] <- gsub(".pred_", "", pos_class)
+  if(input$reduced_full_summary){
+    attr(omicsData$objRM, "response_performance")
   } else {
-    pos_class <- names(pred_df)[3:(2+length(unique(pred_df$response)))]
-    p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))   
+    attr(omicsData$objRM_reduced, "response_performance")
   }
-  
-  auc_by_level <- p %>%
-    dplyr::group_by(.level) %>%
-    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity),
-                  sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
-    dplyr::summarise(sum(spc_diff*sens_avg, na.rm=T))
-  
-  names(auc_by_level)[1] <- "Group"
-  names(auc_by_level)[2] <- "AUC of ROC"
 
-  auc_by_level
 })
 
 output$RM_progress_next_steps <- renderUI({

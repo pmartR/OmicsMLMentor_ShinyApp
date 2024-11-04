@@ -585,6 +585,8 @@ observeEvent(c(input$keep_missing, input$missing_options, input$missingness_hand
       !is.null(input$missing_options)) {
     # Prevent user from Removing all biomolecules
     
+    Sys.sleep(0.5)
+    
     try({
       thresholds <- list(
         keep = missingHandleSliderVals()$md_keep,

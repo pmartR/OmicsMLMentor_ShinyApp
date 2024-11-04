@@ -135,11 +135,6 @@ output$f_data_response_picker_UI <- renderUI({
   )
 })
 
-output$ag_advanced_UI_select_model <- renderUI({
-  # req(input$user_level_pick == "expert")
-  checkboxInput("skip_ag", "I know what model I want to run.")
-})
-
 output$pick_model_group_pick_UI <- renderUI({
   
   req(!is.null(omicsData$objMSU$f_data) && 

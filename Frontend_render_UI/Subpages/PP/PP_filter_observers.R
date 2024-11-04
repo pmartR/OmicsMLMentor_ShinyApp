@@ -1070,6 +1070,7 @@ observeEvent(omicsData$objPP, {
       togglestate_add_tooltip(session,
                               paste0(name, "_add_edata_customfilt_ttip_control"),
                               condition = cond && !cond2,
+                              position="right",
                               tooltip_text = c(ttext[["BIOMOL_CUSTOMFILT_NONE_REMOVED"]],
                                                ttext[["BIOMOL_CUSTOMFILT_ALL_REMOVED"]])[c(!cond, cond2)]
       )
@@ -1399,7 +1400,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     
     df
     
-    }, options = list(dom = "tipr"))
+    }, options = list(dom = "tipr", scrollx = "500px"))
   
   output$after_filter_summary <- renderDT({
     
@@ -1413,7 +1414,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
     
     df
     
-    }, options = list(dom = "tipr"))
+    }, options = list(dom = "tipr", scrollx = "500px"),)
   
   # Modal
   showModal(
@@ -1428,12 +1429,13 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
                      HTML(filters_HTML[[name]]),
                      add,
                      hr(),
-                     splitLayout(
+                     column(5,
                        div(
                          strong("Before"),
                          DTOutput("before_filter_summary")
-                       ),
-                       div(
+                       )),
+                     column(2, "  "),
+                       column(5, div(
                          strong("After"),
                          DTOutput("after_filter_summary")
                        )
@@ -1597,6 +1599,9 @@ output$slider_options_filter_ui <- renderUI({
 
 # change individual slider values into individual thresholds
 missingHandleSliderValsFilter <- reactive({
+  
+  Sys.sleep(0.5)
+  
   thresholds <- list(
     md_keep = NULL,
     md_impute = NULL,

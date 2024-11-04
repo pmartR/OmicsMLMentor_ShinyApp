@@ -541,7 +541,7 @@ unsupervised_tab <- function() {
             div(
               "Selected model summary"
             ),
-            
+
             div(
               uiOutput("model_summary")
             ),
@@ -760,6 +760,7 @@ observeEvent(input$run_sl, {
       })
       }
     })
+    omicsData$objRM <- add_model_attributes(omicsData$objRM)
     
   } else {
 
@@ -817,6 +818,8 @@ observeEvent(input$run_sl, {
     }
 
   }
+  
+  omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F)
   
   
   shinyjs::show("complete_RM")
