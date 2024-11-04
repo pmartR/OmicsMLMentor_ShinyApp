@@ -8,6 +8,34 @@ output$Upload_progress_summary_table <- renderDT({
 })
 
 output$Upload_progress_next_steps <- renderUI({
+  user_inputs$upload <- list(
+    data_type = names(which(ALL_DATATYPE_NAMES == input$data_type)),
+    edata_source = ifelse(input$use_example, "Example Data", "Uploaded Data"),
+    edata_filename = if (is.null(input$e_data_file)) NULL else input$e_data_file$name,
+    emeta_source = ifelse(input$have_emeta, ifelse(input$use_example, "Example Data", "Uploaded Data"), "None"),
+    emeta_filename = if (is.null(input$e_meta_file)) NULL else input$e_meta_file$name,
+    edata_idcol = input$e_data_id_col,
+    edata_datascale = input$datascale,
+    edata_norm = input$normalized,
+    edata_nasymbol = input$na_symbol,
+    emeta_idcol = input$e_meta_id_col,
+    fdata_source = ifelse(
+      input$use_fdata == "f_data",
+      ifelse(
+        input$use_example_fdata,
+        "Example Data",
+        ifelse(
+          input$how_make_fdata == "upload",
+          "Uploaded Data",
+          "Experimental Data Column Names"
+        )
+      ),
+      "None"
+    ),
+    fdata_filename = if (is.null(input$f_data_file)) NULL else input$f_data_file$name,
+    fdata_idcol = input$f_data_id_col
+  )
+  
   tagList(
     tags$b("Quality Control"),
     tags$ul(

@@ -20,7 +20,7 @@ omicsData <- reactiveValues(obj = NULL,
                             objModel = NULL,
                             objPP = NULL,
                             objRM = NULL
-                            )
+)
 
 ## Peptide object specific variables
 pepQCData <- reactiveValues(
@@ -29,9 +29,18 @@ pepQCData <- reactiveValues(
   transforms_df = NULL
 )
 
+## User input storage for report generation
+user_inputs <- reactiveValues(
+  upload = NULL,
+  qc = NULL,
+  msu = NULL,
+  pp = NULL,
+  rm = NULL,
+)
+
 hp_inputs <- reactiveValues(
   input_names = list(),
-  input_labels = list()
+  input_labels = list(),
 )
 
 ## Determine if selected model is supervised

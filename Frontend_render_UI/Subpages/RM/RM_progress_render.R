@@ -22,15 +22,15 @@ output$RM_progress_summary_table <- renderDT({
     p <- yardstick::roc_curve(pred_df, response, dplyr::all_of(pos_class))   
   }
   
-  auc_by_level = p %>%
+  auc_by_level <- p %>%
     dplyr::group_by(.level) %>%
-    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity), 
+    dplyr::mutate(spc_diff = specificity - dplyr::lag(specificity),
                   sens_avg = (sensitivity + dplyr::lag(sensitivity))/2) %>%
     dplyr::summarise(sum(spc_diff*sens_avg, na.rm=T))
   
   names(auc_by_level)[1] <- "Group"
   names(auc_by_level)[2] <- "AUC of ROC"
-  
+
   auc_by_level
 })
 
@@ -52,25 +52,51 @@ output$RM_progress_next_steps <- renderUI({
     }
   }
   
-  # user_inputs$rm <- list(
-  #   model_scope = if(input$rm_prompts_train == "notrain") {
-  #     "Current Data"
-  #   } else {
-  #     "Current and New Data"
-  #   },
-  #   hyperparam_source = str_to_title(input$rm_prompts_hp),
-  #   subset_method = if (input$rm_prompts_hp == "tuned") {
-  #     ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
-  #   } else {
-  #     ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
-  #   },
-  #   nfolds = if (input$rm_prompts_hp == "tuned") {
-  #     input$nFolds_hp %>% as.character()
-  #   } else {
-  #     input$nFolds_cv %>% as.character()
-  #   },
-  #   hyperparams = df
-  # )
+  user_inputs$rm <- list(
+    model_scope = 
+      if (!is.null(input$rm_prompts_train)) {
+        if(input$rm_prompts_train == "notrain") {
+          "Current Data"
+        } else {
+          "Current and New Data"
+        }
+      } else {
+        NULL
+      },
+    hyperparam_source = str_to_title(input$rm_prompts_hp),
+    subset_method = 
+      if (!is.null(input$rm_prompts_train)) {
+        if (input$rm_prompts_hp == "tuned") {
+          ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
+        } else {
+          ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
+        }
+      } else {
+        NULL
+      },
+    nfolds = 
+      if (!is.null(input$rm_prompts_train)) {
+        if (input$rm_prompts_hp == "tuned") {
+          input$nFolds_hp %>% as.character()
+        } else {
+          input$nFolds_cv %>% as.character()
+        }
+      } else {
+        NULL
+      },
+    hyperparams = df,
+    vi_choose = 
+      if (isTruthy(input$feature_select_posthoc)) {
+        input$vi_choose
+      },
+    vi_value =
+      if (isTruthy(input$feature_select_posthoc)) {
+        switch(input$vi_choose,
+               value = input$vi_thresh,
+               count = input$vi_thresh_count,
+               percent = input$vi_thresh_pct)
+      }
+  )
   
   tagList(
     tags$b("Download"),
@@ -109,50 +135,75 @@ output$RM_progress_inputs_list <- renderUI({
 })
 
 output$RM_progress_inputs_table <- renderTable({
+  
   df <- data.frame(
     check.names = FALSE,
     `Input` = c(
-      "Model Scope",
+      if (!is.null(input$rm_prompts_train)) "Model Scope" else NULL,
       "Hyperparameters Used"
     ),
     `Value` = c(
-      if(input$rm_prompts_train == "notrain") {
-        "Current Data"
+      if (!is.null(input$rm_prompts_train)) {
+        if(input$rm_prompts_train == "notrain") {
+          "Current Data"
+        } else {
+          "Current and New Data"
+        }
       } else {
-        "Current and New Data"
+        NULL
       },
       str_to_title(input$rm_prompts_hp)
     )
   )
   
-  if (input$rm_prompts_hp == "tuned") {
-    if (isTruthy(input$cv_hp_option)) {
-      df <- df %>% add_row(
-        `Input` = "Data Subsetting Method",
-        `Value` = ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
-      )
+  if (!is.null(input$rm_prompts_train)) {
+    if (input$rm_prompts_hp == "tuned") {
+      if (isTruthy(input$cv_hp_option)) {
+        df <- df %>% add_row(
+          `Input` = "Data Subsetting Method",
+          `Value` = ifelse(input$cv_hp_option == "loocv", "Leave-one-out", "K-fold")
+        )
+      }
+      
+      if (isTruthy(input$cv_hp_option) && input$cv_hp_option == "kfcv") {
+        df <- df %>% add_row(
+          `Input` = "Number of Folds",
+          `Value` = input$nFolds_hp %>% as.character()
+        )
+      }
+    } else {
+      if (isTruthy(input$cv_perform_option)) {
+        df <- df %>% add_row(
+          `Input` = "Data Subsetting Method",
+          `Value` = ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
+        )
+      }
+      
+      if (isTruthy(input$cv_perform_option) && input$cv_perform_option == "kfcv") {
+        df <- df %>% add_row(
+          `Input` = "Number of Folds",
+          `Value` = input$nFolds_cv %>% as.character()
+        )
+      }
     }
-    
-    if (isTruthy(input$cv_hp_option) && input$cv_hp_option == "kfcv") {
-      df <- df %>% add_row(
-        `Input` = "Number of Folds",
-        `Value` = input$nFolds_hp %>% as.character()
+  }
+  
+  if (isTruthy(input$feature_select_posthoc)) {
+    df <- df %>% add_row(
+      `Input` = "Reduced Model Feature Cutoff",
+      `Value` = paste0(
+        ifelse(input$vi_choose == "value", "", "Top "),
+        switch(input$vi_choose,
+               value = input$vi_thresh,
+               count = input$vi_thresh_count,
+               percent = input$vi_thresh_percent),
+        " ",
+        switch(input$vi_choose,
+               value = "",
+               count = " features",
+               percent = " percent of features")
       )
-    }
-  } else {
-    if (isTruthy(input$cv_perform_option)) {
-      df <- df %>% add_row(
-        `Input` = "Data Subsetting Method",
-        `Value` = ifelse(input$cv_perform_option == "loocv", "Leave-one-out", "K-fold")
-      )
-    }
-    
-    if (isTruthy(input$cv_perform_option) && input$cv_perform_option == "kfcv") {
-      df <- df %>% add_row(
-        `Input` = "Number of Folds",
-        `Value` = input$nFolds_cv %>% as.character()
-      )
-    }
+    )
   }
   
   if (length(hp_inputs$input_names) > 0) {

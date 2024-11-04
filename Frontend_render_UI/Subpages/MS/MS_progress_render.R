@@ -7,6 +7,20 @@ output$MSetup_progress_summary_table <- renderDT({
 })
 
 output$MSetup_progress_next_steps <- renderUI({
+  user_inputs$msu <- list(
+    tracked_cols = paste(input$f_data_track, collapse = ", "),
+    categorical_cols = paste(input$f_data_cats, collapse = ", "),
+    response_var = input$f_data_response_picker,
+    model_type = str_to_title(input$ag_prompts),
+    model_priority = ifelse(
+      is.null(input$ag_prompts_supervised),
+      str_to_title(input$ag_prompts_unsupervised),
+      str_to_title(input$ag_prompts_supervised)
+    ),
+    model_selected_index = which(table_table_current$table$MSU__expert_mentor_summary$Method == names(which(models_long_name == input$pick_model_EM))[1]),
+    model_selected = names(which(models_long_name == input$pick_model_EM))[1]
+  )
+  
   tagList(
     tags$b("Pre-processing"),
     tags$ul(

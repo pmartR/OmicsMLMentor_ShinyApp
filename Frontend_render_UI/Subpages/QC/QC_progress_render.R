@@ -7,6 +7,22 @@ output$QC_progress_summary_table <- renderDT({
 })
 
 output$QC_progress_next_steps <- renderUI({
+  user_inputs$qc <- list(
+    refnorm_applied = input$Nmrdata_reference_choice,
+    refnorm_source = input$Nmrdata_reference_source,
+    refnorm_identifier = input$Nmrdata_picker_reference,
+    ref_group = input$Isobaricpepdata_ref_group,
+    ref_col = input$Isobaricpepdata_ref_col,
+    ref_notation = input$Isobaricpepdata_ref_notation,
+    single_obs_removed = ifelse(is.null(input$QC_add_molfilt) || input$QC_add_molfilt, "Yes", "No"),
+    outliers_removed = ifelse(is.null(input$QC_rmdfilt_sample_remove), "None", paste(input$QC_rmdfilt_sample_remove, collapse = ", ")),
+    min_pct_sample = input$missing_value_thresh,
+    missingdata_kept = input$keep_missing,
+    handle_impute = ifelse(is.null(missingHandleSliderVals()$md_impute), "None", paste(missingHandleSliderVals()$md_impute, collapse = "-")),
+    handle_convert = ifelse(is.null(missingHandleSliderVals()$md_convert), "None", paste(missingHandleSliderVals()$md_convert, collapse = "-")),
+    handle_remove = ifelse(is.null(missingHandleSliderVals()$md_remove), "None", paste(missingHandleSliderVals()$md_remove, collapse = "-"))
+  )
+  
   tagList(
     tags$b("Model Set-Up"),
     tags$ul(
@@ -58,6 +74,47 @@ output$QC_progress_inputs_table <- renderTable({
       input$keep_missing
     )
   )
+  
+  if ("nmrData" %in% class(omicsData$obj)) {
+    df <- df %>% add_row(
+      `Input` = "Reference Normalization Applied",
+      `Value` = input$Nmrdata_reference_choice,
+      .before = 1
+    )
+    
+    if (input$Nmrdata_reference_choice == "Yes")
+    {
+      df <- df %>% add_row(
+        `Input` = "Reference Normalization Source",
+        `Value` = input$Nmrdata_reference_source,
+        .before = 2
+      )
+      
+      df <- df %>% add_row(
+        `Input` = "Reference Normalization Identifier",
+        `Value` = input$Nmrdata_picker_reference,
+        .before = 2
+      )
+    }
+  }
+  
+  if ("isobaricpepData" %in% class(omicsData$obj)) {
+    df <- df %>% add_row(
+      `Input` = "Reference Group Column",
+      `Value` = input$Isobaricpepdata_ref_group,
+      .before = 1
+    )
+    df <- df %>% add_row(
+      `Input` = "Reference Sample Designation Column",
+      `Value` = input$Isobaricpepdata_ref_col,
+      .before = 1
+    )
+    df <- df %>% add_row(
+      `Input` = "Reference Sample Notation",
+      `Value` = input$Isobaricpepdata_ref_notation,
+      .before = 1
+    )
+  }
   
   if (input$keep_missing == "No") {
     df <- rbind(df, data.frame(
