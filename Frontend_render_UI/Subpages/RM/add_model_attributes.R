@@ -3,6 +3,7 @@
 add_model_attributes <- function(model, supervised = T, model_name){
   
   model <- add_SLOPE_model_name(model, model_name)
+
   if(supervised) model <- add_attr_response_perf(model)
   model
   
@@ -30,7 +31,6 @@ add_attr_response_perf <- function(model){
     attr(model, "response_performance") <- df
     return(model)
   }
-  
   
   ### Grab classes
   if (length(unique(pred_df$response)) == 2) {
