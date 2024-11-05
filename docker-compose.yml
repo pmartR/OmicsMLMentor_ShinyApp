@@ -2,13 +2,20 @@ version: "3"
 services:
     slope-app: 
         profiles: ['', 'map']
-        image: slope:latest
+        image: "code-registry.emsl.pnl.gov/multiomics-analyses/slope-app:${TAG:-latest}"
         container_name: slope-app
         volumes:
             - "./cfg/minio_config_compose.yml:/srv/shiny-server/slope/cfg/minio_config.yml"
         ports:
             - "8300:${SHINY_PORT:-2800}"
             - "8301:2801"
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                BASE_IMAGE: "${BASE_IMAGE:-code-registry.emsl.pnl.gov/multiomics-analyses/slope-app"
+                BASE_TAG: "${BASE_TAG:-latest}"
+                
     minio:
         profiles: ['map']
         image: minio/minio

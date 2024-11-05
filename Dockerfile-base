@@ -2,7 +2,7 @@
 ## SLOPER base dependencies image.  Installs system libraries, R libraries, and others.
 ## Top image extends this image and copies the source code for the app
 
-ARG cloud_version=map
+ARG cloud_version=aws
 
 # Install latest version of rocker image
 FROM rocker/shiny:4.2.0 AS base
@@ -60,7 +60,7 @@ COPY renv ./renv
 
 RUN R -e "install.packages('BiocManager')"
 
-FROM base AS multiprobe
+FROM base AS aws
 
 RUN echo "Building MultiProbe image."
 
@@ -81,9 +81,6 @@ RUN R -e "options(repos=c('CRAN' = 'https://cloud.r-project.org', BiocManager::r
 RUN R -e "remotes::install_local('./renv/local/mapdataaccess-lib.zip')" 
 
 FROM ${cloud_version} AS final
-
-# install slope separately
-RUN R -e "remotes::install_local('./renv/local/sloper.zip')"
 
 # python and requirements
 COPY requirements.txt .
