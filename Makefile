@@ -97,8 +97,8 @@ pull-image:
 build_base_map:
 	docker build \
 		-f Dockerfile-base \
-		-t code-registry.emsl.pnl.gov/multiomics-analyses/slope/slope-app:${BASE_TAG} \
-		--build-arg cloud_version=${CLOUD_VERSION} \
+		-t code-registry.emsl.pnl.gov/multiomics-analyses/slope/slope-app/base:${BASE_TAG} \
+		--build-arg cloud_version=map \
 		.
 		
 build_top_map:
