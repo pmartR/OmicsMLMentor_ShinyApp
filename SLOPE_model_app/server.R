@@ -17,10 +17,21 @@ shinyServer(function(session,input,output){
   output$transformation_backfill_text <- renderText({
     
     req(!is.null(omicsData$model) && !is.null(omicsData$obj))
-    num_in_og <- length(attributes(omicsData$model$full_model)$feature_info$names_orig)
-    num_in_both <- sum(unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$model$full_model)$feature_info$names_orig)
+    
+    # determine the number of 
+    num_in_og <- length(attributes(omicsData$model$model)$feature_info$names_orig)
+    
+    if("pepData" %in% class(omicsData$obj)){
+      # use emeta information
+      emeta_cname = pmartR::get_emeta_cname(omicsData$obj)
+      num_in_both <- sum(unique(omicsData$obj$e_meta[[emeta_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+      num_in_just_new <- sum(!unique(omicsData$obj$e_meta[[emeta_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+    } else {
+      edata_cname = pmartR::get_edata_cname(omicsData$obj)
+      num_in_both <- sum(unique(omicsData$obj$e_data[[edata_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+      num_in_just_new <- sum(!unique(omicsData$obj$e_data[[edata_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+    }
     num_in_og_not_new <- num_in_og - num_in_both
-    num_in_just_new <- sum(!unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$model$full_model)$feature_info$names_orig)
     
     paste0("The original model had ", num_in_og, " distinct molecules. Of those molecules, ", num_in_og_not_new,
            " were not identified in the new dataset and will need to be backfilled as 0s for the model to run.", 
@@ -32,11 +43,20 @@ shinyServer(function(session,input,output){
   output$transformation_backfill_plot <- renderPlotly({
     
     req(!is.null(omicsData$model) && !is.null(omicsData$obj))
-    num_in_og <- length(attributes(omicsData$model$full_model)$feature_info$names_orig)
-    num_in_both <- sum(unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$model$full_model)$feature_info$names_orig)
-    num_in_og_not_new <- num_in_og - num_in_both
-    num_in_just_new <- sum(!unique(omicsData$obj$e_meta$Leading.razor.protein) %in% attributes(omicsData$model$full_model)$feature_info$names_orig)
+    # determine the number of 
+    num_in_og <- length(attributes(omicsData$model$model)$feature_info$names_orig)
     
+    if("pepData" %in% class(omicsData$obj)){
+      # use emeta information
+      emeta_cname = pmartR::get_emeta_cname(omicsData$obj)
+      num_in_both <- sum(unique(omicsData$obj$e_meta[[emeta_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+      num_in_just_new <- sum(!unique(omicsData$obj$e_meta[[emeta_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+    } else {
+      edata_cname = pmartR::get_edata_cname(omicsData$obj)
+      num_in_both <- sum(unique(omicsData$obj$e_data[[edata_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+      num_in_just_new <- sum(!unique(omicsData$obj$e_data[[edata_cname]]) %in% attributes(omicsData$model$model)$feature_info$names_orig)
+    }
+    num_in_og_not_new <- num_in_og - num_in_both
     backfill_plot <- data.frame(Dataset = factor(c("Only Original","Both", "Only New"),levels = c("Only Original","Both", "Only New")),
                                 Value = c(num_in_og_not_new,num_in_both,num_in_just_new)) %>%
       ggplot(aes(x = Dataset, y = Value,fill = Dataset)) + 
@@ -54,7 +74,7 @@ shinyServer(function(session,input,output){
     
     # pipeline
     omics_processed <- omicsData$obj
-    model <- omicsData$model$full_model
+    model <- omicsData$model$model
     norm_data <- omicsData$model$norm_omics
     pp_data <- omicsData$model$pp_omics
     
@@ -149,7 +169,8 @@ shinyServer(function(session,input,output){
   })
   
   observeEvent(input$apply_filters,{
-    if(input$apply_filters){
+    req(!is.null(input$apply_filters))
+    if(input$apply_filters == "Yes"){
       showModal(
         modalDialog(
           title = "Alert!",
@@ -158,20 +179,21 @@ shinyServer(function(session,input,output){
           footer = modalButton("OK")
         )
       )
-      enable(id = "confirm_filters")
+      #enable(id = "confirm_filters")
     }
   })
   
   observeEvent(input$confirm_filters,{
     req(omicsData$obj_scaled)
+    req(input$apply_filters)
     
     # pipeline
     omics_processed <- omicsData$obj_scaled
-    model <- omicsData$model$full_model
+    model <- omicsData$model$model
     norm_data <- omicsData$model$norm_omics
     pp_data <- omicsData$model$pp_omics
     
-    if(input$apply_filters){
+    if(input$apply_filters == "Yes"){
       # this will be used in all scenarios - will need to build this up
       # more with more filters in the future
       all_filter_functions <- c("custom_filter","molecule_filter","cv_filter","imputation_filter")
@@ -197,11 +219,20 @@ shinyServer(function(session,input,output){
       # determine what molecules will stay regardless, because they are
       # found in the predictions dataset
       # edata of new dataset is emeta of pp omics dataset
-      og_edata_cname = pmartR::get_emeta_cname(omicsData$obj_scaled)
-      # peptide cname for new data
-      new_edata_cname = pmartR::get_edata_cname(omicsData$obj_scaled)
-      og_proteins = as.character(omicsData$model$pp_omics$e_data[[og_edata_cname]])
-      og_peptides = as.character(omicsData$model$norm_omics$e_data$Sequence)
+      
+      if("pepData" %in% class(omicsData$obj_scaled)){
+        og_edata_cname = pmartR::get_emeta_cname(omicsData$obj_scaled)
+        # peptide cname for new data
+        new_edata_cname = pmartR::get_edata_cname(omicsData$obj_scaled)
+        og_proteins = as.character(omicsData$model$pp_omics$e_data[[og_edata_cname]])
+        pep_cname = pmartR::get_edata_cname(omicsData$model$norm_omics)
+        og_molecules = as.character(omicsData$model$norm_omics$e_data[[pep_cname]])
+      } else {
+        og_edata_cname = pmartR::get_edata_cname(omicsData$obj_scaled)
+        new_edata_cname = pmartR::get_edata_cname(omicsData$obj_scaled)
+        og_molecules = as.character(omicsData$model$norm_omics$e_data[[og_edata_cname]])
+      }
+      
       
       # iterate through the specific filters for this dataset
       # do everything except imputation (that is done last)
@@ -234,7 +265,7 @@ shinyServer(function(session,input,output){
           )
           
           filtObj_custom <- filtObj %>% data.frame() %>%
-            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_peptides)) %>%
+            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_molecules)) %>%
             dplyr::filter(Num_Observations < threshold)
           
           if(nrow(filtObj_custom) > 0){
@@ -260,7 +291,7 @@ shinyServer(function(session,input,output){
                                       use_groups)
           
           filtObj_custom <- filtObj %>% data.frame() %>%
-            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_peptides)) %>%
+            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_molecules)) %>%
             dplyr::filter(CV < threshold)
           
           if(nrow(filtObj_custom) > 0){
@@ -280,8 +311,11 @@ shinyServer(function(session,input,output){
       
       # separate step for imputation
       if(("imputationFilt" %in% names(all_filter_requirements_specific)) & (!"pepData" %in% class(omicsData$model$norm_omics))){
-        omics_processed_sl <- slopeR::imputation(omics_processed_sl)
+        impObj <- slopeR::imputation(omics_processed_sl)
+        omics_processed_sl <- slopeR::apply_imputation(impObj,omics_processed_sl)
       }
+      
+      # update for the other ones (0-1), and other
     }
     
     # for normalization have to convert back to not sl object
@@ -297,7 +331,7 @@ shinyServer(function(session,input,output){
     }
     
     # convert to sl object
-    omics_sl <- as.slData(omics_processed_sl)
+    omics_sl <- as.slData(omicsData$obj_norm)
     omicsData$obj_sl <- omics_sl
 
     
@@ -344,39 +378,57 @@ shinyServer(function(session,input,output){
   
   # run model
   observeEvent(input$run_model,{
-    
+    req(!is.null(omicsData$obj_scaled))
     req(!is.null(omicsData$obj_pp))
-    req(!is.null(omicsData$model$full_model))
+    req(!is.null(omicsData$model$model))
     
     # if the data is rolled up use that version, otherwise use OG slope version
     omicsNewdata = omicsData$obj_pp
     
-    orig_names <- attr(omicsData$model$full_model,"feature_info")
-    # remove columns not found in training data
-    pro_edata <- omicsNewdata$e_data
-    pro_edata <- pro_edata[unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)]) %in% orig_names$names_orig,]
-    # find which are found in the OG version but not in the new data
-    # we will want
-    in_og_not_new <- orig_names$names_orig[!orig_names$names_orig %in% unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)])]
+    orig_names <- attr(omicsData$model$model,"feature_info")
     
-    in_og_not_new_df <- data.frame(emetname = in_og_not_new,
-                                   matrix(0,ncol = nrow(omicsNewdata$f_data),nrow = length(in_og_not_new)))
-    emetCol = which(colnames(in_og_not_new_df) == "emetname")
-    colnames(in_og_not_new_df)[emetCol] <- pmartR::get_emeta_cname(omicsNewdata)
-    colnames(in_og_not_new_df)[-emetCol] <- colnames(pro_edata)[-emetCol]
-    # add into old dataset
-    pro_edata <- dplyr::bind_rows(pro_edata,in_og_not_new_df)
-    
-    # arrange them to match the original features
-    pro_edata <- pro_edata[match(orig_names$names_orig,unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)])),]
-    
+    if("pepData" %in% class(omicsData$obj_scaled)){
+      # remove columns not found in training data
+      pro_edata <- omicsNewdata$e_data
+      pro_edata <- pro_edata[unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)]) %in% orig_names$names_orig,]
+      # find which are found in the OG version but not in the new data
+      # we will want
+      in_og_not_new <- orig_names$names_orig[!orig_names$names_orig %in% unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)])]
+      
+      in_og_not_new_df <- data.frame(emetname = in_og_not_new,
+                                     matrix(0,ncol = nrow(omicsNewdata$f_data),nrow = length(in_og_not_new)))
+      emetCol = which(colnames(in_og_not_new_df) == "emetname")
+      colnames(in_og_not_new_df)[emetCol] <- pmartR::get_emeta_cname(omicsNewdata)
+      colnames(in_og_not_new_df)[-emetCol] <- colnames(pro_edata)[-emetCol]
+      # add into old dataset
+      pro_edata <- dplyr::bind_rows(pro_edata,in_og_not_new_df)
+      # arrange them to match the original features
+      pro_edata <- pro_edata[match(orig_names$names_orig,unlist(pro_edata[pmartR::get_emeta_cname(omicsNewdata)])),]
+    } else {
+      pro_edata <- omicsNewdata$e_data
+      pro_edata <- pro_edata[unlist(pro_edata[pmartR::get_edata_cname(omicsNewdata)]) %in% orig_names$names_orig,]
+      # find which are found in the OG version but not in the new data
+      # we will want
+      in_og_not_new <- orig_names$names_orig[!orig_names$names_orig %in% unlist(pro_edata[pmartR::get_edata_cname(omicsNewdata)])]
+      
+      in_og_not_new_df <- data.frame(edatname = in_og_not_new,
+                                     matrix(0,ncol = nrow(omicsNewdata$f_data),nrow = length(in_og_not_new)))
+      edatCol = which(colnames(in_og_not_new_df) == "edatname")
+      colnames(in_og_not_new_df)[edatCol] <- pmartR::get_edata_cname(omicsNewdata)
+      colnames(in_og_not_new_df)[-edatCol] <- colnames(pro_edata)[-edatCol]
+      # add into old dataset
+      pro_edata <- dplyr::bind_rows(pro_edata,in_og_not_new_df)
+      # arrange them to match the original features
+      pro_edata <- pro_edata[match(orig_names$names_orig,unlist(pro_edata[pmartR::get_edata_cname(omicsNewdata)])),]
+    }
+
     # now set up new data to be ran with predictions
     new_info <- pro_edata[,-which(colnames(pro_edata) == pmartR::get_edata_cname(omicsNewdata))] %>%
       t() %>% data.frame()
     names(new_info) <- paste0("feature_",seq(from = 1, to = ncol(new_info)))
     
     # unique levels in the model
-    unique_outcomes <- unlist(unique(omicsData$model$full_model$pre$mold$outcomes))
+    unique_outcomes <- unlist(unique(omicsData$model$model$pre$mold$outcomes))
     
     contains_exact_values <- function(column, values) {
       all(sort(column[!is.na(column)]) %in% (values))
@@ -406,13 +458,14 @@ shinyServer(function(session,input,output){
     
     # run predictions
     prediction_test_df <- tibble(response = factor(unlist(omicsNewdata$f_data[matching_column]),levels = unique_outcomes),
-                                 .pred_class = unlist(predict(omicsData$model$full_model$fit$fit,new_data = new_info))) %>%
-      dplyr::bind_cols(data.frame(predict(omicsData$model$full_model$fit$fit,new_data = new_info,type = "prob"))) %>%
+                                 .pred_class = unlist(predict(omicsData$model$model$fit$fit,new_data = new_info))) %>%
+      dplyr::bind_cols(data.frame(predict(omicsData$model$model$fit$fit,new_data = new_info,type = "prob"))) %>%
       dplyr::mutate(`__SAMPNAMES__` = unlist(omicsNewdata$f_data[pmartR::get_fdata_cname(omicsNewdata)]))
     # full model already an slRes object
-    full_model_test <- omicsData$model$full_model
-    full_model_train <- omicsData$model$full_model
+    full_model_test <- omicsData$model$model
+    full_model_train <- omicsData$model$model
     
+    attributes(full_model_train)$prediction_test <- attributes(full_model_train)$prediction_test
     attributes(full_model_train)$prediction_test <- attributes(full_model_train)$prediction_train
     # update it to match OOB estimates
     #attributes(full_model_train)$prediction_test$.pred_Mock <- full_model_train$fit$fit$fit$votes[,1]
