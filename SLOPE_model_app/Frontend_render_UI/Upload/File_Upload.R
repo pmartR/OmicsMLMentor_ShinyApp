@@ -66,7 +66,7 @@ output[["e_data_upload_UI"]] <- renderUI({
   
   dt <- class(reactive_dataholder$model$model$norm_omics)
   
-  fileinput_UI("e_data_upload", "e_data", is_RNA = dt == "RNA-seq")
+  fileinput_UI("e_data_upload", "e_data", is_RNA = "RNA-seq" %in% dt)
 })
 
 output[["f_data_upload_UI"]] <- renderUI({
@@ -164,7 +164,7 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
           reactive_dataholder[[label]]$model <- readRDS(
             input[[paste0(label, "_file")]]$datapath)
         
-          model <- reactive_dataholder[[label]]$model$full_model
+          model <- reactive_dataholder[[label]]$model$model
           
         responses <- unique(model$pre$mold$outcomes[[1]])
         og_train_size <- model$pre$mold$blueprint$recipe$tr_info[[1]]

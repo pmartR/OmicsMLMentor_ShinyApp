@@ -22,6 +22,10 @@ output$e_data_load_UI <- renderUI({
   req(!is.null(reactive_dataholder$model$model) && input$upload_model_done > 0)
   
   dt <- class(reactive_dataholder$model$model$norm_omics)
+  # if we slData as well as other datasets, we run into issues
+  if("slData" %in% dt){
+    dt <- dt[dt != "slData"]
+  }
   
   collapseBox(
     value = "data_upload_edata",
@@ -254,7 +258,7 @@ output$f_data_spec_UI <- renderUI({
   selected <- colnames(f_data)[best_col]
   
   
-  check_cols <- as.character(unique(reactive_dataholder$model$model$full_model$pre$mold$outcomes[[1]]))
+  check_cols <- as.character(unique(reactive_dataholder$model$model$model$pre$mold$outcomes[[1]]))
   f_data <- reactive_dataholder[["f_data"]]$file
   
   best_col <- which.max(map_int(colnames(f_data), function(col){
