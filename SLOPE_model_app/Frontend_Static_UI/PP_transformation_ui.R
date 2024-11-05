@@ -30,9 +30,13 @@ preprocess_UI <- function() {
         collapseBox(
           div(
             "Filters",
-            checkboxInput("apply_filters","Apply Filters",value = FALSE),
-            checkboxInput("apply_without_filters","Continue without applying filters",value = FALSE),
-            disabled(actionButton("confirm_filters","Confirm"))
+            radioGroupButtons(
+              "apply_filters",
+              "Apply Filters Used in Original Model?",
+              choices = c("Yes", "No"),
+              selected = "No"
+            ),
+            actionButton("confirm_filters","Confirm")
           ),
           value = "filters",
           collapsed = F
