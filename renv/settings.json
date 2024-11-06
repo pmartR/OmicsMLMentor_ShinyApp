@@ -3,7 +3,10 @@
   "external.libraries": [],
   "ignored.packages": [
     "devtools",
-    "testthat"
+    "testthat",
+    "slopeR",
+    "mapDataAccess",
+    "shinytest2"
   ],
   "package.dependency.fields": [
     "Imports",

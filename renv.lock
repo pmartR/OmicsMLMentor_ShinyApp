@@ -321,17 +321,6 @@
       "Repository": "CRAN",
       "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
     },
-    "RcppTOML": {
-      "Package": "RcppTOML",
-      "Version": "0.2.2",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "Rcpp"
-      ],
-      "Hash": "c232938949fcd8126034419cc529333a"
-    },
     "RcppZiggurat": {
       "Package": "RcppZiggurat",
       "Version": "0.1.6",
@@ -1260,16 +1249,6 @@
       ],
       "Hash": "ce4c3edb05233800669102440c26a435"
     },
-    "here": {
-      "Package": "here",
-      "Version": "1.0.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "rprojroot"
-      ],
-      "Hash": "24b224366f9c2e7534d2344d10d59211"
-    },
     "highr": {
       "Package": "highr",
       "Version": "0.10",
@@ -1622,20 +1601,6 @@
         "R"
       ],
       "Hash": "7ce2733a9826b3aeb1775d56fd305472"
-    },
-    "mapDataAccess": {
-      "Package": "mapDataAccess",
-      "Version": "0.0.0.10",
-      "Source": "Local",
-      "RemoteType": "local",
-      "RemoteUrl": "/Users/clab683/git_repos/SLOPE-app/renv/local/mapdataaccess-lib.zip",
-      "Requirements": [
-        "magrittr",
-        "reticulate",
-        "uuid",
-        "yaml"
-      ],
-      "Hash": "72919dd1d67a8e00d4e1835662cd3755"
     },
     "markdown": {
       "Package": "markdown",
@@ -1996,7 +1961,8 @@
     "pmartR": {
       "Package": "pmartR",
       "Version": "2.4.6",
-      "Source": "./renv/local/pmartR.zip",
+      "Source": "Bioconductor",
+      "Repository": "CRAN",
       "Requirements": [
         "BH",
         "R",
@@ -2021,7 +1987,7 @@
         "stringr",
         "tidyr"
       ],
-      "Hash": "5ebda0dd794cae227809aac64a97754b"
+      "Hash": "0f8eac0191db48815bafcd70e1a2ebf5"
     },
     "pmartRdata": {
       "Package": "pmartRdata",
@@ -2036,16 +2002,6 @@
         "R"
       ],
       "Hash": "5b8d691fdd158eba50fb7cc80af99412"
-    },
-    "png": {
-      "Package": "png",
-      "Version": "0.1-8",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "bd54ba8a0a5faded999a7aab6e46b374"
     },
     "prettyunits": {
       "Package": "prettyunits",
@@ -2284,27 +2240,6 @@
       ],
       "Hash": "bb5996d0bd962d214a11140d77589917"
     },
-    "reticulate": {
-      "Package": "reticulate",
-      "Version": "1.28",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "Matrix",
-        "R",
-        "Rcpp",
-        "RcppTOML",
-        "graphics",
-        "here",
-        "jsonlite",
-        "methods",
-        "png",
-        "rappdirs",
-        "utils",
-        "withr"
-      ],
-      "Hash": "86c441bf33e1d608db773cb94b848458"
-    },
     "rintrojs": {
       "Package": "rintrojs",
       "Version": "0.3.4",
@@ -2379,16 +2314,6 @@
         "stats"
       ],
       "Hash": "b3c892a81783376cc2204af0f5805a80"
-    },
-    "rprojroot": {
-      "Package": "rprojroot",
-      "Version": "2.0.3",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "1de7ab598047a87bba48434ba35d497d"
     },
     "rrcov": {
       "Package": "rrcov",
@@ -2689,32 +2614,6 @@
         "warp"
       ],
       "Hash": "c1c73df260af9e1e3692eb3b8e1ecb88"
-    },
-    "slopeR": {
-      "Package": "slopeR",
-      "Version": "0.1.0",
-      "Source": "Local",
-      "RemoteType": "local",
-      "RemoteUrl": "/Users/clab683/git_repos/SLOPE-app/renv/local/sloper.zip",
-      "Requirements": [
-        "Amelia",
-        "R",
-        "dplyr",
-        "forcats",
-        "foreach",
-        "ggplot2",
-        "magrittr",
-        "parsnip",
-        "pmartR",
-        "purrr",
-        "recipes",
-        "rsample",
-        "tidyr",
-        "tune",
-        "workflows",
-        "yardstick"
-      ],
-      "Hash": "1839d6f5064b2bd1120ed5d75fe0f56f"
     },
     "snow": {
       "Package": "snow",
