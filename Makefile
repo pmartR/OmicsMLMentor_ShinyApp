@@ -19,6 +19,7 @@ ENV ?= dev
 IMAGE := slope
 TAG := latest
 BASE_TAG := latest
+PROFILE := map
 TAG_LATEST := 1
 REPO := $(shell echo ${ENV}-${IMAGE} | tr [:upper:] [:lower:])
 
@@ -97,14 +98,14 @@ pull-image:
 build_base_map:
 	docker build \
 		-f Dockerfile-base \
-		-t code-registry.emsl.pnl.gov/multiomics-analyses/slope/slope-app/base:${BASE_TAG} \
+		-t code-registry.emsl.pnl.gov/multiomics-analyses/slope-app/base:${BASE_TAG} \
 		--build-arg cloud_version=map \
 		.
 		
 build_top_map:
 	docker build \
 		-t code-registry.emsl.pnl.gov/multiomics-analyses/slope-app:${TAG} \
-		--build-arg BASE_IMAGE=code-registry.emsl.pnl.gov/multiomics-analyses/slope/base \
+		--build-arg BASE_IMAGE=code-registry.emsl.pnl.gov/multiomics-analyses/slope-app/base \
 		--build-arg BASE_TAG=${BASE_TAG} \
 		--build-arg PORT=${PORT} \
 		.
@@ -132,7 +133,8 @@ push_map: push_base_map push_top_map
 
 .PHONY: up
 up:
-	TAG=${TAG} docker-compose up --profile ${PROFILE}
+	TAG=${TAG} && docker compose --profile ${PROFILE} up
+	
 test: 
 	echo "This is a test!!!"
 
