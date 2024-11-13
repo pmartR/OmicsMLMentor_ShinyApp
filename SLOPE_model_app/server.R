@@ -234,100 +234,129 @@ shinyServer(function(session,input,output){
       }
       
       
-      # iterate through the specific filters for this dataset
-      # do everything except imputation (that is done last)
-      for(i in 1:length(all_filter_requirements_specific)){
+      # molecule filter (if applicable)
+      if(("moleculeFilt" %in% names(all_filter_requirements_specific))){
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
+        thresholds <- attr(norm_data,"filters")[[og_filter_id]]$threshold
         
-        # molecule filter
-        if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
-          
-          
-          # which filter in original matches this ?
-          ## This can be applied multiple times potentially
-          og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
-          
-          use_groups <- any(map_lgl(og_filter_id, function(x) 
-            attr(norm_data,"filters")[[x]]$method$use_groups))
-          threshold <- max(map_int(og_filter_id, function(x) 
-            attr(norm_data,"filters")[[x]]$threshold))
-          use_batch <- any(map_lgl(og_filter_id, function(x)
-            attr(norm_data,"filters")[[x]]$method$use_batch))
-          
-          # add in attributes
-          all_filter_requirements_specific[[i]]$threshold = threshold
-          all_filter_requirements_specific[[i]]$method$use_groups = use_groups
-          all_filter_requirements_specific[[i]]$method$use_batch = use_batch
-          
-          filtObj = pmartR::molecule_filter(
-            omics_processed,
-            ifelse(is.null(use_groups), FALSE, use_groups),
-            ifelse(is.null(use_batch), FALSE, use_batch)
-          )
-          
-          filtObj_custom <- filtObj %>% data.frame() %>%
-            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_molecules)) %>%
-            dplyr::filter(Num_Observations < threshold)
-          
-          if(nrow(filtObj_custom) > 0){
-            molfilt_customFilt <- custom_filter(omics_processed,e_data_remove = as.character(filtObj_custom[[new_edata_cname]]))
-            omics_processed = pmartR::applyFilt(
-              molfilt_customFilt,
-              omics_processed)
-          }
+        use_groups <- any(map_lgl(og_filter_id, function(x) 
+          attr(norm_data,"filters")[[x]]$method$use_groups))
+        threshold <- max(map_int(og_filter_id, function(x) 
+          attr(norm_data,"filters")[[x]]$threshold))
+        use_batch <- any(map_lgl(og_filter_id, function(x)
+          attr(norm_data,"filters")[[x]]$method$use_batch))
+        
+        # add in attributes
+        all_filter_requirements_specific_id <- which(names(all_filter_requirements_specific) == "moleculeFilt")
+        all_filter_requirements_specific[[all_filter_requirements_specific_id]]$threshold = threshold
+        all_filter_requirements_specific[[all_filter_requirements_specific_id]]$method$use_groups = use_groups
+        all_filter_requirements_specific[[all_filter_requirements_specific_id]]$method$use_batch = use_batch
+        
+        filtObj = pmartR::molecule_filter(
+          omics_processed,
+          ifelse(is.null(use_groups), FALSE, use_groups),
+          ifelse(is.null(use_batch), FALSE, use_batch)
+        )
+        
+        filtObj_custom <- filtObj %>% data.frame() %>%
+          dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_molecules)) %>%
+          dplyr::filter(Num_Observations < threshold)
+        
+        if(nrow(filtObj_custom) > 0){
+          molfilt_customFilt <- custom_filter(omics_processed,e_data_remove = as.character(filtObj_custom[[new_edata_cname]]))
+          omics_processed = pmartR::applyFilt(
+            molfilt_customFilt,
+            omics_processed)
         }
+      }
+      
+      # cv filter
+      if(("cvFilt" %in% names(all_filter_requirements_specific))){
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
         
-        # cv filter
-        if(names(all_filter_requirements_specific)[i] == "cvFilt"){
-          # which filter in original matches this ?
-          og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
-          # add in attributes
-          all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
-          all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
-          
-          threshold = all_filter_requirements_specific[[i]]$threshold
-          use_groups = all_filter_requirements_specific[[i]]$method$use_groups
-          
-          filtObj = pmartR::cv_filter(omics_processed,
-                                      use_groups)
-          
-          filtObj_custom <- filtObj %>% data.frame() %>%
-            dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_molecules)) %>%
-            dplyr::filter(CV < threshold)
-          
-          if(nrow(filtObj_custom) > 0){
-            cv_customFilt <- custom_filter(omics_processed,e_data_remove = as.character(filtObj_custom[[new_edata_cname]]))
-            omics_processed = pmartR::applyFilt(
-              cv_customFilt,
-              omics_processed)
-          }
+        # add in attributes
+        all_filter_requirements_specific_id <- which(names(all_filter_requirements_specific) == "cvFilt")
+        all_filter_requirements_specific[[all_filter_requirements_specific_id]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[all_filter_requirements_specific_id]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
+        
+        threshold = all_filter_requirements_specific[[all_filter_requirements_specific_id]]$threshold
+        use_groups = all_filter_requirements_specific[[all_filter_requirements_specific_id]]$method$use_groups
+        
+        filtObj = pmartR::cv_filter(omics_processed,
+                                    use_groups)
+        
+        filtObj_custom <- filtObj %>% data.frame() %>%
+          dplyr::filter(!(!!as.symbol(new_edata_cname) %in% og_molecules)) %>%
+          dplyr::filter(CV < threshold)
+        
+        if(nrow(filtObj_custom) > 0){
+          cv_customFilt <- custom_filter(omics_processed,e_data_remove = as.character(filtObj_custom[[new_edata_cname]]))
+          omics_processed = pmartR::applyFilt(
+            cv_customFilt,
+            omics_processed)
         }
       }
       
       # need to filter out molecules that are never identified (which should not affect the process at all)
       molfilt_zero <- pmartR::molecule_filter(omics_processed)
       omics_processed <- pmartR::applyFilt(molfilt_zero,omics_processed, min_num = 1)
-      
       omics_processed_sl <- as.slData(omics_processed)
       
       # separate step for imputation
-      if(("imputationFilt" %in% names(all_filter_requirements_specific)) & (!"pepData" %in% class(omicsData$model$norm_omics))){
-        impObj <- slopeR::imputation(omics_processed_sl)
-        omics_processed_sl <- slopeR::apply_imputation(impObj,omics_processed_sl)
+      if(("imputationFilt" %in% names(all_filter_requirements_specific))){
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "imputationFilt")
+        thresholds <- attr(norm_data,"filters")[[og_filter_id]]$threshold
+        if("pepData" %in% class(omicsData$model$norm_omics)){
+          
+          # Impute all of e_data
+          imputed_data <- slopeR::imputation(omics_processed_sl)
+          imputed_data_pmart <- slopeR::apply_imputation(imputed_data,omics_processed_sl)
+          imputed_data <- cbind(E_DATA_CNAME = omics_processed_sl$e_data[[get_edata_cname(omics_processed_sl)]], imputed_data)
+          names(imputed_data)[1] <- get_edata_cname(omics_processed_sl)
+          
+          # rollup for the intent of determining which get rolled up needing to be imputed
+          rollup_method = attr(pp_data,"pro_quant_info")$method
+          objQCPro <- slopeR::protein_rollup(imputed_data_pmart,method = rollup_method)
+          # objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
+          #                           method = input$qc_which_rollup,
+          #                           qrollup_thresh = input$qc_qrollup_thresh / 100,
+          #                           single_pep = single_pep,
+          #                           single_observation = single_observation,
+          #                           combine_fn = input$qc_which_combine_fn,
+          #                           parallel = TRUE)
+          
+          # get transformation data.frame
+          transforms_df <- slopeR::get_transform_df(objQCPro,thresholds)
+          
+          # Get the proteins whose peptides will be imputed
+          impute_proteins <- transforms_df[which(transforms_df$Handling == "Estimate"),][[pmartR::get_edata_cname(objQCPro)]]
+          
+          # Replace just those peptides with their imputed versions
+          impute_pro_idx <- which(omics_processed_sl$e_meta[[get_emeta_cname(omics_processed_sl)]] %in% impute_proteins)
+          impute_peps <- omics_processed_sl$e_meta[[get_edata_cname(omics_processed_sl)]][impute_pro_idx]
+          impute_pep_idx <- which(omics_processed_sl$e_data[[get_edata_cname(omics_processed_sl)]] %in% impute_peps)
+          omics_processed_sl$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
+          tmp <- omics_processed_sl
+        } else {
+          # all other data types
+          tmp <- slopeR::edata_nathresh_transform(omics_processed_sl, thresholds)
+        }
+        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
+        omics_processed_sl <- tmp
       }
-      
       # update for the other ones (0-1), and other
     }
     
     # for normalization have to convert back to not sl object
-    class(omics_processed_sl) <- class(omics_processed)
+    class(tmp) <- class(omics_processed)
     
     # convert to normalization immediately
     if((attributes(omicsData$obj)$data_info$norm_info$is_normalized == FALSE)|
        (!is.null(attributes(omicsData$obj)$data_info$norm_info$norm_fn) && 
         attributes(omicsData$obj)$data_info$norm_info$norm_fn != norm_method)){
-      omicsData$obj_norm <- pmartR::normalize_zero_one_scaling(omics_processed_sl)
+      omicsData$obj_norm <- pmartR::normalize_zero_one_scaling(tmp)
     } else {
-      omicsData$obj_norm <- omics_processed_sl
+      omicsData$obj_norm <- tmp
     }
     
     # convert to sl object
@@ -523,9 +552,28 @@ shinyServer(function(session,input,output){
     req(!is.null(omicsData$obj_predictions))
     ggplotly(plot(omicsData$obj_predictions, plotType = "confusion_heatmap"))
   })
+  # 
+  # true_pos_predict_plot_confidenceScatter_UI <- renderUI({
+  #   #req(omicsData$obj_predictions)
+  #   # pickerInput("true_pos_predict_plot_confidenceScatter",
+  #   #             "Designate true positive event",
+  #   #             choices = c("dog","cat"))
+  #   actionButton("dog","Dog")
+  # })
+  # 
+  
+  output$true_pos_picker_UI <- renderUI({
+    req(omicsData$obj_predictions)
+    df <- unique(omicsData$obj_predictions$pre$mold$outcomes$response)
+    pickerInput(inputId = "true_pos_select",
+                label = "Designate true positive event",
+                choices = df,
+                selected = df[1])
+  })
+  
   output$predict_plot_confidenceScatter <- renderPlotly({
     req(!is.null(omicsData$obj_predictions))
-    ggplotly(plot(omicsData$obj_predictions, plotType = "confidence_scatter"))
+    ggplotly(plot(omicsData$obj_predictions, plotType = "confidence_scatter",pos_class = input$true_pos_select))
   })
   
   output$download_processed_data <- downloadHandler(
