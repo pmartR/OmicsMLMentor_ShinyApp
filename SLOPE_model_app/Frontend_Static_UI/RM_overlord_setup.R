@@ -54,9 +54,9 @@ RM_tab <- function(){
               tabPanel("Confusion Heatmap",
                        plotlyOutput("predict_plot_confusionHeatmap")),
               tabPanel("Confidence Scatter",
-                       plotlyOutput("predict_plot_confidenceScatter"))
+                       plotlyOutput("predict_plot_confidenceScatter"),
+                       uiOutput("true_pos_picker_UI"))
             )
-            
           )
           
         )
