@@ -399,7 +399,74 @@ multilasso_params <- function(){
 
 }
 
-knn_params <- function(){}
+knn_params <- function(){
+  hp_inputs$input_labels <- list(
+    "The k value of k nearest neighbors"
+  )
+  hp_inputs$input_names <- list(
+    "k"
+  )
+  
+  div(
+    apply_disabled(numericInput("k", "A numeric parameter representing the number of nearest neighbors considered when classifying or predicting a new data point",
+                   min = 1, value = 5, step = 1, width = "100%")),
+    if (input$rm_prompts_hp == "tuned")
+      checkboxInput("optimize_k", "Optimize?", value = F)
+  )
+}
+
+lr_params <- function(){
+  hp_inputs$input_labels <- list(
+    # None
+  )
+  hp_inputs$input_names <- list(
+    # None
+  )
+  
+  div(
+    p("Linear Regression has no hyperparameters."),
+    br()
+  )
+}
+
+lda_params <- function(){
+  hp_inputs$input_labels <- list(
+  #  "Amount of penalties in regularized models",
+  #  "Regularization method"
+  )
+  hp_inputs$input_names <- list(
+  #  "penalty",
+  #  "regularization_method"
+  )
+  
+  div(
+    p("LDA has no hyperparameters."),
+    #apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
+    #                            max = 1e0, value = 0, step = 0.1, width = "100%")),
+    #if(input$rm_prompts_hp == "tuned")
+    #  checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br()
+  )
+}
+
+qda_params <- function(){
+  hp_inputs$input_labels <- list(
+  #  "Amount of penalties in regularized models",
+  #  "Regularization method"
+  )
+  hp_inputs$input_names <- list(
+  #  "penalty",
+  )
+  
+  div(
+    p("QDA has no hyperparameters."),
+    #apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
+    #                            max = 1e0, value = 0, step = 0.1, width = "100%")),
+    #if(input$rm_prompts_hp == "tuned")
+    #  checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br()
+  )
+}
 
 gbtree_params <- function(){
 

@@ -13,7 +13,7 @@ img_get <- function(abbr) switch(
   nb = "model_images/nb.png",
   lda = "model_images/lda.png",
   qda = "model_images/qda.png",
-  pls = "model_images/lr.png",
+  pls = "model_images/pls.png",
   kmeans = "model_images/kmeans.png",
   hclust = "model_images/hclust.png",
   pca = "model_images/pca.png",
