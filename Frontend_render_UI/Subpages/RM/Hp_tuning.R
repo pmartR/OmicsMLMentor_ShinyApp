@@ -69,6 +69,19 @@ observeEvent(input$param_opti, {
         penalty = if(input$optimize_penalty) tune::tune() else input$penalty,
         mixture = if(input$optimize_mix) tune::tune() else input$mixture
       )
+    } else if (method == "knn"){
+      custom_args <- list(
+        kmax = if(input$optimize_k) tune::tune() else input$k
+      )
+    } else if (method %in% c("lda", "qda")){
+      custom_args <- list(
+        #penalty = if(input$optimize_penalty) tune::tune() else input$penalty,
+        #regularization_method = input$regularization_method
+      )
+    } else if (method == "lr"){
+      custom_args <- list(
+        # None
+      )
     } else if (method == "gbtree"){
       custom_args <- list(
         trees = if(input$optimize_trees) tune::tune() else input$trees,

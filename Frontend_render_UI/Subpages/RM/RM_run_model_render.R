@@ -667,56 +667,9 @@ observeEvent(input$run_sl, {
         ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
     } else ptest <- 0
-    ## Get custom/optimized parameters
-    custom_args <- list()
     
-    if(method == "rf"){
-      custom_args <- list(
-        trees = input$trees,
-        min_n = input$min_n,
-        mtry = input$mtry
-      )
-    } else if (method == "lsvm"){
-      custom_args <- list(
-        cost = input$cost,
-        margin = input$svm_margin
-      )
-    } else if (method == "psvm"){
-      custom_args <- list(
-        cost = input$cost,
-        margin = input$svm_margin,
-        degree = input$degree,
-        scale_factor = input$scale_factor
-      )
-    } else if (method == "rsvm"){
-      custom_args <- list(
-        cost = input$cost,
-        margin = input$svm_margin,
-        rbf_sigma = input$rbf_sigma
-      )
-    } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
-      custom_args <- list(
-        penalty = input$penalty,
-        mixture = input$mixture
-      )
-    } else if (method == "gbtree"){
-      custom_args <- list(
-        trees = input$trees,
-        min_n = input$min_n,
-        mtry = input$mtry,
-        # cost_complexity,
-        tree_depth = input$tree_depth,
-        loss_reduction = input$loss_reduction,
-        learn_rate = input$learn_rate,
-        stop_iter = input$stop_iter,
-        sample_size = input$sample_prop
-      )
-    } else if (method == "pls") {
-      custom_args <- list(
-        num_comp = input$pls_num_comp,
-        predictor_prop = input$pls_predictor_prop
-      )
-    }
+    ## Get custom/optimized parameters
+    custom_args <- get_custom_args(method)
     
     if(holdout_valid() && input$rm_prompts_hp == "tuned"){
       cvMethod <- input$cv_hp_option
@@ -743,6 +696,8 @@ observeEvent(input$run_sl, {
     )
     
     list_args <- c(list_args, custom_args)
+    
+    browser()
     
     unregister()
     future::plan(future::sequential)
@@ -831,6 +786,65 @@ observeEvent(input$run_sl, {
 
 })
 
+## Get custom/optimized parameters
+get_custom_args <- function(method) {
+  custom_args <- list()
+  
+  if(method == "rf"){
+    custom_args <- list(
+      trees = input$trees,
+      min_n = input$min_n,
+      mtry = input$mtry
+    )
+  } else if (method == "lsvm"){
+    custom_args <- list(
+      cost = input$cost,
+      margin = input$svm_margin
+    )
+  } else if (method == "psvm"){
+    custom_args <- list(
+      cost = input$cost,
+      margin = input$svm_margin,
+      degree = input$degree,
+      scale_factor = input$scale_factor
+    )
+  } else if (method == "rsvm"){
+    custom_args <- list(
+      cost = input$cost,
+      margin = input$svm_margin,
+      rbf_sigma = input$rbf_sigma
+    )
+  } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
+    custom_args <- list(
+      penalty = input$penalty,
+      mixture = input$mixture
+    )
+  } else if (method %in% c("lda", "qda")){
+    custom_args <- list(
+      penalty = input$penalty,
+      regularization_method = input$regularization_method
+    )
+  } else if (method == "gbtree"){
+    custom_args <- list(
+      trees = input$trees,
+      min_n = input$min_n,
+      mtry = input$mtry,
+      # cost_complexity,
+      tree_depth = input$tree_depth,
+      loss_reduction = input$loss_reduction,
+      learn_rate = input$learn_rate,
+      stop_iter = input$stop_iter,
+      sample_size = input$sample_prop
+    )
+  }  else if (method == "pls") {
+    custom_args <- list(
+      num_comp = input$pls_num_comp,
+      predictor_prop = input$pls_predictor_prop
+    )
+  }
+  
+  return(custom_args)
+}
 
 observeEvent(input$feature_select_posthoc, {
   
@@ -886,55 +900,7 @@ observeEvent(input$feature_select_posthoc, {
     } else ptest <- 0
     
     ## Get custom/optimized parameters
-    custom_args <- list()
-    
-    if(method == "rf"){
-      custom_args <- list(
-        trees = input$trees,
-        min_n = input$min_n,
-        mtry = input$mtry
-      )
-    } else if (method == "lsvm"){
-      custom_args <- list(
-        cost = input$cost,
-        margin = input$svm_margin
-      )
-    } else if (method == "psvm"){
-      custom_args <- list(
-        cost = input$cost,
-        margin = input$svm_margin,
-        degree = input$degree,
-        scale_factor = input$scale_factor
-      )
-    } else if (method == "rsvm"){
-      custom_args <- list(
-        cost = input$cost,
-        margin = input$svm_margin,
-        rbf_sigma = input$rbf_sigma
-      )
-    } else if (method %in% c("logistic", "loglasso", "multi", "multilasso")){
-      custom_args <- list(
-        penalty = input$penalty,
-        mixture = input$mixture
-      )
-    } else if (method == "gbtree"){
-      custom_args <- list(
-        trees = input$trees,
-        min_n = input$min_n,
-        mtry = input$mtry,
-        # cost_complexity,
-        tree_depth = input$tree_depth,
-        loss_reduction = input$loss_reduction,
-        learn_rate = input$learn_rate,
-        stop_iter = input$stop_iter,
-        sample_size = input$sample_prop
-      )
-    }  else if (method == "pls") {
-      custom_args <- list(
-        num_comp = input$pls_num_comp,
-        predictor_prop = input$pls_predictor_prop
-      )
-    }
+    custom_args <- get_custom_args(method)
     
     if(holdout_valid() && input$rm_prompts_hp == "tuned"){
       cvMethod <- input$cv_hp_option
