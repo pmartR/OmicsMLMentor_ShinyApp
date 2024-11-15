@@ -122,12 +122,6 @@ output$transform_preview_plot <- renderPlotly({
       
       if(cond == "continuous"){
         
-        arrange_fdata <- order(out$f_data[[col]])
-        
-        out$e_data <- cbind(
-          out$e_data[1],
-          out$e_data[as.character(out$f_data[[get_fdata_cname(out)]])[arrange_fdata]])
-        
         p <- plot_continuous(out, plot, col)
 
       } else {
