@@ -19,6 +19,7 @@ output$RM_progress_summary_table <- renderDT({
   } else {
     attr(omicsData$objRM, "response_performance")
 
+
   }
 
 })
