@@ -9,7 +9,8 @@ add_model_attributes <- function(model, supervised = T){
 }
 
 add_SLOPE_model_name <- function(model){
-  attr(model, "SLOPE_model_name") <- input$input$pick_model_EM
+  attr(model, "SLOPE_model_name") <- input$pick_model_EM
+  model
 }
 
 add_attr_response_perf <- function(model){
@@ -22,7 +23,14 @@ add_attr_response_perf <- function(model){
   }
   
   ### Need continuous catch
-  browser()
+  if(is.numeric(pred_df$response)){
+    p <- yardstick::rmse(pred_df, response, .pred)
+    df <- data.frame(Metric = "Root mean squared error",
+                     Value = p$.estimate)
+    attr(model, "response_performance") <- df
+    return(model)
+  }
+  
   
   ### Grab classes
   if (length(unique(pred_df$response)) == 2) {
@@ -46,4 +54,6 @@ add_attr_response_perf <- function(model){
   names(auc_by_level)[2] <- "AUC of ROC"
   
   attr(model, "response_performance") <- auc_by_level
+  
+  model
 }

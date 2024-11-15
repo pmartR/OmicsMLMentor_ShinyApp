@@ -3,7 +3,14 @@ output$MSetup_progress_summary <- renderUI({
 })
 
 output$MSetup_progress_summary_table <- renderDT({
-  summary(omicsData$objMSU)
+  df <- summary(omicsData$objMSU)
+  
+  if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+    df <- df[1:6,]
+  }
+  
+  df
+  
 })
 
 output$MSetup_progress_next_steps <- renderUI({

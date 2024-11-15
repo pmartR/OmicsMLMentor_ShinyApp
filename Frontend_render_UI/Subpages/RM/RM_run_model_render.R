@@ -597,6 +597,11 @@ unsupervised_tab <- function() {
             
             br(),
             
+            div(
+              column(12,uiOutput("unsup_plot_type_UI")),
+              style= "float:right;z-index:1100;"
+            ),
+            
             tabsetPanel(
               
               id = "performance_tabset",
@@ -1016,6 +1021,7 @@ output$performance_plot_RM <- renderPlotly({
   }
   
   isolate(plot_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p)
+  isolate(plot_table_current$names[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- "Regression performance")
   isolate(table_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p$data)
 
   return(p)
@@ -1091,7 +1097,7 @@ output$unsup_plot_type_UI <- renderUI({
   if (inherits(omicsData$objRM, "slRes.cluster")) {
     fit_obj <- workflows::extract_fit_engine(omicsData$objRM)
     # always has at least the pca scatter
-    choices <- c("Scatter plot" = "pca")
+    choices <- c("Scatterplot" = "pca")
     if (inherits(fit_obj, "hclust")) {
       choices <- c(choices, "Dendrogram" = "dendro")
     }
@@ -1100,8 +1106,8 @@ output$unsup_plot_type_UI <- renderUI({
   }
   
   picker_out = pickerInput(
-    "unsup_plot_type", "Plot type", choices = choices,
-    selected = input$unsup_plot_type
+    "unsup_plot_type", "Plot type", choices = choices
+    selected = isolate(input$unsup_plot_type)
   )
   
   return(picker_out)
@@ -1110,28 +1116,33 @@ output$unsup_plot_type_UI <- renderUI({
 
 
 output$unsup_res_aes_UI <- renderUI({
-  req(!is.null(input$pick_model_EM) && !supervised(), omicsData$objRM)
+  req(!is.null(input$pick_model_EM) && !is.null(omicsData$objRM))
   
   method <- input$pick_model_EM ## While summary getting fixed
 
   # always have a redraw plot button
-  element_list <- list(actionButton("redraw_unsup_structure_plot", "Redraw plot"), br(), br())
+  element_list <- list(
+    actionButton("redraw_unsup_structure_plot", "Redraw plot"), 
+                       br(), br())
   
   # req(method %in% c())
 
   if(attr(omicsData$objRM, "axis") == "samples"){
-    colors <- colnames(omicsData$objPP$f_data)
+    colors <- colnames(omicsData$objPP$f_data) 
   } else {
     colors <- colnames(omicsData$objPP$e_meta)
   }
 
   colors <- colors[!(colors %in% c(get_fdata_cname(omicsData$objPP),
                                  get_edata_cname(omicsData$objPP)))]
-
-  req(length(colors) > 0)
   
   choices <- if(inherits(omicsData$objRM, "slRes.embed")){
     colors
+    
+    if(!(length(colors) > 0)){
+      return(do.call(div, c(list(class = "inline-wrapper-1"), element_list)))
+    }
+    
   } else {
     c("Parameter clusters", colors)
   }
@@ -1218,7 +1229,7 @@ output$pc_yaxis_UI <- renderUI({
 # 
 
 output$structure_plot <- renderPlot({
-  req(input$redraw_unsup_structure_plot > 0)
+  input$redraw_unsup_structure_plot
   omicsData$objRM
   
   isolate({
@@ -1244,7 +1255,7 @@ output$structure_plot <- renderPlot({
         input$unsup_plot_type
       }
     } else if (inherits(omicsData$objRM, "slRes.embed")) {
-      plot_type <- if (!isTruthy(input$unsup_plot_type %in% c("scatter"))) {
+      plot_type <- if (is.null(input$unsup_plot_type)) {
         "scatter"
       } else {
         input$unsup_plot_type
@@ -1262,26 +1273,41 @@ output$structure_plot <- renderPlot({
     # plot depends on whether we have a cluster or embedding result
     if (inherits(omicsData$objRM, "slRes.cluster")) {
       if (plot_type == "dendro") {
-        plot_call = rlang::call_modify(
-          plot_call,
-          slData = omicsData$objPP,
-          label_obs = TRUE,
-          k = input$dendro_num_k,
-          color_by = color_by,
-          label.vjust = input$dendro_vjust,
-          label.hjust = input$dendro_hjust,
-          label_size = input$dendro_label_size
-        )
+        
+        if(!is.null(omicsData$objPP$f_data)){
+          plot_call = rlang::call_modify(
+            plot_call,
+            slData = as.slData(omicsData$objPP),
+            label_obs = TRUE,
+            k = input$dendro_num_k,
+            color_by = color_by,
+            label.vjust = input$dendro_vjust,
+            label.hjust = input$dendro_hjust,
+            label_size = input$dendro_label_size
+          )
+        } else {
+          
+          plot_call = rlang::call_modify(
+            plot_call,
+            slData = as.slData(omicsData$objPP),
+            #label_obs = TRUE,
+            k = input$dendro_num_k,
+            color_by = color_by,
+            label.vjust = input$dendro_vjust,
+            label.hjust = input$dendro_hjust,
+            label_size = input$dendro_label_size
+          )
+          
+        }
       } else if (plot_type == "pca") {
         plot_call = rlang::call_modify(
           plot_call, 
-          slData = omicsData$objPP,
+          slData = as.slData(omicsData$objPP),
           color_by = color_by,
           ellipse = TRUE
         )
       }
       
-      p <- rlang::eval_tidy(plot_call)
     } else if (inherits(omicsData$objRM, "slRes.embed")) {
       if (plot_type == "scatter") {
         xvar = if (!is.null(input$unsup_embed_xaxis)) input$unsup_embed_xaxis else 1
@@ -1291,15 +1317,16 @@ output$structure_plot <- renderPlot({
           plot_call,
           components = c(xvar, yvar),
           slData = runner,
-          color_by = color_by,
-          alpha = 1,
-          add_stroke = FALSE,
-          pch = 19
+          color_by = color_by#,
+          # alpha = 1,
+          # add_stroke = FALSE,
+          # pch = 19
         )
       }
-      
-      p <- rlang::eval_tidy(plot_call)
+
     }
+    
+    p <- rlang::eval_tidy(plot_call)
     
     isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
     isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))

@@ -1,9 +1,20 @@
 output$preprocessing_progress_summary <- renderUI({
+
   DTOutput("preprocessing_progress_summary_table")
 })
 
+observeEvent(omicsData$objPP, {
+  ## Odd guy, maybe due to order of loading?
+  outputOptions(output, "preprocessing_progress_summary_table", suspendWhenHidden = FALSE)
+})
+
 output$preprocessing_progress_summary_table <- renderDT({
-  summary(omicsData$objPP)
+  req(!is.null(omicsData$objPP))
+  df <- summary(omicsData$objPP)
+  if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+    df <- df[1:6,]
+  }
+  df
 })
 
 output$preprocessing_progress_next_steps <- renderUI({

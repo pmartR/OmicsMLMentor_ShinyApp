@@ -37,7 +37,7 @@ observeEvent(input$missing_value_thresh, {
 })
 
 # change individual slider values into individual thresholds
-missingHandleSliderVals <- reactive({
+missingHandleSliderVals_ <- reactive({
   thresholds <- list(
     md_keep = NULL,
     md_impute = NULL,
@@ -58,21 +58,21 @@ missingHandleSliderVals <- reactive({
       return(thresholds)
     }
     
-    thresholds$md_impute <- c(0, input$missingness_handle_slider[1])
+    thresholds$md_impute <- c(0, round(input$missingness_handle_slider[1]))
     
     if ("convert" %in% input$missing_options) {
-      thresholds$md_convert <- c(input$missingness_handle_slider[1], 100)
+      thresholds$md_convert <- c(round(input$missingness_handle_slider[1]), 100)
       
       if ("remove" %in% input$missing_options) {
-        thresholds$md_convert[2] <- input$missingness_handle_slider[2]
-        thresholds$md_remove <- c(input$missingness_handle_slider[2], 100)
+        thresholds$md_convert[2] <- round(input$missingness_handle_slider[2])
+        thresholds$md_remove <- c(round(input$missingness_handle_slider[2]), 100)
       }
       
       # impute, convert, [remove]
       return(thresholds)
     }
     
-    thresholds$md_remove <- c(input$missingness_handle_slider[1], 100)
+    thresholds$md_remove <- c(round(input$missingness_handle_slider[1]), 100)
     # impute, remove
     return(thresholds)
   }
@@ -84,8 +84,8 @@ missingHandleSliderVals <- reactive({
       return(thresholds)
     }
     
-    thresholds$md_convert <- c(0, input$missingness_handle_slider[1])
-    thresholds$md_remove <- c(input$missingness_handle_slider[1], 100)
+    thresholds$md_convert <- c(0, round(input$missingness_handle_slider[1]))
+    thresholds$md_remove <- c(round(input$missingness_handle_slider[1]), 100)
     # convert, remove
     return(thresholds)
   }
@@ -98,6 +98,8 @@ missingHandleSliderVals <- reactive({
   return(thresholds)
 })
 
+missingHandleSliderVals <- missingHandleSliderVals_ %>% debounce(500)
+
 ## hist to detected
 
 output$missing_data_hist_biomolecule <- renderPlotly({
@@ -109,83 +111,27 @@ output$missing_data_hist_biomolecule <- renderPlotly({
     omics_obj <- pepQCData$objQCPro
   }
   
-  id_col <- colnames(omics_obj$e_data) %in% pmartR::get_edata_cname(omics_obj)
-  df <- omics_obj$e_data[!id_col]
-  
-  apply_dir <- 1
-  total <- ncol(df[-1])
-  
-  data <- data.frame(`Percentage missing` = 
-                       apply(is.na(df[-1]), apply_dir, sum)/total*100, 
-                     check.names = F)
-  
-  data <- cbind(df[1], data)
-  
-  data <- arrange(data, `Percentage missing`)
-  
-  data$Handling <- "Unassigned"
-  
-  sliderVals <- missingHandleSliderVals %>% debounce(500)
-  
-  try({
-    if(input$keep_missing == "Yes"){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= sliderVals()$md_keep[1],
-        data[["Percentage missing"]] <= sliderVals()$md_keep[2]
-      ))
-      
-      data$Handling[rows] <- "Keep"
-      
-    }
+    thresholds <- list(
+      keep = missingHandleSliderVals()$md_keep,
+      impute = missingHandleSliderVals()$md_impute,
+      convert = missingHandleSliderVals()$md_convert,
+      remove = missingHandleSliderVals()$md_remove
+    )
     
-    if("impute" %in% input$missing_options){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= sliderVals()$md_impute[1],
-        data[["Percentage missing"]] <= sliderVals()$md_impute[2]
-      ))
-      
-      data$Handling[rows] <- "Estimate"
-      
-    }
+    data_use <- slopeR::get_transform_df(omics_obj, thresholds)
     
-    if("convert" %in% input$missing_options){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= sliderVals()$md_convert[1],
-        data[["Percentage missing"]] <= sliderVals()$md_convert[2]
-      ))
-      
-      data$Handling[rows] <- "Convert"
-      
-    }
-    
-    if("remove" %in% input$missing_options){
-      
-      rows <- Reduce("&", list(
-        data[["Percentage missing"]] >= sliderVals()$md_remove[1],
-        data[["Percentage missing"]] <= sliderVals()$md_remove[2]
-      ))
-      
-      data$Handling[rows] <- "Remove"
-      
-    }
+    req(!all(data_use$Handling == "Remove"))
+ 
     
     text_ylab <- "biomolecules"
     
-    p <- ggplot(data, aes(x = `Percentage missing`, fill = Handling)) +
+    p <- ggplot(data_use, aes(x = `Percentage missing`, fill = Handling)) +
       geom_histogram() + theme_bw() + 
       labs(y = paste0("Count of ", text_ylab)) + xlim(c(-1,100)) +
       scale_fill_manual(values = 
                           c("Convert" = "#c87619", 
                             "Estimate" = "#238551", 
                             "Remove" ="#cd4246"))
-    
-  
-    # if (inherits(omicsData$objQC, "pepData")) {
-    #   p <- p + ggtitle("Protein level preview")
-    # }
     
     if (inherits(omicsData$objQC, "pepData")) {
       p <- p + ggtitle("Protein level preview")
@@ -194,9 +140,7 @@ output$missing_data_hist_biomolecule <- renderPlotly({
     isolate(plot_table_current$table$QC__missing_features <- p)
     
     return(p)
-  })
-  
-  return(NULL)
+
 })
 
 output$qc_biomolecule_title <- renderText({
@@ -254,42 +198,6 @@ output$missing_data_hist_sample <- renderPlotly({
   
 })
 
-# output$missing_data_hist_sample <- renderPlotly({
-#   req(!is.null(omicsData$objQC$e_data))
-#   
-#   total_biomolecule <- nrow(omicsData$objQC$e_data)
-#   
-#   temp_dat <- omicsData$objQC
-#   
-#   if(is.null(omicsData$objQC$f_data)){
-#     temp_dat$f_data <- data.frame(
-#       SampleID = colnames(temp_dat$e_data)[colnames(temp_dat$e_data) != pmartR::get_edata_cname(temp_dat)],
-#       Temp_col_all = "All"
-#     )
-#   }
-#   
-#   res <- missingval_result(temp_dat)
-#   
-#   df <- res$na.by.sample
-#   
-#   df <- arrange(df, num_NA)
-#   
-#   df[[1]] <- factor(as.character(df[[1]]), 
-#                     levels = unique(as.character(df[[1]])))
-#   
-#   df$Percentage <- df$num_NA/total_biomolecule*100
-#   
-#   ggplot(df, aes(x = !!rlang::sym(colnames(df)[1]), 
-#                  y = 100-Percentage)) + 
-#     # geom_text(label = paste0(round(df$Percentage, 3), "%"), ) +
-#     geom_col() + theme_bw() + 
-#     theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 0)) +
-#     lims(y = c(0,100)) + labs(y = "Percentage of all observed biomolecules detected", x = "")
-#   
-#   # plot(missingval_result(omicsData$objQC), omicsData$objQC)
-#   
-# })
-
 
 output$slider_options_ui <- renderUI({
   
@@ -326,7 +234,7 @@ output$slider_options_ui <- renderUI({
       "missingness_handle_slider",
       values = sliders,
       min = 0,
-      max = 100,
+      max = 100.00000001,
       labelStepSize = 25
     )
     # uiOutput("missingness_handle_legend")
@@ -350,35 +258,6 @@ output$slider_options_ui <- renderUI({
   
 })
 
-# output$missingness_handle_legend <- renderUI({
-#   req(length(input$missing_options) > 1)
-#   
-#   # div(
-#   #   if ("impute" %in% input$missing_options) {
-#   #     div(
-#   #       style = "display: inline-block; margin-right: 20px;",
-#   #       div(style = "width: 10px; height: 10px; display: inline-block; background-color: #238551;"),
-#   #       "Estimate"
-#   #     )
-#   #   },
-#   # 
-#   #   if ("convert" %in% input$missing_options) {
-#   #     div(
-#   #       style = "display: inline-block; margin-right: 20px;",
-#   #       div(style = "width: 10px; height: 10px; display: inline-block; background-color: #c87619;"),
-#   #       "Convert"
-#   #     )
-#   #   },
-#   # 
-#   #   if ("remove" %in% input$missing_options) {
-#   #     div(
-#   #       style = "display: inline-block; margin-right: 20px;",
-#   #       div(style = "width: 10px; height: 10px; display: inline-block; background-color: #cd4246;"),
-#   #       "Remove"
-#   #     )
-#   #   },
-#   # )
-# })
 
 output$missing_data_sample_picker_UI <- renderUI({
   
@@ -533,7 +412,11 @@ observeEvent(input$qc_apply_rollup, {
   }
   unregister()
   
-  temp_dat <- edata_transform(omicsData$objQC, "log2")
+  temp_dat <- omicsData$objQC
+  
+  if(get_data_scale(temp_dat) == "abundance"){
+    temp_dat <- edata_transform(temp_dat, "log2")
+  }
 
   if(is.null(temp_dat$f_data)){
     temp_dat$f_data <- data.frame(
@@ -580,14 +463,14 @@ observeEvent(input$done_qc_rollup, {
                     open = "missing_data_biomolecule_plot")
 })
 
-observeEvent(c(input$keep_missing, input$missing_options, input$missingness_handle_slider), {
+observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVals()), {
   if ((!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
       !is.null(input$missing_options)) {
     # Prevent user from Removing all biomolecules
     
-    Sys.sleep(0.5)
-    
-    try({
+    # Sys.sleep(0.5) ## I think the debounce covers this
+
+    isolate(try({
       thresholds <- list(
         keep = missingHandleSliderVals()$md_keep,
         impute = missingHandleSliderVals()$md_impute,
@@ -608,7 +491,7 @@ observeEvent(c(input$keep_missing, input$missing_options, input$missingness_hand
         output$warn_missing_biom <- renderText("")
         shinyjs::enable("done_biom_miss")
       }
-    })
+    }))
     
   } else {
     output$warn_missing_biom <- renderText("")
@@ -619,16 +502,16 @@ observeEvent(c(input$keep_missing, input$missing_options, input$missingness_hand
 observeEvent(input$done_biom_miss, {
   if(input$done_biom_miss > 0){
     
-    if (inherits(omicsData$objQC, "pepData")) {
-      thresholds <- list(
-        keep = missingHandleSliderVals()$md_keep,
-        impute = missingHandleSliderVals()$md_impute,
-        convert = missingHandleSliderVals()$md_convert,
-        remove = missingHandleSliderVals()$md_remove
-      )
-      
-      pepQCData$transforms_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
-    }
+    # if (inherits(omicsData$objQC, "pepData")) {
+    #   thresholds <- list(
+    #     keep = missingHandleSliderVals()$md_keep,
+    #     impute = missingHandleSliderVals()$md_impute,
+    #     convert = missingHandleSliderVals()$md_convert,
+    #     remove = missingHandleSliderVals()$md_remove
+    #   )
+    #   
+    #   pepQCData$transforms_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
+    # }
     
     updateBoxCollapse(session, "missing_data_box", 
                       close = "missing_by_biomolecule")

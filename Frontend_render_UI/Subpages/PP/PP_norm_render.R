@@ -2,7 +2,10 @@
 
 SPANS_res <- reactiveValues()
 
-subset_conv <- function(slData) {
+subset_conv <- function(omicsData) {
+  
+  
+  slData <- as.slData(omicsData)
   
   na_trf_df = attributes(slData)$na_transform
   
@@ -27,10 +30,24 @@ subset_conv <- function(slData) {
     warning("No na_transform attribute found. Returning original slData object.")
   }
   
-  return(slData)
+  ## Conserve all attributes
+  transfer <- attributes(slData)
+  transfer$class <- attr(omicsData, "class")
+  extra_attr <- attributes(omicsData)[!(names(attributes(omicsData)) %in% names(transfer))]
+  transfer <- c(transfer, extra_attr)
+  
+  attributes(omicsData) <- transfer
+  omicsData$e_data <- slData$e_data
+  omicsData$f_data <- slData$f_data
+  omicsData$e_meta <- slData$e_meta
+  
+  return(omicsData)
 }
 
-subset_noconv <- function(slData) {
+subset_noconv <- function(omicsData) {
+  
+  slData <- as.slData(omicsData)
+  
   na_trf_df = attributes(slData)$na_transform
 
   if (!is.null(na_trf_df)) {
@@ -49,7 +66,18 @@ subset_noconv <- function(slData) {
     warning("No na_transform attribute found. Returning original slData object.")
   }
   
-  return(slData)
+  ## Conserve all attributes
+  transfer <- attributes(slData)
+  transfer$class <- attr(omicsData, "class")
+  extra_attr <- attributes(omicsData)[!(names(attributes(omicsData)) %in% names(transfer))]
+  transfer <- c(transfer, extra_attr)
+  
+  attributes(omicsData) <- transfer
+  omicsData$e_data <- slData$e_data
+  omicsData$f_data <- slData$f_data
+  omicsData$e_meta <- slData$e_meta
+  
+  return(omicsData)
 }
 
 combine_omicsdata <- function(obj_1, obj_2){
@@ -565,7 +593,7 @@ load_norm_observers <- function(tab) {
         updateBoxCollapse(session, paste0(tab, "_normalization_mainpanel"), close = "normdata_mainpanel")
         updateBoxCollapse(session, paste0(tab, "_spans_mainpanel"), open = "spans_mainpanel")
 
-        noconv <- subset_noconv(as.slData(omicsData$objPP))
+        noconv <- subset_noconv(omicsData$objPP)
         
         if(input$user_level_pick == "beginner"){
           SPANS_res[[tab]] <- spans_procedure(noconv)
@@ -992,24 +1020,25 @@ load_norm_observers <- function(tab) {
           params <- get_params(subset_fn = input[[paste0(tab, "_subset_fn")]], tab)
 
           
-          noconv <- subset_noconv(as.slData(omicsData$objPP))
-          conv <- subset_conv(as.slData(omicsData$objPP))
+          noconv <- subset_noconv(omicsData$objPP)
+          conv <- subset_conv(omicsData$objPP)
           
           if(is.null(noconv$f_data)){
             noconv$f_data <- data.frame(
               SampleID = colnames(noconv$e_data)[
-                colnames(noconv$e_data) != pmartR::get_edata_cname(noconv)],
+                colnames(noconv$e_data) != pmartR::get_edata_cname(omicsData$objPP)],
               Temp_col_all = "All"
             )
             noconv <- group_designation(noconv, "Temp_col_all")
-            
-            
-            conv$f_data <- data.frame(
-              SampleID = colnames(conv$e_data)[
-                colnames(conv$e_data) != pmartR::get_edata_cname(conv)],
-              Temp_col_all = "All"
-            )
-            conv <- group_designation(conv, "Temp_col_all")
+
+            if(!is.null(conv)){
+              conv$f_data <- data.frame(
+                SampleID = colnames(conv$e_data)[
+                  colnames(conv$e_data) != pmartR::get_edata_cname(omicsData$objPP)],
+                Temp_col_all = "All"
+              )
+              conv <- group_designation(conv, "Temp_col_all")
+            }
           } 
           
           
@@ -2170,9 +2199,12 @@ assign_norm_output <- function(tab) {
       lock <- prettySwitch(paste0(tab, "_lock_norm"), "Add/Remove", value = norm_applied)
       # preview <- actionButton(paste0(tab, "_preview_normalization"), "Preview")
       
-      cond_sup <- input$pick_model_EM %in% models_supervised
+      cond_sup <- supervised() && response_types_ag() != "continuous"
+        
+      cond_zero_one <- !is.null(input[[paste0(tab, "_normalize_option")]]) &&
+        input[[paste0(tab, "_normalize_option")]] == "Zero-to-one scaling"
       
-      bias <- if(cond_sup){
+      bias <- if(cond_sup && !cond_zero_one){
         actionButton(paste0(tab, "_inspect_norm"), "Evaluate Normalization Bias")
       } else div()
       
@@ -2187,9 +2219,6 @@ assign_norm_output <- function(tab) {
       #   input[[paste0(tab, "_normalize_option")]] == "Loess Normalization" &&
       #   !is.null(input[[paste0(tab, "_loess_method")]]) &&
       #   !is.null(input[[paste0(tab, "_loess_span")]])
-      
-      cond_zero_one <- !is.null(input[[paste0(tab, "_normalize_option")]]) &&
-        input[[paste0(tab, "_normalize_option")]] == "Zero-to-one scaling"
       
       cond_global <- !is.null(input[[paste0(tab, "_normalize_option")]]) &&
         input[[paste0(tab, "_normalize_option")]] %in%
@@ -2289,7 +2318,7 @@ assign_norm_output <- function(tab) {
     output[[paste0(tab, "_normalized_boxplots_pre_render")]] <- renderUI({
       if (isTruthy(input[[paste0(tab, "_normalized_boxplots_pre_load")]]) || 
           dim(omicsData$objPP$e_data)[1] < 20000) {
-        withSpinner(plotlyOutput(paste0(tab, "_normalized_boxplots_pre")))
+        withSpinner(plotOutput(paste0(tab, "_normalized_boxplots_pre")))
       } else {
         div(
           "This plot is large and may take a while to render.",
@@ -2299,11 +2328,7 @@ assign_norm_output <- function(tab) {
       
     }),
     
-    output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlotly({ 
-      
-      drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
-      
-      req(!all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1)))
+    output[[paste0(tab, "_normalized_boxplots_pre")]] <- renderPlot({ 
 
       if(!(input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F)){
@@ -2339,10 +2364,18 @@ assign_norm_output <- function(tab) {
       
       } else if(!is.null(get_group_DF(omicsData$objPP))){
         
-        p <- plot_noconv(as.slData(omicsData$objPP), 
-                         color_by = "Group", order_by = "Group") + labs(
-          title = paste0("Un-Normalized: ", tab, " Data")
-        )
+        tmp <- omicsData$objPP
+        col <- response_cols_ag()
+        
+        if(isolate(response_types_ag()) == "continuous"){
+
+          p <- plot_continuous(as.slData(tmp), plot_noconv, col)
+
+        } else {
+          p <- plot_noconv(tmp, color_by = col, order_by = col)
+        }
+        
+        p <- p + labs(title = paste0("Un-Normalized: ", tab, " Data"))
         
       } else {
         
@@ -2350,14 +2383,12 @@ assign_norm_output <- function(tab) {
                         paste0("Normalized: ", tab, " Data"),
                         paste0("Un-Normalized: ", tab, " Data"))
         
-        p <- plot_noconv(as.slData(omicsData$objPP)) + labs(
+        p <- plot_noconv(omicsData$objPP) + labs(
           title = title_use
         )
       }
       
       isolate(plot_table_current$table$PP__normalization__pre <- p)
-      
-      p <- p %>% ggplotly()
       
       p
     }),
@@ -2370,7 +2401,7 @@ assign_norm_output <- function(tab) {
       ) {
         if (isTruthy(input[[paste0(tab, "_normalized_boxplots_post_load")]]) || 
             dim(omicsData$objPP$e_data)[1] < 20000) {
-          return(plotlyOutput(paste0(tab, "_normalized_boxplots_post")))
+          return(plotOutput(paste0(tab, "_normalized_boxplots_post")))
         } else {
           div(
             "This plot is large and may take a while to render.",
@@ -2392,7 +2423,7 @@ assign_norm_output <- function(tab) {
       }
     }),
     
-    output[[paste0(tab, "_normalized_boxplots_post")]] <- renderPlotly({
+    output[[paste0(tab, "_normalized_boxplots_post")]] <- renderPlot({
       
       req((input[["normalized"]] == "Yes" ||  
             get_data_norm(isolate(omicsData$objPP)) == F ) &&
@@ -2401,10 +2432,18 @@ assign_norm_output <- function(tab) {
 
       if(!is.null(get_group_DF(omicsData$objNorm))){
         
-        p <- plot_noconv(as.slData(omicsData$objNorm), 
-                         color_by = "Group", order_by = "Group") + labs(
-                           title = paste0("Normalized: ", tab, " Data")
-                         )
+        tmp <- omicsData$objNorm
+        col <- response_cols_ag()
+        
+        if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+          
+          p <- plot_continuous(as.slData(tmp), plot_noconv, col)
+          
+        } else {
+          p <- plot_noconv(as.slData(tmp), color_by = col, order_by = col)
+        }
+        
+        p <- p + labs(title = paste0("Normalized: ", tab, " Data"))
         
       } else {
         p <- plot_noconv(as.slData(omicsData$objNorm)) + labs(
@@ -2413,8 +2452,6 @@ assign_norm_output <- function(tab) {
       }
       
       isolate(plot_table_current$table$PP__normalization__post <- p)
-      
-      p <- p %>% ggplotly()
       
       p
     })

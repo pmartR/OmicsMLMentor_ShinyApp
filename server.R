@@ -5,6 +5,8 @@ options(shiny.maxRequestSize = 250 * 1024^2,
         shiny.fullstacktrace=TRUE
         )
 
+formals(renderDT)$server <- FALSE
+
 shinyServer(function(session, input, output) {
   onStop(function() {
     # save the session object

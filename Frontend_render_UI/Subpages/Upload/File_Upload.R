@@ -417,7 +417,12 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
   ## Render from uploaded files
   output[[paste0("DT_", label)]] <- renderDT({
     
-    reactive_dataholder[[label]]$file
+    df <- reactive_dataholder[[label]]$file
+    
+    if(nrow(df) > 500){
+      df <- df[1:500,]
+    }
+    df
   },
   selection = 'none',
   options = list(dom = 'tpi',

@@ -171,7 +171,35 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
     
   } else input$QC_rmd_metrics
   
-  rmd <- rmd_filter(temp_group, metrics = input$QC_rmd_metrics)
+  ### Metric hierarchy
+  metrics_sort <- c("Kurtosis", "Skewness", "MAD", "Correlation", "Proportion_Missing")
+  metrics_use <- metrics_sort[metrics_sort %in% metrics]
+  
+  tryCatch({
+    rmd <- rmd_filter(temp_group, metrics = metrics_use)
+  }, error = function(e){
+    while(all(is.na(rmd$Log2.md)) && length(metrics_use) > 2){
+      metrics_use <- metrics_use[-1]
+      rmd <- rmd_filter(temp_group, metrics = metrics_use)
+    }
+  })
+  
+  while(all(is.na(rmd$Log2.md)) && length(metrics_use) > 2){
+    metrics_use <- metrics_use[-1]
+    rmd <- rmd_filter(temp_group, metrics = metrics_use)
+  }
+  
+  if(!all(metrics %in% metrics_use) && input$user_level_pick != "beginner"){
+    shinyalert("", 
+               type = "warning",
+               text = paste0(
+                 "Too few samples detected in dataset for the number of metrics selected. The reduced list of the following metrics were used instead: ",
+                 toString(metrics_use)
+                 )
+               
+               )
+  }
+  
   
   QC_rmd$res <- rmd
   
