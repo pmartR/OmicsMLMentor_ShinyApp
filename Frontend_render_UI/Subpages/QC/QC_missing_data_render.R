@@ -485,9 +485,9 @@ observeEvent(input$done_qc_rollup, {
 })
 
 observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVals()), {
-  
+ 
   req(!inherits(omicsData$objQC, "seqData"))
-  
+
   if ((!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
       !any(is.na(omicsData$objQC$e_data)) || inherits(omicsData$objQC, "seqData") ||
       !is.null(input$missing_options)) {
@@ -496,7 +496,6 @@ observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVal
     # Sys.sleep(0.5) ## I think the debounce covers this
 
     isolate(try({
-
       thresholds <- list(
         keep = missingHandleSliderVals()$md_keep,
         impute = missingHandleSliderVals()$md_impute,

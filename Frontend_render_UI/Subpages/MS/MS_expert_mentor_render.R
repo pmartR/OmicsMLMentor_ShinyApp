@@ -293,7 +293,7 @@ observeEvent(
   df <- df[df$supervised,] ## supervised/unsupervised
   
   df <- df[df$naive_bayes_cutoff,] ## nb cutoff check
-  
+
   if('continuous' %in% response_types_ag()){
     df <- df[df$regression,]
     scores <- map(attr(suggests, "soft_rules"), function(x) sum(unlist(x)))
@@ -584,7 +584,6 @@ observeEvent(
   
   # Remove NB cutoff col
   df <- df[-14]
-  
   
   # else if(input$user_level_pick == "beginner"){
   #  df <- df[1:4,]
