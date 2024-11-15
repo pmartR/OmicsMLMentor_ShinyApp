@@ -707,14 +707,8 @@ observeEvent(omicsData$objPP, {
         title = "Incomplete detection handling filter",
         value = "imputefilt_plot_tab",
         br(),
-        uiOutput("imputefilt_plot_render")
+        withSpinner(plotOutput("imputefilt_plot"))
       )
-      # tabPanel(
-      #   title = "Incomplete detection handling filter",
-      #   value = "imputefilt_plot_tab",
-      #   br(),
-      #   withSpinner(plotOutput("imputefilt_plot"))
-      # )
     )
   })
   
@@ -1182,7 +1176,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
      !input[[paste0(name, "_add_imputefilt")]]) &&
     
     ## Missingness
-    any(is.na(omicsData$objPP$e_data))
+    !all(missingval_result(omicsData$objPP)$na.by.molecule$num_NA == 0)
     
   ){
     
@@ -1286,8 +1280,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         #   biom_rm_count <- tmp
         # }
         
-        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt",
-                                                                  thresholds = thresholds)))
+        attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
         # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
 
         # tmp$e_data <- sldata_temp$e_data
@@ -1370,7 +1363,6 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       res <- NULL
     },
     error = function(e) {
-      warning(e$message)
       res <<- e
     }
   )
@@ -1713,10 +1705,6 @@ output$missing_options_filter_UI <- renderUI({
       "Estimation of values must be at peptide level data for proteomics data.", 
       "", "")
     disabled <- c(T, F, F)
-  } else if (inherits(omicsData$objMSU, "seqData")){
-    disabled <- c(T, T, T)
-    subtext <- rep("Not avaliable for transcriptomic data", 3)
-    
   } else {
     disabled <- NULL
     subtext <- NULL
@@ -1973,8 +1961,8 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
         rmd_filter(omicsData$objPP, 
                    metrics = metric)
       }, error = function(e){
-        print(e$message)
-        # browser()
+        print(e)
+        browser()
         return(NULL)
       })
       
