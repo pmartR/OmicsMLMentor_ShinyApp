@@ -50,9 +50,6 @@ RUN R -e "remotes::install_version('renv', version = '${RENV_VERSION}', repos = 
 RUN R -e "options(renv.config.connect.timeout = 1000L)"
 RUN R -e "options(renv.config.connect.retry = 3L)"
 
-# The following 3 lines are needed to successfully install pmartR.
-# Need to set linker flags to install pmartR in linux environment
-
 # dependencies
 COPY renv.lock .
 # Contains local repos
