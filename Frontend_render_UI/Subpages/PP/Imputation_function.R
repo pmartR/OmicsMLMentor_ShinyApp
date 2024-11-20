@@ -29,7 +29,8 @@ imputation_function <- function(omicsData_use, thresholds = NULL){
     transform_df2 <- combined_handling[!(colnames(combined_handling)%in% get_emeta_cname(omicsData_use))]
     
     ## Only apply imutation -- convert and remove applied on protein level
-    transform_df2$Handling != "Estimate" <- "Keep"
+    transform_df2$Handling[transform_df2$Handling != "Estimate"] <- "Keep"
+
     
     ## Degenerate peptides catch
     degen_catch <- duplicated(transform_df2[[get_edata_cname(omicsData_use)]])

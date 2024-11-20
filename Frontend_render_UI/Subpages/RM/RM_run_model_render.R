@@ -1106,7 +1106,7 @@ output$unsup_plot_type_UI <- renderUI({
   }
   
   picker_out = pickerInput(
-    "unsup_plot_type", "Plot type", choices = choices
+    "unsup_plot_type", "Plot type", choices = choices,
     selected = isolate(input$unsup_plot_type)
   )
   

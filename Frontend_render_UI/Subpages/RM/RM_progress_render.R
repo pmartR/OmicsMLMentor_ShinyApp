@@ -14,7 +14,7 @@ output$RM_progress_summary_table <- renderDT({
     return(data.frame(Value = c("No data summary available for unsupervised models.", "Please see the plots available to the right.")))
   }
   
-  if(!is.null(input$reduced_full_summary) && reduced_full_summary == "Reduced model"){
+  if(!is.null(input$reduced_full_summary) && input$reduced_full_summary == "Reduced model"){
     attr(omicsData$objRM_reduced, "response_performance")
   } else {
     attr(omicsData$objRM, "response_performance")
