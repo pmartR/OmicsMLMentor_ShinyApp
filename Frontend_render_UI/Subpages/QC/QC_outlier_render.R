@@ -184,7 +184,6 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
     }
   })
   
-
   if(!exists("rmd")){
     
     return(c("Rmd is unavailable for this data."))
