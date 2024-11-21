@@ -178,11 +178,16 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
   tryCatch({
     rmd <- rmd_filter(temp_group, metrics = metrics_use)
   }, error = function(e){
-    while(all(is.na(rmd$Log2.md)) && length(metrics_use) > 2){
+    while(!exists("rmd") && length(metrics_use) > 2){
       metrics_use <- metrics_use[-1]
       rmd <- rmd_filter(temp_group, metrics = metrics_use)
     }
   })
+  
+  if(!exists("rmd")){
+    
+    return(c("Rmd is unavailable for this data."))
+  }
   
   while(all(is.na(rmd$Log2.md)) && length(metrics_use) > 2){
     metrics_use <- metrics_use[-1]

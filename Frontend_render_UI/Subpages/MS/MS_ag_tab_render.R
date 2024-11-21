@@ -19,7 +19,7 @@ response_types_ag <- reactive({
 response_cols_ag <- reactive({
   expert_cond <- !is.null(input$skip_ag) && 
     input$skip_ag && 
-    input$pick_model %in% models_supervised
+    !is.null(input$pick_model) && input$pick_model %in% models_supervised
   
   other_cond <- !is.null(input$ag_prompts) && 
     input$ag_prompts == "supervised"
