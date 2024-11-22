@@ -172,16 +172,18 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
         
         
         hyperparams <- model$fit$actions$model$spec$args
-        hyperparams <- map_int(hyperparams, rlang::quo_get_expr)
+        # this originally was map_int but issues when not dealing with integers
+        hyperparams <- map_dbl(hyperparams, rlang::quo_get_expr)
         hp_df <- as.data.frame(hyperparams)
         colnames(hp_df) <- "Metrics"
         row.names(hp_df) <- paste0("Hyperparameter ", row.names(hp_df))
         
+        # update this once we know if this is the problem or not
         performance <- as.data.frame(model$fit$fit$fit$confusion)
         per_df <- signif(performance[ncol(performance)])
         colnames(per_df) <- "Metrics"
         row.names(per_df) <- paste0(row.names(per_df), " class error")
-        
+        #per_df <- NULL
         
         df <- data.frame(
           "Metrics" = c(
