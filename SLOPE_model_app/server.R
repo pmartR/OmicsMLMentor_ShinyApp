@@ -306,41 +306,9 @@ shinyServer(function(session,input,output){
       if(("imputationFilt" %in% names(all_filter_requirements_specific))){
         og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "imputationFilt")
         thresholds <- attr(norm_data,"filters")[[og_filter_id]]$threshold
-        if("pepData" %in% class(omicsData$model$norm_omics)){
-          
-          # Impute all of e_data
-          imputed_data <- slopeR::imputation(omics_processed_sl)
-          imputed_data_pmart <- slopeR::apply_imputation(imputed_data,omics_processed_sl)
-          imputed_data <- cbind(E_DATA_CNAME = omics_processed_sl$e_data[[get_edata_cname(omics_processed_sl)]], imputed_data)
-          names(imputed_data)[1] <- get_edata_cname(omics_processed_sl)
-          
-          # rollup for the intent of determining which get rolled up needing to be imputed
-          rollup_method = attr(pp_data,"pro_quant_info")$method
-          objQCPro <- slopeR::protein_rollup(imputed_data_pmart,method = rollup_method)
-          # objQCPro <- protein_quant(edata_transform(omicsData$objQC, "log2"),
-          #                           method = input$qc_which_rollup,
-          #                           qrollup_thresh = input$qc_qrollup_thresh / 100,
-          #                           single_pep = single_pep,
-          #                           single_observation = single_observation,
-          #                           combine_fn = input$qc_which_combine_fn,
-          #                           parallel = TRUE)
-          
-          # get transformation data.frame
-          transforms_df <- slopeR::get_transform_df(objQCPro,thresholds)
-          
-          # Get the proteins whose peptides will be imputed
-          impute_proteins <- transforms_df[which(transforms_df$Handling == "Estimate"),][[pmartR::get_edata_cname(objQCPro)]]
-          
-          # Replace just those peptides with their imputed versions
-          impute_pro_idx <- which(omics_processed_sl$e_meta[[get_emeta_cname(omics_processed_sl)]] %in% impute_proteins)
-          impute_peps <- omics_processed_sl$e_meta[[get_edata_cname(omics_processed_sl)]][impute_pro_idx]
-          impute_pep_idx <- which(omics_processed_sl$e_data[[get_edata_cname(omics_processed_sl)]] %in% impute_peps)
-          omics_processed_sl$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
-          tmp <- omics_processed_sl
-        } else {
-          # all other data types
-          tmp <- slopeR::edata_nathresh_transform(omics_processed_sl, thresholds)
-        }
+        
+        
+        tmp = imputation_function(omics_processed_sl,thresholds = thresholds)
         attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
         omics_processed_sl <- tmp
       }
