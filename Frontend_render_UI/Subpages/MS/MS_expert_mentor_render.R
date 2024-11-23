@@ -292,6 +292,8 @@ observeEvent(
   
   df <- df[df$supervised,] ## supervised/unsupervised
   
+  df <- df[df$naive_bayes_cutoff,] ## nb cutoff check
+  
   if('continuous' %in% response_types_ag()){
     df <- df[df$regression,]
     scores <- map(attr(suggests, "soft_rules"), function(x) sum(unlist(x)))
@@ -337,8 +339,11 @@ observeEvent(
     "Model innately avoids overfitting?",
     "Model handles highly correlated features?",
     "High dimensional?",
-    "Model handles outliers robustly?"
+    "Model handles outliers robustly?",
+    "NB_CUTOFF"
   )
+  
+  df <- df[-which(colnames(df) == "NB_CUTOFF"),]
   
   #if(!input$equal_sort){
   #  
@@ -576,6 +581,9 @@ observeEvent(
   ## Remove classification and regression cols (auto-filtered)
   df <- df[-4]
   df <- df[-4]
+  
+  # Remove NB cutoff col
+  df <- df[-14]
   
   
   # else if(input$user_level_pick == "beginner"){
