@@ -1,5 +1,5 @@
 
-## Download behavoir
+## Download behavior
 
 observeEvent(input$makezipfile, {
   disable("makezipfile")
@@ -20,11 +20,9 @@ observeEvent(input$makezipfile, {
   fname <- file.path(temp_dir, 
                      paste0("SLOPE_", method, 
                             "_", gsub("( |:|-)", "_", Sys.time())))
-  
+
   plots_chk <- reactiveValuesToList(plot_table_current)$table
   tables_chk <- reactiveValuesToList(table_table_current)$table
-  # true/false for if model has been actually ran
-  model_chk <- !is.null(omicsData$objRM)
   
   plots_keep <- getShinyInput(input, "checkplot")
   tables_keep <- getShinyInput(input, "checktable")
@@ -60,29 +58,6 @@ observeEvent(input$makezipfile, {
   
   plots_export <- plots_chk[plot_idx][plots_keep]
   tables_export <- tables_chk[tbl_idx][tables_keep]
-  model_export <- list()
-  # if we have include model set to be TRUE then we include the model
-  # make sure that we do not include the slData information for objRM or objNorm
-  # this will break the predictions app (we just want the default information)
-  if("slData" %in% class(omicsData$objRM)){
-    class(omicsData$objRM) <- class(omicsData$objRM)[class(omicsData$objRM) != "slData"]
-  }
-  if("slData" %in% class(omicsData$objNorm)){
-    class(omicsData$objNorm) <- class(omicsData$objNorm)[class(omicsData$objNorm) != "slData"]
-  }
-  if((!is.null(input$include_model)) && (input$include_model == TRUE)){
-    model_export = list(full_model = list(model = omicsData$objRM,
-                                          norm_omics = omicsData$objNorm,
-                                          pp_omics = omicsData$objPP))
-    if(!is.null(omicsData$objRM_reduced)){
-      model_export = list(full_model = list(model = omicsData$objRM,
-                                            norm_omics = omicsData$objNorm,
-                                            pp_omics = omicsData$objPP),
-                          reduced_model = list(model = omicsData$objRM_reduced,
-                                               norm_omics = omicsData$objNorm,
-                                               pp_omics = omicsData$objPP))
-    }
-  }
   
   # Write plots
   if (length(plots_export) > 0) {
@@ -101,7 +76,7 @@ observeEvent(input$makezipfile, {
                  # height = save_options$height, 
                  # scale = save_options$scale, 
                  # units="px"
-          )
+                 )
         }
         incProgress(1 / length(plots_export), 
                     detail = paste0(fname, " done"))
@@ -118,44 +93,35 @@ observeEvent(input$makezipfile, {
       
       file_names_tables <- map2(tables_export, 
                                 names(tables_export), function(table, handle){
-                                  
-                                  write.csv(table, 
-                                            file = paste0(handle, ".csv"), 
-                                            row.names = FALSE)
-                                  
-                                  incProgress(1 / length(tables_export), 
-                                              detail = paste0(paste0(handle, ".csv"), " done"))
-                                  paste0(handle, ".csv")
-                                })
+        
+        write.csv(table, 
+                  file = paste0(handle, ".csv"), 
+                  row.names = FALSE)
+        
+        incProgress(1 / length(tables_export), 
+                    detail = paste0(paste0(handle, ".csv"), " done"))
+        paste0(handle, ".csv")
+      })
     })
   } else file_names_tables <- NULL
   
   # Write .Rdata
-  if(length(model_export) > 0){
-    
-    withProgress(message = "Writing model RDS object...",{
-      
-      file_names_models <- map2(model_export,
-                                names(model_export),function(model,handle){
-                                  
-                                  saveRDS(model,
-                                          file = paste0(handle,".RDS"))
-                                  
-                                  incProgress(1 / length(model_export), 
-                                              detail = paste0(paste0(handle, ".RDS"), " done"))
-                                  
-                                  paste0(handle,".RDS")
-                                })
-    })
-  } else file_names_models <- NULL
-  
+
   # Write report
+  if (input$include_report) {
+    tryCatch({
+      withProgress(message = "Writing report file...", {
+        params <- list(user_inputs = reactiveValuesToList(user_inputs), omicsData = reactiveValuesToList(omicsData), tables = reactiveValuesToList(table_table_current), plots = reactiveValuesToList(plot_table_current), titleName = "SLOPE Report")
+        rmarkdown::render(paste0(orig_wd, "/www/markdowns/Report_Template.Rmd"), output_dir = getwd(), output_file = fs::path_sanitize(input$report_name), params = params, envir = new.env())
+      })
+    }, error = print)
+  }
   
   zip(zipfile = paste0(fname, ".zip"), 
-      files = c(file_names_tables, file_names_plots, file_names_models), 
+      files = c(file_names_tables, file_names_plots, fs::path_sanitize(input$report_name)), 
       flags = "-r")
   
-  zipped_file$fs <- c(zipped_file$fs, paste0(fname, ".zip"))
+  zipped_file$fs <- paste0(fname, ".zip")
 })
 
 

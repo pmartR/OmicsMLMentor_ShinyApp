@@ -1,4 +1,5 @@
-filter_tab_temp <- function(tabname, keep_missing, user_level, datascale) {
+
+filter_tab_temp <- function(tabname, keep_missing, user_level, datascale, no_cv) {
   
   # if(!is.null(input$keep_missing)){
   #   # no_mol_filt <- T
@@ -60,9 +61,9 @@ filter_tab_temp <- function(tabname, keep_missing, user_level, datascale) {
       biofilt_UI <- grep("imputefilt", biofilt_UI, invert = T, value = T)
     }
     
-    # if(no_mol_filt){
-    #   biofilt_UI <- grep("molfilt", biofilt_UI, invert = T, value = T)
-    # }
+    if(no_cv){ ## No CV if already normalized
+      biofilt_UI <- grep("cvfilt", biofilt_UI, invert = T, value = T)
+    }
     
     
     sampfilt_UI <- c(
@@ -237,11 +238,10 @@ select_biofilter_UI <- function(
       column(
         6,
         uiOutput("cv_threshold_UI"),
-        # numericInput(paste0(tabname, "_cv_threshold"), "Maximum CV", 150, step = 1, min = 0),
         radioGroupButtons(
           inputId = paste0(tabname, "_cvfilt_use_groups"),
           label = "Use groups to calculate CV?",
-          choices = c("Yes" = TRUE, "No" = FALSE)
+          choices = c("No" = FALSE, "Yes" = TRUE)
         )
       )
     ),
@@ -253,7 +253,7 @@ select_biofilter_UI <- function(
         div(
           id = paste0(tabname, "_add_impute_ttip_control"),
           
-          uiOutput("add_impute_ui")#,
+          uiOutput("add_impute_ui")
           # actionButton(inputId = paste0(tabname, "_preview_impute"), "Preview")
         )
       ),
@@ -261,7 +261,6 @@ select_biofilter_UI <- function(
         6,
         
         uiOutput("missing_options_filter_UI"),
-        
         uiOutput("slider_options_filter_ui")
       )
     ),
@@ -292,7 +291,7 @@ select_biofilter_UI <- function(
       uiOutput(paste0(tabname, "_edata_filter_preview"))
     ),
     
-    protfilt = div(
+    profilt = div(
       id = paste0(tabname, "_profilt_UI"),
       tagList(
         fluidRow(

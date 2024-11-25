@@ -90,6 +90,8 @@ output$transform_preview_plot <- renderPlotly({
   # req(!inherits(omicsData$objMSU, "seqData"))
   
   out <- omicsData$objMSU
+  cond <- isolate(response_types_ag())
+  col <- isolate(response_cols_ag())
   
   if(inherits(omicsData$objMSU, "seqData")){
     
@@ -103,7 +105,7 @@ output$transform_preview_plot <- renderPlotly({
       p <- plot(x)
     # }
     
-    yaxis <- switch(get_data_info(x)$data_scale_actual,
+    yaxis <- switch(attr(x, "data_info")$data_scale_actual,
                     lcpm = "Log counts per million",
                     upper = "Upper-quantile transformed counts",
                     median = "Median counts")
@@ -117,9 +119,18 @@ output$transform_preview_plot <- renderPlotly({
     }
     
     if(!is.null(get_group_DF(out))){
-      p <- plot(out, color_by = "Group", order_by = "Group")
+      
+      if(cond == "continuous"){
+        
+        p <- plot_continuous(out, plot, col)
+
+      } else {
+        p <- plot(out, color_by = col, order_by = col)
+      }
+      
     } else {
       p <- plot(out)
+      
     }
   }
   
@@ -187,7 +198,9 @@ observeEvent(input$complete_transform, {
   ## Call from previous so they can redo as they like
   if(!inherits(omicsData$objMSU, "seqData")){
     omicsData$objPP <- edata_transform(omicsData$objMSU, input$transform)
+    omicsData$objToFilter <- omicsData$objPP
   } else {
+
     # This has to happen after filters
     # omicsData$objPP <- edata_transform_seq(omicsData$objMSU, input$transform)
   }

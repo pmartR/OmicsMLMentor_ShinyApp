@@ -136,9 +136,18 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
               id = "PP_review_selection_box",
               
               br(),
-              progress_tab("preprocessing"),
-              
-              actionButton("complete_ppreview", "Done")
+              progress_tab(
+                "preprocessing",
+                plot_choices = c(
+                  "Transformed Boxplots" = "PP__transform",
+                  "Molecule Filter Preview" = "PP__filters__molfilt",
+                  "Missingness Handling Preview" = "PP__filters__imputefilt",
+                  "CV Filter Preview" = "PP__filters__cvfilt",
+                  "Normalized Data Boxplots" = "PP__normalization__post"
+                ),
+                done_btn = actionButton("complete_ppreview", "Continue to Run Model"),
+                reset_btn = actionButton("reset_pp", "Revert to start of Pre-processing")
+              ),
               
             )
             
@@ -251,9 +260,18 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
               id = "PP_review_selection_box",
               
               br(),
-              progress_tab("preprocessing"),
-              
-              actionButton("complete_ppreview", "Done")
+              progress_tab(
+                "preprocessing",
+                plot_choices = c(
+                  "Transformed Boxplots" = "PP__transform",
+                  "Molecule Filter Preview" = "PP__filters__molfilt",
+                  "Missingness Handling Preview" = "PP__filters__imputefilt",
+                  "CV Filter Preview" = "PP__filters__cvfilt",
+                  "Normalized Data Boxplots" = "PP__normalization__post"
+                ),
+                done_btn = actionButton("complete_ppreview", "Continue to Run Model"),
+                reset_btn = actionButton("reset_pp", "Revert to start of Pre-processing")
+              ),
               
             )
             
@@ -389,7 +407,7 @@ observeEvent(input$complete_filters, ignoreInit = T, {
   print("filters")
   
   if(!is.null(omicsData$objfilters)){
-    omicsData$objPP <- omicsData$objfilters
+    omicsData$objPP <- auto_remove_na(omicsData$objfilters)
   }
   disable("apply_filters")
   
@@ -437,7 +455,9 @@ observeEvent(input$complete_norm, ignoreInit = T, {
   
   if(!is.null(omicsData$objNorm) && 
      input[[paste0(tabname, "_normalize_option")]] != "No Normalization"){
-    omicsData$objPP <- omicsData$objNorm
+    omicsData$objPP <- auto_remove_na(omicsData$objNorm)
+  } else {
+    omicsData$objPP <- auto_remove_na(omicsData$objPP)
   }
   
   shinyalert(title = "Success!", "Continue to next page or review results?",

@@ -3,6 +3,7 @@ ui <- function(request) {
   tagList(
     useShinyjs(),
     use_prompt(),
+    #https://github.com/dreamRs/shinyWidgets/blob/26838f9e9ccdc90a47178b45318d110f5812d6e1/R/useShinydashboardPlus.R
     useShinydashboardPlus(), ## This causes the hovers for picker input, pages
     introjsUI(),
     
@@ -82,7 +83,7 @@ ui <- function(request) {
       
       # #### Download Tab #####
       download_tab(),
-      
+
       tabPanel(uiOutput("notify_which_data"), value = "nav_which_datatype")
       # tabPanel(uiOutput('plots_summary'), value = 'nav_plot_review'),
       # tabPanel(uiOutput('current_data_summary'), value = 'nav_data_review')
@@ -124,8 +125,8 @@ ui <- function(request) {
     ),
     
     
-    uiOutput("developer_buttons")
+    uiOutput("developer_buttons"),
     
-    
+    shinybusy::add_busy_spinner(spin = "orbit", position = "bottom-left", timeout = 200)
   )
 } # shinyUI + shinyjs tagList

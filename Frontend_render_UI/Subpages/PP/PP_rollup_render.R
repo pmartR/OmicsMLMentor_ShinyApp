@@ -44,6 +44,16 @@ load_rollup_observers <- function(tab) {
         pep$e_meta[[cname]] <- as.character(pep$e_meta[[cname]])
         
         norm_attr <- attr(pep,"data_info")$norm_info$norm_fn 
+        
+        if(is.null(pep$f_data)){
+          pep$f_data <- data.frame(
+            SampleID = colnames(pep$e_data)[
+              colnames(pep$e_data) != pmartR::get_edata_cname(pep)],
+            Temp_col_all = "All"
+          )
+        }
+        
+        unregister()
         omicsData$objPP <- protein_quant(pep,
                                                   method = input$qc_which_rollup,
                                                   qrollup_thresh = input$qc_qrollup_thresh / 100,
@@ -53,29 +63,39 @@ load_rollup_observers <- function(tab) {
                                                   parallel = TRUE
         )
         
-        attr(omicsData$objPP,"pro_quant_info")$combine_fn = input$qc_which_combine_fn
-        
+        unregister()
         attr(omicsData$objPP,"data_info")$norm_info$norm_fn <- norm_attr
         
         if (input$keep_missing != "Yes") {
-          # Remove proteins which got filtered out
-          transforms_df <- pepQCData$transforms_df[
-            -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
-          ]
           
-          if (dim(transforms_df)[1] == 0) {
-            transforms_df <- pepQCData$transforms_df
-          }
+          # thresholds <- pep ### see if we can derive from the object itself in the future?
+          thresholds <- filter_settings[[get_omicsData_type(pep)]]$imputefilt
           
-          omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          ## No further imputation occurs fyi since all imputed peps are complete at the pro level
+          omicsData$objPP <- imputation_function(omicsData$objPP, thresholds)
           
-          # Remove all remaining proteins with missingness.
-          # These occur when a protein is only made up of peptides that are 100% missing.
-          if (any(is.na(omicsData$objPP$e_data))) {
-            transforms_df <- slopeR::get_transform_df(omicsData$objPP, list())
-            transforms_df$Handling[which(transforms_df$`Percentage missing` > 0)] <- "Remove"
-            omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
-          }
+          # # Remove proteins which got filtered out
+          # transforms_df <- pepQCData$transforms_df[
+          #   -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
+          # ]
+          # 
+          # if (dim(transforms_df)[1] == 0) {
+          #   transforms_df <- pepQCData$transforms_df
+          # }
+          # 
+          # omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          # 
+          # # Remove all remaining proteins with missingness.
+          # # These occur when a protein is only made up of peptides that are 100% missing.
+          # if (any(is.na(omicsData$objPP$e_data))) {
+          #   transforms_df <- slopeR::get_transform_df(omicsData$objPP, list())
+          #   transforms_df$Handling[which(transforms_df$`Percentage missing` > 0)] <- "Remove"
+          #   omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          # }
+        }
+        
+        if(is.null(pep$f_data)){
+          omicsData$objPP$f_data <- NULL
         }
         
         updateTabsetPanel(session, paste0(tab, "_rollup_res_tabpanel"),
@@ -120,35 +140,29 @@ assign_rollup_output <- function(tab) {
   output[[paste0(tab, "_rollup_res")]] <- renderPlotly({
     req(!inherits(omicsData$objPP, "pepData"))
     
-    # e_data <- omicsData$objPP$e_data
-    # e_data_cname <- pmartR::get_edata_cname(omicsData$objPP)
-    # plot_data <- melt(e_data, id = e_data_cname, na.rm = TRUE)
-    # group_df <- get_group_DF(omicsData$objPP)
-    # plot_data <- left_join(plot_data, group_df, by = c("variable" = colnames(group_df)[1]))
-    # title <- paste0("Protein Roll-up: ", tab, " Data")
-    # 
-    # plot_data <- arrange(plot_data, !!rlang::sym(colnames(group_df)[2]))
-    # plot_data$variable <- factor(plot_data$variable, levels = unique(plot_data$variable))
-    # 
-    # p <- plot_ly(
-    #   data = plot_data,
-    #   x = plot_data$variable,
-    #   y = plot_data$value,
-    #   color = plot_data[[colnames(group_df)[2]]],
-    #   type = "box"
-    # ) %>%
-    #   layout(
-    #     title = title,
-    #     xaxis = list(title = "Samples"),
-    #     yaxis = list(title = "Values")
-    #   )
+    drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
     
-    if(!is.null(get_group_DF(omicsData$objPP))){
-      p <- plot(omicsData$objPP, 
-                color_by = "Group", 
-                order_by = "Group")
+    if(all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1))) {
+
+      ## Still need group designation for color, order
+      df <- as.data.frame(table(melt(omicsData$objPP$e_data)[2:3]))
+      p <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+        geom_col() + theme_bw() + 
+        labs(
+          title = "Protein-summarized data",
+          fill = "Conversion",
+          y = "Number of biomolecules",
+          x = "Sample",
+        ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+      
     } else {
-      p <- plot(omicsData$objPP)
+      if(!is.null(get_group_DF(omicsData$objPP))){
+        p <- plot(omicsData$objPP, 
+                  color_by = response_cols_ag(), 
+                  order_by = response_cols_ag())
+      } else {
+        p <- plot(omicsData$objPP)
+      }
     }
     
     isolate(plot_table_current$table$PP__rollup <- p)

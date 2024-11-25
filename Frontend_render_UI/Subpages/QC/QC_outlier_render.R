@@ -137,7 +137,9 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
   
   req(!is.null(omicsData$objQC) && 
         !inherits(omicsData$objQC, "seqData") &&
-        !("customFilt" %in% map(attr(omicsData$objQC, "filters"), 1)))
+        !is.null(input$outliers_done) && input$outliers_done < 1,
+      cancelOutput = T
+      )
   
   temp_dat <- omicsData$objQC
   
@@ -169,7 +171,40 @@ output$QC_rmdfilt_sample_select_UI <- renderUI({
     
   } else input$QC_rmd_metrics
   
-  rmd <- rmd_filter(temp_group, metrics = input$QC_rmd_metrics)
+  ### Metric hierarchy
+  metrics_sort <- c("Kurtosis", "Skewness", "MAD", "Correlation", "Proportion_Missing")
+  metrics_use <- metrics_sort[metrics_sort %in% metrics]
+  
+  tryCatch({
+    rmd <- rmd_filter(temp_group, metrics = metrics_use)
+  }, error = function(e){
+    while(!exists("rmd") && length(metrics_use) > 2){
+      metrics_use <- metrics_use[-1]
+      rmd <- rmd_filter(temp_group, metrics = metrics_use)
+    }
+  })
+  
+  if(!exists("rmd")){
+    
+    return(c("Rmd is unavailable for this data."))
+  }
+  
+  while(all(is.na(rmd$Log2.md)) && length(metrics_use) > 2){
+    metrics_use <- metrics_use[-1]
+    rmd <- rmd_filter(temp_group, metrics = metrics_use)
+  }
+  
+  if(!all(metrics %in% metrics_use) && input$user_level_pick != "beginner"){
+    shinyalert("", 
+               type = "warning",
+               text = paste0(
+                 "Too few samples detected in dataset for the number of metrics selected. The reduced list of the following metrics were used instead: ",
+                 toString(metrics_use)
+                 )
+               
+               )
+  }
+  
   
   QC_rmd$res <- rmd
   
@@ -245,12 +280,9 @@ output$rmd_plot_qc_all <- renderPlotly({
   
   pval <- if(input$user_level_pick == "beginner") 0.0001 else input$QC_pvalue_threshold
   
-  p <- plot(QC_rmd$res, pvalue_threshold = pval) + 
-    theme(legend.position = 0)
+  p <- plot(QC_rmd$res, pvalue_threshold = pval)
   
-  ### FIXME: why does this plot only render with plotly???
-  ### - ECG 5/16/2024
-  isolate(plot_table_current$table$QC__rmd_overall <- ggplotly(p))
+  isolate(plot_table_current$table$QC__rmd_overall <- p)
   isolate(table_table_current$table$QC__rmd_table <- QC_rmd$res)
   
   p

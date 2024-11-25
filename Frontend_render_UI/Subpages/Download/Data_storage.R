@@ -46,7 +46,7 @@ plot_table_current <- reactiveValues(
     QC__rmd_overall = "Outlier plot: All",
     QC__rmd_outliers = "Outlier plot: Selected",
     QC__missing_samples = "Missingness by sample",
-    QC__missing_features = "Missingness handling thresholds",
+    QC__missing_features = "Incomplete detection handling thresholds",
     
     PP__transform = "Transformed boxplots",
     # PP__filters__* added via code
@@ -59,7 +59,6 @@ plot_table_current <- reactiveValues(
     RM__rec_folds = "Fold recommendation",
     RM__param_optim = "Parameter optimization",
     RM__training_structure = "Training structure",
-    RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
     RM__model_eval__full__roc_curve = "Model evaluation: roc curve (full)",
     RM__model_eval__full__confidence_bar = "Model evaluation: confidence bar (full)",
     RM__model_eval__full__prediction_bar = "Model evaluation: prediction bar (full)",
@@ -177,7 +176,13 @@ output$preview_selected_dwn_UI <- renderUI({
       uiOutput("edit_plot")
     )
   } else {
-    DTOutput("preview_selected_dwn_table")
+    
+    div(
+      DTOutput("preview_selected_dwn_table"),
+      br(),
+      strong("Note: only first 500 rows will be loaded in preview."),
+      br()
+    )
   }
   
 })
@@ -504,7 +509,12 @@ output$preview_selected_dwn_plot_plotly <- renderPlotly({
 })
 output$preview_selected_dwn_table <- renderDT(height = "450px",{
   req(!download_preview$plot)
-  download_preview$current
+  df <- download_preview$current
+  
+  if(nrow(df) > 500){
+    df <- df[1:500,]
+  }
+  df
 }, 
 selection = "none",
 options = list(dom = "tp", 
@@ -531,7 +541,7 @@ map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
     
     observeEvent(input[[str]], {
       
-      req(length(input[[str]]) > 0)
+      req(length(input[[str]]) > 0 && !is.null(input[[str]]$row))
       
       pull_info <- get(paste0(type, "_table_current"))
       req(!is.null(pull_info))
@@ -816,7 +826,7 @@ output$include_model_UI <- renderUI({
   trans_fn <- attr(omicsData$objPP,"data_info")$data_scale_actual
   
   if(inherits(omicsData$objPP, "seqData") && 
-     (is.null(trans_fn) || trans_fn != "lcpm")){
+     (is.null(trans_fn) || trans_fn != "lcpm") && AWS){
     
     include_mod <- disabled(
       checkboxInput(
@@ -831,7 +841,7 @@ output$include_model_UI <- renderUI({
         inputId = "include_model", value = F)
     )
     
-  } else if(!inherits(omicsData$objPP, "seqData") && 
+  } else if(!inherits(omicsData$objPP, "seqData") && AWS &&
             (is.null(norm_fn) || norm_fn != "zero_to_one")){
     
     include_mod <- disabled(
@@ -840,7 +850,7 @@ output$include_model_UI <- renderUI({
           "Include model as an R object (RDS file)?",
           strong("   "),
           tipify(icon("circle-info"),
-                 paste0("Disabled, as 0-1 normalization was not applied.")
+                 paste0("Disabled, as zero-to-one normalization was not applied.")
           )
         ),
         inputId = "include_model", value = F)

@@ -157,6 +157,16 @@
       ],
       "Hash": "ac8b12951882c375d1a14f64c93e78f1"
     },
+    "FNN": {
+      "Package": "FNN",
+      "Version": "1.1.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "eaabdc7938aa3632a28273f53a0d226d"
+    },
     "FactoMineR": {
       "Package": "FactoMineR",
       "Version": "2.11",
@@ -295,6 +305,18 @@
       ],
       "Hash": "5ea2700d21e038ace58269ecdbeb9ec0"
     },
+    "RcppAnnoy": {
+      "Package": "RcppAnnoy",
+      "Version": "0.0.22",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp",
+        "methods"
+      ],
+      "Hash": "f6baa1e06fb6c3724f601a764266cb0d"
+    },
     "RcppArmadillo": {
       "Package": "RcppArmadillo",
       "Version": "0.12.8.2.0",
@@ -342,6 +364,13 @@
         "R"
       ],
       "Hash": "a45594a00f5dbb073d5ec9f48592a08a"
+    },
+    "RcppProgress": {
+      "Package": "RcppProgress",
+      "Version": "0.4.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "1c0aa18b97e6aaa17f93b8b866c0ace5"
     },
     "RcppZiggurat": {
       "Package": "RcppZiggurat",
@@ -1056,6 +1085,19 @@
       ],
       "Hash": "fedd9d00c2944ff00a0e2696ccf048ec"
     },
+    "dqrng": {
+      "Package": "dqrng",
+      "Version": "0.4.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "BH",
+        "R",
+        "Rcpp",
+        "sitmo"
+      ],
+      "Hash": "6d7b942d8f615705f89a7883998fc839"
+    },
     "e1071": {
       "Package": "e1071",
       "Version": "1.7-14",
@@ -1094,6 +1136,31 @@
         "rlang"
       ],
       "Hash": "bb0eec2fe32e88d9e2836c2f73ea2077"
+    },
+    "embed": {
+      "Package": "embed",
+      "Version": "1.1.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "dplyr",
+        "generics",
+        "glue",
+        "lifecycle",
+        "purrr",
+        "recipes",
+        "rlang",
+        "rsample",
+        "stats",
+        "tibble",
+        "tidyr",
+        "utils",
+        "uwot",
+        "vctrs",
+        "withr"
+      ],
+      "Hash": "96ae1386d72a3bf956f39ebc206e13ff"
     },
     "emmeans": {
       "Package": "emmeans",
@@ -1798,6 +1865,19 @@
       ],
       "Hash": "b25a108cbf4834be7c1b1f46ff30f888"
     },
+    "irlba": {
+      "Package": "irlba",
+      "Version": "2.3.5.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "Matrix",
+        "R",
+        "methods",
+        "stats"
+      ],
+      "Hash": "acb06a47b732c6251afd16e19c3201ff"
+    },
     "isoband": {
       "Package": "isoband",
       "Version": "0.2.7",
@@ -2222,17 +2302,8 @@
     },
     "nlme": {
       "Package": "nlme",
-      "Version": "3.1-164",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "graphics",
-        "lattice",
-        "stats",
-        "utils"
-      ],
-      "Hash": "a623a2239e642806158bc4dc3f51565d"
+      "Version": "3.1-166",
+      "Source": "Repository"
     },
     "nloptr": {
       "Package": "nloptr",
@@ -2535,9 +2606,8 @@
     },
     "pmartR": {
       "Package": "pmartR",
-      "Version": "2.4.5",
-      "Source": "Bioconductor",
-      "Repository": "CRAN",
+      "Version": "2.4.6",
+      "Source": "./renv/local/pmartR.zip",
       "Requirements": [
         "BH",
         "R",
@@ -2567,13 +2637,7 @@
     "pmartRdata": {
       "Package": "pmartRdata",
       "Version": "2.0.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "pmartRdata",
-      "RemoteUsername": "pmartR",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "bb4729346c264b45deb310f2d99199cd09776051",
+      "Source": "./renv/local/pmartRdata.zip",
       "Requirements": [
         "R"
       ],
@@ -3402,6 +3466,17 @@
       ],
       "Hash": "802e4786b353a4bb27116957558548d5"
     },
+    "sitmo": {
+      "Package": "sitmo",
+      "Version": "2.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "Rcpp"
+      ],
+      "Hash": "c956d93f6768a9789edbc13072b70c78"
+    },
     "slider": {
       "Package": "slider",
       "Version": "0.3.1",
@@ -3800,6 +3875,24 @@
         "R"
       ],
       "Hash": "303c19bfd970bece872f93a824e323d9"
+    },
+    "uwot": {
+      "Package": "uwot",
+      "Version": "0.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "FNN",
+        "Matrix",
+        "RSpectra",
+        "Rcpp",
+        "RcppAnnoy",
+        "RcppProgress",
+        "dqrng",
+        "irlba",
+        "methods"
+      ],
+      "Hash": "f693a0ca6d34b02eb432326388021805"
     },
     "vctrs": {
       "Package": "vctrs",

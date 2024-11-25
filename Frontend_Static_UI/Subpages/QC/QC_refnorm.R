@@ -135,7 +135,11 @@ upload_reference <- function(tabname) {
                        br(),
                        withSpinner(uiOutput(paste0(tabname, "_norm_edata_UI")))
                      )
-                   )
+                   ),
+                   
+                   br(),
+                   strong("Note: Data preview will only show first 500 rows."),
+                   br()
                  ),
                  
                  collapseBox(

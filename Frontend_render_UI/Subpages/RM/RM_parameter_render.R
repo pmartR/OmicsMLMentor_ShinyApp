@@ -9,6 +9,7 @@ apply_disabled <- function(el) {
 output[["param_opti_UI"]] <- renderUI({
   if(input$rm_prompts_hp == "tuned"){
     out <- actionButton("param_opti", "Optimize parameters")
+    out <- disabled(actionButton("param_opti", "Optimize parameters"))
     if(!any(map_lgl(grep("optimize", names(input), value = T), 
                     function(x) input[[x]])))
       out <- disabled(out)
@@ -61,7 +62,9 @@ rf_params <- function(){
     response <- input$f_data_response_picker
   }
   
-  x <- as.data.frame(t(omicsData$objPP$e_data[-1]))
+  drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+  
+  x <- as.data.frame(t(omicsData$objPP$e_data[-drop]))
   if(length(response) == 1){
     y <- omicsData$objPP$f_data[[response]]
   } else {
@@ -71,6 +74,17 @@ rf_params <- function(){
   
   mtry <- if(!is.null(y) && !is.factor(y)) max(floor(ncol(x)/3), 1) else floor(sqrt(ncol(x)))
   min_n <- if (!is.null(y) && !is.factor(y)) 5 else 1
+  
+  hp_inputs$input_labels <- list(
+    "Number of trees in the forest",
+    "Minimum number of datapoints for branch split",
+    "Number of predictors to evaluate at each split"
+  )
+  hp_inputs$input_names <- list(
+    "trees",
+    "min_n",
+    "mtry"
+  )
   
   div(
     apply_disabled(numericInput("trees", "Number of trees in forest", min = 1L, 
@@ -106,6 +120,15 @@ lsvm_params <- function(){
   # dials::cost() #### is the trans argument needed here?
   # dials::svm_margin() #### is the trans argument needed here?
   
+  hp_inputs$input_labels <- list(
+    "Cost of predicting a sample within or on the wrong side of the margin",
+    "Epsilon in the SVM insensitive loss function"
+  )
+  hp_inputs$input_names <- list(
+    "cost",
+    "svm_margin"
+  )
+  
   div(
     apply_disabled(numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = 1e-10, 
                  max = 1e5, value = 1, width = "100%")),
@@ -135,6 +158,19 @@ psvm_params <- function(){
   # dials::svm_margin() ## epsilon.   #### is the trans argument needed here?
   # dials::scale_factor()
   # dials::degree()
+  
+  hp_inputs$input_labels <- list(
+    "Cost of predicting a sample within or on the wrong side of the margin",
+    "Epsilon in the SVM insensitive loss function",
+    "Scaling parameter of the polynomial and tangent kernal",
+    "Polynomial degree"
+  )
+  hp_inputs$input_names <- list(
+    "cost",
+    "svm_margin",
+    "scale_factor",
+    "degree"
+  )
   
   div(
     apply_disabled(numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", min = 1e-10, 
@@ -179,6 +215,17 @@ rsvm_params <- function(){
   # dials::svm_margin()
   # dials::rbf_sigma()
   
+  hp_inputs$input_labels <- list(
+    "Cost of predicting a sample within or on the wrong side of the margin",
+    "Epsilon in the SVM insensitive loss function",
+    "Inverse kernal width"
+  )
+  hp_inputs$input_names <- list(
+    "cost",
+    "svm_margin",
+    "rbf_sigma"
+  )
+  
   div(
     apply_disabled(numericInput("cost", "A positive number for the cost of predicting a sample within or on the wrong side of the margin", 
                  min = 1e-10, 
@@ -219,6 +266,15 @@ logistic_params <- function(){
   # ?dials::weight_scheme
   # ?dials::weight_func
   
+  hp_inputs$input_labels <- list(
+    "Amount of penalties in regularized models",
+    "Relative amount of penalties in regularized models"
+  )
+  hp_inputs$input_names <- list(
+    "penalty",
+    "mixture"
+  )
+  
   div(
     apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
                  max = 0, value = 0, step = 0.1, width = "100%")),
@@ -247,6 +303,15 @@ loglasso_params <- function(){
   # ?dials::weight
   # ?dials::weight_scheme
   # ?dials::weight_func
+  
+  hp_inputs$input_labels <- list(
+    "Amount of penalties in regularized models",
+    "Relative amount of penalties in regularized models"
+  )
+  hp_inputs$input_names <- list(
+    "penalty",
+    "mixture"
+  )
   
   div(
     apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
@@ -277,6 +342,15 @@ multi_params <- function(){
   # ?dials::weight_scheme
   # ?dials::weight_func
   
+  hp_inputs$input_labels <- list(
+    "Amount of penalties in regularized models",
+    "Relative amount of penalties in regularized models"
+  )
+  hp_inputs$input_names <- list(
+    "penalty",
+    "mixture"
+  )
+  
   div(
     apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
                  max = 1e0, value = 0, step = 0.1, width = "100%")),
@@ -299,6 +373,15 @@ multilasso_params <- function(){
   # parsnip::multinom_reg -- mode, engine, penalty, mixture
   # glmnet::glmnet -- x, y, family, weights, offset, alpha, nlambda, lambda.min.ratio, lambda, standardize, intercept, thresh, dfmax, pmax, exclude, penalty.factor, lower.limits, upper.limits, maxit, type.gaussian, type.logistic, standardize.response, type.multinomial, relax, trace.it, ...
   # ## Figure out which ones can be tuned
+  
+  hp_inputs$input_labels <- list(
+    "Amount of penalties in regularized models",
+    "Relative amount of penalties in regularized models"
+  )
+  hp_inputs$input_names <- list(
+    "penalty",
+    "mixture"
+  )
   
   div(
     apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
@@ -344,7 +427,9 @@ gbtree_params <- function(){
     response <- input$f_data_response_picker
   }
   
-  x <- as.data.frame(t(omicsData$objPP$e_data[-1]))
+  drop <- which(colnames(omicsData$objPP$e_data) == get_edata_cname(omicsData$objPP)) 
+  
+  x <- as.data.frame(t(omicsData$objPP$e_data[-drop]))
   if(length(response) == 1){
     y <- omicsData$objPP$f_data[[response]]
   } else {
@@ -354,6 +439,29 @@ gbtree_params <- function(){
   
   mtry <- if(!is.null(y) && !is.factor(y)) max(floor(ncol(x)/3), 1) else floor(sqrt(ncol(x)))
   min_n <- if (!is.null(y) && !is.factor(y)) 5 else 1
+  
+  hp_inputs$input_labels <- list(
+    "Number of trees in boosted ensemble", 
+    "Minimum number of datapoints for branch split", 
+    "Number of predictors to evaluate at each split",
+    "The cost-complexity parameter in classical CART models",
+    "The maximum depth of the tree",
+    "The reduction in the loss function required to split further",
+    "Scale factor for the contribution of each tree", 
+    "Number of iterations without an improvement in the objective function occur before training should be halted.", 
+    "The size of the data set used for modeling within an iteration of the modeling algorithm, such as stochastic gradient boosting"
+  )
+  hp_inputs$input_names <- list(
+    "trees",
+    "min_n",
+    "mtry",
+    "cost_complexity",
+    "tree_depth",
+    "loss_reduction",
+    "learn_rate",
+    "stop_iter",
+    "sample_prop"
+  )
   
   div(
     apply_disabled(numericInput("trees", "Number of trees in boosted ensemble", min = 1L, 
@@ -428,6 +536,15 @@ pls_params <- function() {
   n_samps = attributes(omicsData$objPP)$data_info$num_samps
   n_feats = attributes(omicsData$objPP)$data_info$num_edata
   
+  hp_inputs$input_labels <- list(
+    "Number of components",
+    "Proportion of features"
+  )
+  hp_inputs$input_names <- list(
+    "pls_num_comp",
+    "pls_predictor_prop"
+  )
+  
   max_pcs = min(n_feats, n_samps - 1)
   div(
     sliderInput("pls_num_comp", "Number of components", min=2, max=max_pcs, value = 2),
@@ -438,6 +555,13 @@ pls_params <- function() {
 ## Split into appropriate later
 
 kmeans_params <- function(){
+  
+  hp_inputs$input_labels <- list(
+    "Number of clusters"
+  )
+  hp_inputs$input_names <- list(
+    "num_clust"
+  )
   
   div(
     apply_disabled(numericInput("num_clust", "Number of clusters", value = 2, 
@@ -481,6 +605,17 @@ hclust_params <- function(){
                       choices = c("Height", "Number of clusters")),
     
     conditionalPanel("input.height_clust == 'Height'", {
+      hp_inputs$input_labels <- list(
+        "Linkage method",
+        "Clusters defined by",
+        "Dendogram height to define clusters from"
+      )
+      hp_inputs$input_names <- list(
+        "linkage_methods",
+        "height_clust",
+        "cut_height"
+      )
+      
       div(
         apply_disabled(numericInput("cut_height", 
                      "Dendogram height to define clusters from", 
@@ -491,6 +626,17 @@ hclust_params <- function(){
     }),
     
     conditionalPanel("input.height_clust == 'Number of clusters'", {
+      hp_inputs$input_labels <- list(
+        "Linkage method",
+        "Clusters defined by",
+        "Number of clusters"
+      )
+      hp_inputs$input_names <- list(
+        "linkage_methods",
+        "height_clust",
+        "num_clust"
+      )
+      
       div(
         apply_disabled(numericInput("num_clust", "Number of clusters", value = 2, 
                      min = 1, max = ncol(omicsData$objPP$e_data[-1]), 
@@ -520,6 +666,15 @@ pca_params <- function(){
   out <- div(
     sliderInput("pca_num_comp", "Number of components", min=2, max=max_pcs, value = 2)
   )
+  
+  hp_inputs$input_labels <- list(
+    "Number of components"
+  )
+  hp_inputs$input_names <- list(
+    "pca_num_comp"
+  )
+  
+  out
 }
 
 ### Not yet available
@@ -532,6 +687,15 @@ ppca_params <- function(){
   out <- div(
     sliderInput("ppca_num_comp", "Number of components", min=2, max=max_pcs, value = 2)
   )
+  
+  hp_inputs$input_labels <- list(
+    "Number of components"
+  )
+  hp_inputs$input_names <- list(
+    "ppca_num_comp"
+  )
+  
+  out
 }
 
 

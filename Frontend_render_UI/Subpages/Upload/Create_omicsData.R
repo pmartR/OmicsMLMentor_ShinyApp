@@ -11,7 +11,7 @@ observeEvent(input$check_group_cols, {
   fdata_cname <- input$f_data_id_col
   emeta_cname <- input$e_meta_id_col
   
-  if(is.null(fdata)){
+  if(is.null(fdata) || input$use_fdata == "No"){
     fdata <- data.frame(SampleID = colnames(edata)[colnames(edata) != edata_cname],
                         Col1 = colnames(edata)[colnames(edata) != edata_cname])
     fdata_cname <- "SampleID"
@@ -56,7 +56,6 @@ observeEvent(input$check_group_cols, {
       } else {
         attr(res, "data_info")$data_scale_actual <- data_scale_hold
       }
-      
       res
     },
     error = function(e) {
@@ -71,7 +70,7 @@ observeEvent(input$check_group_cols, {
     return(NULL)
   }
   
-  if(is.null(reactive_dataholder[["f_data"]]$file)){
+  if(is.null(reactive_dataholder[["f_data"]]$file) || input$use_fdata == "No"){
     od$f_data <- NULL
   }
 

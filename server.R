@@ -1,9 +1,36 @@
 options(shiny.maxRequestSize = 250 * 1024^2, 
         ch.dir = TRUE, 
         expressions = 5e5,
-        DT.TOJSON_ARGS = list(na = "string"))
+        DT.TOJSON_ARGS = list(na = "string"),
+        shiny.fullstacktrace=TRUE
+        )
+
+formals(renderDT)$server <- FALSE
 
 shinyServer(function(session, input, output) {
+  onStop(function() {
+    # save the session object
+    if (Sys.getenv("SHINY_TEST_MODE") == "1") {
+      message("Session is ending. Saving the session object.")
+      server_env <- parent.env(environment())
+      
+      ## get all objects which are reactivevalues objects and
+      ## which are not identical to input
+      rvs <- map_lgl(as.list(server_env), ~inherits(.x, "reactivevalues") & !identical(.x, input))
+      
+      rv_names = names(rvs[rvs])
+      
+      POSTMORTEM_OBJECTS <<- list()
+      
+      isolate({
+        for (name in rv_names) {
+          POSTMORTEM_OBJECTS[[name]] <<- reactiveValuesToList(server_env[[name]])
+        }
+        
+        POSTMORTEM_OBJECTS[["input"]] <<- reactiveValuesToList(input)
+      })
+    }
+  })
   
   file_loads <- c(
     list.files("./Modules/", recursive = T, full.names = T),
@@ -19,53 +46,75 @@ shinyServer(function(session, input, output) {
     source(f, local = TRUE)
   }
   
-  if (AWS) {
-    
-    message("AWS VERSION ENABLED")
-    
-    # Load AWS specific R library
-    library(aws.s3)
-    
-    # Load AWS specific code
-    source("./AWS_Functions.R", local = TRUE)
-    
-    ######## comment this out before push
-
-    # wd <-"../"
-    # 
-    # AWSobj$e_data <- read.csv(file.path(wd, "e_data_omni.csv"))
-    # AWSobj$f_data <- read.csv(file.path(wd, "f_data_omni.csv"))
-    # AWSobj$e_meta <- read.csv(file.path(wd, "e_meta_omni.csv"))
-    #
-    
-    
-    ## Temp fix for razor proteins
-    observeEvent(AWSobj$e_data, {
-      AWSobj$e_data <- AWSobj$e_data[apply(!is.na(AWSobj$e_data), 2, sum) > 2,]
-
-    # write.csv(AWSobj$e_data, "e_data_short.csv", row.names = F)
-    # write.csv(AWSobj$f_data, "f_data_short.csv", row.names = F)
-    # write.csv(AWSobj$e_meta, "e_meta.csv", row.names = F)
-    }, once = T)
+  # only exposed when shiny::runApp(test.mode = TRUE) -- shinytest2 sets this variable when running Shiny based app or document.
+  exportTestValues(
+    omicsData = reactiveValuesToList(omicsData),
+    plot_table_current = reactiveValuesToList(plot_table_current),
+    table_table_current = reactiveValuesToList(table_table_current)
+  )
   
-    observeEvent(AWSobj$e_meta, {
-      AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
-    }, once = T)
-
-    # # Specify file type and disable input
-    # updatePickerInput(session, "data_type", selected = "Label-free")
-    # 
-  } else {
-    hide(id = "loading-gray-overlay")
-  }
+  observeEvent(session$clientData$url_search, once = T, {
+   
+    # Parse the query string at the url header
+    query <- parseQueryString(session$clientData$url_search)
+    
+    # Set a conditional test. We only care if the "s3" parameter exists.
+    AWS_cond <- length(query) != 0 && "s3_bucket" %in% names(query)
+    MAP_cond <- length(query) != 0 && 'map-data' %in% names(query)
+    
+    if(AWS_cond) AWS <<- T else if(MAP_cond) MAP_ACTIVE <<- T
+    
+    if (AWS) {
+      
+      message("AWS VERSION ENABLED")
+      
+      # Load AWS specific R library
+      library(aws.s3)
+      
+      # Load AWS specific code
+      source("./AWS_Functions.R", local = TRUE)
+      
+      ######## comment this out before push
+      
+      # wd <-"../"
+      # 
+      # AWSobj$e_data <- read.csv(file.path(wd, "e_data_omni.csv"))
+      # AWSobj$f_data <- read.csv(file.path(wd, "f_data_omni.csv"))
+      # AWSobj$e_meta <- read.csv(file.path(wd, "e_meta_omni.csv"))
+      #
+      
+      
+      ## Temp fix for razor proteins
+      observeEvent(AWSobj$e_data, {
+        AWSobj$e_data <- AWSobj$e_data[apply(!is.na(AWSobj$e_data), 2, sum) > 2,]
+        
+        # write.csv(AWSobj$e_data, "e_data_short.csv", row.names = F)
+        # write.csv(AWSobj$f_data, "f_data_short.csv", row.names = F)
+        # write.csv(AWSobj$e_meta, "e_meta.csv", row.names = F)
+      }, once = T)
+      
+      observeEvent(AWSobj$e_meta, {
+        AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
+      }, once = T)
+      
+      # # Specify file type and disable input
+      # updatePickerInput(session, "data_type", selected = "Label-free")
+      # 
+      launch_tutorial()
+    } else if (MAP_ACTIVE){
+      
+      source("./MAP_Functions.R", local = TRUE)
+      
+    } else {
+      hide("loading-gray-overlay")
+      launch_tutorial()
+    }
+     
+  })
   
   # Observe any collapsible panels
   observeEvent(input$collapseTitleClick, {
     req(input$collapseTitleClick)
     updateBoxCollapse(session, input$collapseTitleClick$p, toggle = input$collapseTitleClick$id)
   })
-  
-  launch_tutorial()
- 
-  
 })

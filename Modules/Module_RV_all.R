@@ -1,7 +1,12 @@
 
-## AWS
+## Cloud Data Retrieval
 # Create a reactive value to hold AWS-specific objects
 AWSobj <- reactiveValues(e_data = NULL, f_data = NULL, e_meta = NULL)
+
+#' @details Store any values passed in the URL
+header_params = reactiveValues()
+
+minio_upload_data <- reactiveValues(project_omic = NULL)
 
 ## Data holder up until object creation
 reactive_dataholder <- reactiveValues(e_data = NULL,
@@ -15,13 +20,27 @@ omicsData <- reactiveValues(obj = NULL,
                             objModel = NULL,
                             objPP = NULL,
                             objRM = NULL
-                            )
+)
 
 ## Peptide object specific variables
 pepQCData <- reactiveValues(
   objQCPro = NULL,
   keep = FALSE,
   transforms_df = NULL
+)
+
+## User input storage for report generation
+user_inputs <- reactiveValues(
+  upload = NULL,
+  qc = NULL,
+  msu = NULL,
+  pp = NULL,
+  rm = NULL,
+)
+
+hp_inputs <- reactiveValues(
+  input_names = list(),
+  input_labels = list(),
 )
 
 ## Determine if selected model is supervised
@@ -46,15 +65,15 @@ auto_remove_na <- function(omicsData){
 }
 
 observeEvent(omicsData$obj, {
-  omicsData$objQC <- auto_remove_na(omicsData$obj)
+  omicsData$objQC <- omicsData$obj
 })
 
 observeEvent(omicsData$objQC, {
-  omicsData$objMSU <- auto_remove_na(omicsData$objQC)
+  omicsData$objMSU <- omicsData$objQC
 })
 
 observeEvent(omicsData$objMSU, {
-  omicsData$objPP <- auto_remove_na(omicsData$objMSU)
+  omicsData$objPP <- omicsData$objMSU
 })
 
 ## Track selected model and response

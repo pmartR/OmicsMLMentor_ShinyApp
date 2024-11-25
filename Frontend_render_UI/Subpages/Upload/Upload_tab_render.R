@@ -35,7 +35,10 @@ output$data_select_UI <- renderUI({
       )
     } else {
       tagList(
-        prettySwitch("have_emeta", label_emeta, value = F, fill = T, status = "primary"),
+        div(
+          id = 'have_emeta_js',
+          prettySwitch("have_emeta", label_emeta, value = F, fill = T, status = "primary")
+        ),
         div("Optional", relevant_examples, style = "margin-top: -10px;")
       )
     },
@@ -51,6 +54,7 @@ output$e_data_upload_UI <- renderUI({
   
   label <- ifelse(input$data_type == "RNA-seq", 
                   "Upload Expression File", "Upload Abundance File")
+  
   div(
     collapseBox(
       label,
@@ -75,6 +79,7 @@ output$e_meta_upload_UI <- renderUI({
   req(!input$use_example && 
         input$data_type_done > 0 && 
         input$specify_edata_done > 0 && !AWS)
+  req(!is.null(input$data_type))
   req(isTruthy(input$have_emeta))
   
   div(
@@ -101,7 +106,7 @@ output$e_data_spec_UI <- renderUI({
   
   req(input$data_type_done > 0 && !is.null(input$data_type))
   
-  req((input$edata_upload_done > 0 || input$use_example || AWS) &&
+  req((input$edata_upload_done > 0 || input$use_example || AWS || MAP_ACTIVE) &&
         !is.null(input$data_type) && 
         !is.null(reactive_dataholder[["e_data"]]$file))
   
@@ -295,10 +300,10 @@ output$boxplot_UI_render <- renderUI({
 observeEvent(input$data_type, {
   if (!is.null(input$data_type)) {
     shinyjs::enable("data_type_done")
-    shinyjs::show("use_example")
+    shinyjs::show("use_example_js")
   } else {
     shinyjs::disable("data_type_done")
-    shinyjs::hide("use_example")
+    shinyjs::hide("use_example_js")
   }
 }, ignoreNULL = FALSE)
 
