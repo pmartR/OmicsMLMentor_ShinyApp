@@ -170,7 +170,7 @@
       "Package": "GPfit",
       "Version": "1.0-8",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "lattice",
         "lhs"
@@ -354,7 +354,7 @@
       "Package": "SQUAREM",
       "Version": "2021.1",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
@@ -548,7 +548,7 @@
       "Package": "clock",
       "Version": "0.7.0",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "cli",
@@ -675,7 +675,7 @@
       "Package": "diagram",
       "Version": "1.6.5",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "graphics",
@@ -997,7 +997,7 @@
       "Package": "furrr",
       "Version": "0.3.1",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "future",
@@ -1204,7 +1204,7 @@
       "Package": "gridExtra",
       "Version": "2.3",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "grDevices",
         "graphics",
@@ -1360,7 +1360,7 @@
       "Package": "ipred",
       "Version": "0.9-14",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "MASS",
         "R",
@@ -1539,7 +1539,7 @@
       "Package": "lhs",
       "Version": "1.1.6",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "Rcpp"
@@ -1698,7 +1698,7 @@
       "Package": "modelenv",
       "Version": "0.1.1",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "glue",
         "rlang",
@@ -1772,7 +1772,7 @@
       "Package": "numDeriv",
       "Version": "2016.8-1.1",
       "Source": "Repository",
-      "Repository": "RSPM",
+      "Repository": "CRAN",
       "Requirements": [
         "R"
       ],
@@ -2614,6 +2614,32 @@
         "warp"
       ],
       "Hash": "c1c73df260af9e1e3692eb3b8e1ecb88"
+    },
+    "slopeR": {
+      "Package": "slopeR",
+      "Version": "0.1.0",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "./renv/local/sloper.zip",
+      "Requirements": [
+        "Amelia",
+        "R",
+        "dplyr",
+        "forcats",
+        "foreach",
+        "ggplot2",
+        "magrittr",
+        "parsnip",
+        "pmartR",
+        "purrr",
+        "recipes",
+        "rsample",
+        "tidyr",
+        "tune",
+        "workflows",
+        "yardstick"
+      ],
+      "Hash": "1839d6f5064b2bd1120ed5d75fe0f56f"
     },
     "snow": {
       "Package": "snow",

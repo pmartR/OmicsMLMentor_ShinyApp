@@ -2,6 +2,7 @@ suppressPackageStartupMessages({
   
   ## R stuff
   library(pmartR)
+  # devtools::install_github("pmartR/pmartRdata")
   library(pmartRdata)
   library(readr)
   library(reshape2)
@@ -9,6 +10,7 @@ suppressPackageStartupMessages({
   library(tidyr)
   library(V8)
   library(future)
+  # devtools::install("../sloper", repos = NULL, type="source")
   library(forcats)
   library(Amelia)
   

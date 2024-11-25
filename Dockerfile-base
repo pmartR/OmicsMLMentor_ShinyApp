@@ -79,9 +79,6 @@ RUN R -e "remotes::install_local('./renv/local/mapdataaccess-lib.zip')"
 
 FROM ${cloud_version} AS final
 
-# install slope separately
-RUN R -e "remotes::install_local('./renv/local/sloper.zip')"
-
 # python and requirements
 COPY requirements.txt .
 RUN python3 -m venv /venv
