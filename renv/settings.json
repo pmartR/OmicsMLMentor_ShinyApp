@@ -1,7 +1,12 @@
 {
-  "bioconductor.version": "3.13",
+  "bioconductor.version": "3.16",
   "external.libraries": [],
-  "ignored.packages": [],
+  "ignored.packages": [
+    "devtools",
+    "testthat",
+    "mapDataAccess",
+    "shinytest2"
+  ],
   "package.dependency.fields": [
     "Imports",
     "Depends",

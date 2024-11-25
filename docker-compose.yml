@@ -1,0 +1,33 @@
+version: "3" 
+services:
+    slope-app: 
+        profiles: ['', 'map']
+        image: "code-registry.emsl.pnl.gov/multiomics-analyses/slope-app:${TAG:-latest}"
+        container_name: slope-app
+        volumes:
+            - "./:/srv/shiny-server/slope/"
+            - "./cfg/minio_config_compose.yml:/srv/shiny-server/slope/cfg/minio_config.yml"
+        ports:
+            - "8300:${SHINY_PORT:-2800}"
+            - "8301:2801"
+        environment:
+            - RENV_CONFIG_AUTOLOADER_ENABLED=false
+        build:
+            context: .
+            dockerfile: Dockerfile
+            args:
+                BASE_IMAGE: "${BASE_IMAGE:-code-registry.emsl.pnl.gov/multiomics-analyses/slope-app}"
+                BASE_TAG: "${BASE_TAG:-latest}"
+                
+    minio:
+        profiles: ['map', 'minio']
+        image: minio/minio
+        container_name: minio-slope
+        ports:
+          - "9000:9000"
+          - "9001:9001"
+        command: server --console-address ":9001" /data
+    
+networks:
+  default:
+    name: sloper-net

@@ -68,6 +68,8 @@ store_minio_data <- function(uri) {
 
     if (class(pullData) == "project omic") {
       minio_upload_data$project_omic <- pullData
+    } else if (class(pullData) == "project edata") {
+      minio_upload_data$project_omic <- pullData
     }
 
     modalmessage <- div(class = "column-scroll-sm",

@@ -1,0 +1,8 @@
+renv/
+data/
+.Rprofile
+.git
+.RData
+*.rds
+*.RDS
+!citations.RDS
