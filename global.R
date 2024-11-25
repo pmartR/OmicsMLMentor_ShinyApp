@@ -2,8 +2,8 @@ suppressPackageStartupMessages({
   
   ## R stuff
   library(pmartR)
-  library(pmartRdata)
   # devtools::install_github("pmartR/pmartRdata")
+  library(pmartRdata)
   library(readr)
   library(reshape2)
   library(stringr)
@@ -25,7 +25,6 @@ suppressPackageStartupMessages({
   
   ## Reporting
   library(yaml)
-  library(devtools)
   library(markdown)
   
   ## Shiny stuff
@@ -37,16 +36,12 @@ suppressPackageStartupMessages({
   library(shinyalert)
   library(prompter)
   library(shinydashboardPlus)
-  library(shinyFiles)
-  library(shinyjqui)
   library(rintrojs)
   library(shinybusy)
   library(shiny.blueprint)
   
   ## Model stuff
   library(mixOmics)
-  # BiocManager::install('mixOmics')
-  library(factoextra)
   library(xgboost)
   library(kernlab)
   library(tidyclust)

@@ -1,4 +1,3 @@
-celery[redis]
 numpy
 gunicorn
 minio==7.0.2
