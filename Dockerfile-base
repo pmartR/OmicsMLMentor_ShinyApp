@@ -2,11 +2,10 @@
 ## SLOPER base dependencies image.  Installs system libraries, R libraries, and others.
 ## Top image extends this image and copies the source code for the app
 
-## Must provide a secret file for access to private github repos with the build argument:
-## docker build --secret id=github_pat,src=.mysecret ...
+ARG cloud_version=aws
 
 # Install latest version of rocker image
-FROM rocker/shiny:4.2.0
+FROM rocker/shiny:4.2.0 AS base
 
 # Load general use libraries
 # Keep gettext-base for MultiProbe
@@ -40,27 +39,27 @@ USER root
 # Keep for MultiProbe, direct to correct url
 WORKDIR /srv/shiny-server/slope
 
-# only need this to restore
-COPY requirements.txt .
-
 # pre-install renv
 ENV RENV_VERSION 1.0.3
 ENV RENV_WATCHDOG_ENABLED FALSE
 
+RUN echo "Installing remotes and renv..."
+
 RUN R -e "install.packages('remotes', repos = c(CRAN = 'https://cloud.r-project.org'))"
-RUN R -e "options('repos'=c(CRAN = 'https://cloud.r-project.org'));remotes::install_version('renv', version = '${RENV_VERSION}')"
+RUN R -e "remotes::install_version('renv', version = '${RENV_VERSION}', repos = c(CRAN = 'https://cloud.r-project.org'))"
 RUN R -e "options(renv.config.connect.timeout = 1000L)"
 RUN R -e "options(renv.config.connect.retry = 3L)"
 
-# The following 3 lines are needed to successfully install pmartR.
-# Need to set linker flags to install pmartR in linux environment
-RUN mkdir $HOME/.R
-COPY Makevars-docker .
-RUN cp Makevars-docker $HOME/.R/Makevars
-
-# Keep for MultiProbe, local DT use due to issue in download
-COPY renv ./renv
+# dependencies
 COPY renv.lock .
+# Contains local repos
+COPY renv ./renv
+
+RUN R -e "install.packages('BiocManager')"
+
+FROM base AS aws
+
+RUN echo "Building MultiProbe image."
 
 # install all packages listed in renv.lock
 RUN R -e 'renv::restore()'
@@ -68,6 +67,17 @@ RUN R -e 'renv::restore()'
 ## Keep for MultiProbe AWS
 RUN R -e "install.packages('aws.s3')"
 RUN R -e "install.packages('aws.ec2metadata')"
+
+FROM base AS map
+
+RUN echo "Building MAP image."
+
+# install all packages listed in renv.lock
+RUN R -e "options(repos=c('CRAN' = 'https://cloud.r-project.org', BiocManager::repositories()));renv::restore()"
+
+RUN R -e "remotes::install_local('./renv/local/mapdataaccess-lib.zip')" 
+
+FROM ${cloud_version} AS final
 
 # python and requirements
 COPY requirements.txt .

@@ -1,15 +1,21 @@
 
 
 observeEvent(input$param_opti, {
-  
+  unregister()
   ## Check normalization application
   shinyjs::show("HP_busy")
-  future::plan(future::multisession)
-  
+
   on.exit({
-    future::plan(future::sequential)
     shinyjs::hide("HP_busy")
   })
+  
+  if (Sys.getenv("TUNE_USE_PARALLEL") == "1") {
+    future::plan(future::multisession)
+    
+    on.exit({
+      future::plan(future::sequential)
+    }, add = TRUE)
+  }
   
   method <- input$pick_model_EM
   
