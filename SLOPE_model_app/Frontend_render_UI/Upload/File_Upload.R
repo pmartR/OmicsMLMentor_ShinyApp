@@ -178,12 +178,16 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
         colnames(hp_df) <- "Metrics"
         row.names(hp_df) <- paste0("Hyperparameter ", row.names(hp_df))
         
-        # update this once we know if this is the problem or not
-        performance <- as.data.frame(model$fit$fit$fit$confusion)
+        # classification error
+        performance <- attributes(model)$prediction_train %>%
+          data.frame() %>%
+          dplyr::group_by(response) %>%
+          dplyr::select(response,.pred_class) %>%
+          dplyr::summarise(class_error = sum(response != .pred_class)/n()) %>%
+          tibble::column_to_rownames(var = "response")
         per_df <- signif(performance[ncol(performance)])
         colnames(per_df) <- "Metrics"
         row.names(per_df) <- paste0(row.names(per_df), " class error")
-        #per_df <- NULL
         
         df <- data.frame(
           "Metrics" = c(
