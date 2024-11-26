@@ -452,8 +452,8 @@ shinyServer(function(session,input,output){
       tibble::column_to_rownames(var = pmartR::get_fdata_cname(omicsNewdata))
     new_info[is.na(new_info)] <- 0
     
-    
     # run predictions
+    set.seed(2024)
     prediction_test_df <- tibble(response = factor(unlist(omicsNewdata$f_data[matching_column]),levels = unique_outcomes),
                                  .pred_class = unlist(predict(omicsData$model$model$fit$fit,new_data = new_info))) %>%
       dplyr::bind_cols(data.frame(predict(omicsData$model$model$fit$fit,new_data = new_info,type = "prob"))) %>%
