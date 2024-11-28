@@ -59,6 +59,7 @@ holdout_valid <- reactive({
       ppca = 0,
       umap = 0,
       gbtree = 20,
+      nb = 0
     )
     
     if(.3*nsamp < rec_minimum){

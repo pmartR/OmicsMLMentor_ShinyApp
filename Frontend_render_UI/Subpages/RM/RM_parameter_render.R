@@ -440,7 +440,7 @@ lda_params <- function(){
   )
   
   div(
-    p("LDA has no hyperparameters."),
+    p("Linear Discriminant Analysis has no hyperparameters."),
     #apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
     #                            max = 1e0, value = 0, step = 0.1, width = "100%")),
     #if(input$rm_prompts_hp == "tuned")
@@ -459,9 +459,28 @@ qda_params <- function(){
   )
   
   div(
-    p("QDA has no hyperparameters."),
+    p("Quadratid Discriminant Analysis has no hyperparameters."),
     #apply_disabled(numericInput("penalty", "A numeric parameter function representing the amount of penalties (e.g. L1, L2, etc) in regularized models.", min = 1e-10, 
     #                            max = 1e0, value = 0, step = 0.1, width = "100%")),
+    #if(input$rm_prompts_hp == "tuned")
+    #  checkboxInput("optimize_penalty", "Optimize?", value = F),
+    br()
+  )
+}
+
+nb_params <- function(){
+  hp_inputs$input_labels <- list(
+    #  "Smoothness",
+    #  "Regularization method"
+  )
+  hp_inputs$input_names <- list(
+    #  "smoothness",
+  )
+  
+  div(
+    p("Naive Bayes has no hyperparameters."),
+    #apply_disabled(numericInput("smoothness", "A numeric parameter function representing the Laplace smoothness alpha parameter of the Naive Bayes classifier.", min = 1e-10, 
+    #                            max = 10, value = ``, step = 0.1, width = "100%")),
     #if(input$rm_prompts_hp == "tuned")
     #  checkboxInput("optimize_penalty", "Optimize?", value = F),
     br()

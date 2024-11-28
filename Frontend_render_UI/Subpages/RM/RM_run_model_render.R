@@ -697,8 +697,6 @@ observeEvent(input$run_sl, {
     
     list_args <- c(list_args, custom_args)
     
-    browser()
-    
     unregister()
     future::plan(future::sequential)
     omicsData$objRM <- tryCatch({
@@ -720,8 +718,18 @@ observeEvent(input$run_sl, {
       })
       }
     })
-    omicsData$objRM <- add_model_attributes(omicsData$objRM)
     
+    if (is.null(omicsData$objRM)) {
+      return()
+    }
+    
+    tryCatch({
+      omicsData$objRM <- add_model_attributes(omicsData$objRM)
+      shinyjs::show("complete_RM")
+    }, error = function(e) {
+      shinyalert("Something went wrong: ", paste0("System error: ", e$message))
+    })
+
   } else {
 
     runner <- as.slData(omicsData$objPP)
@@ -777,12 +785,14 @@ observeEvent(input$run_sl, {
 
     }
 
+    tryCatch({
+      omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F)
+      shinyjs::show("complete_RM")
+    }, error = function(e) {
+      shinyalert("Something went wrong: ", paste0("System error: ", e$message))
+    })
+    
   }
-  
-  omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F)
-  
-  
-  shinyjs::show("complete_RM")
 
 })
 
