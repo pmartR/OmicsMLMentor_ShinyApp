@@ -697,8 +697,6 @@ observeEvent(input$run_sl, {
     
     list_args <- c(list_args, custom_args)
     
-    browser()
-    
     unregister()
     future::plan(future::sequential)
     omicsData$objRM <- tryCatch({
