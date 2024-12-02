@@ -51,6 +51,10 @@ map(c("e_data", "f_data", "e_meta"), function(lab) {
     req(use_file)
     class_cols <- purrr::map_chr(1:ncol(use_file), function(n) class(use_file[[n]]))
     
+    if(nrow(use_file) > 500){
+      use_file <- use_file[1:500,]
+    }
+    
     dt <- datatable(use_file,
                     selection = 'none',
                     options = list(dom = 'tpi', 
@@ -63,7 +67,7 @@ map(c("e_data", "f_data", "e_meta"), function(lab) {
     
     dt <- formatStyle(dt, columns = which(!(class_cols %in% c("factor", "character"))), 
                       backgroundColor = "#DFE9F5")
-    
+
     dt
     
   })
@@ -87,7 +91,7 @@ output$vs_tab_plots_UI <- renderUI({
     column(6, 
     uiOutput("VS_column_examine")),
     br(),
-    column(12, withSpinner(plotlyOutput("vs_tab_plots")))
+    column(12, withSpinner(plotOutput("vs_tab_plots")))
   ))
   
 })
@@ -111,14 +115,26 @@ output$VS_column_examine <- renderUI({
   
 })
 
-output$vs_tab_plots <-  renderPlotly({
+output$vs_tab_plots <-  renderPlot({
+  
+  out <- omicsData$objMSU
   
   if(input$VS_data_picker == "e_data"){
     
-    if(!is.null(get_group_DF(omicsData$objMSU))){
-      p <- plot(omicsData$objMSU, color_by = "Group", order_by = "Group")
+    if(!is.null(get_group_DF(out))){
+      
+      col <- response_cols_ag()
+      
+      if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+        
+        p <- plot_continuous(out, plot, col)
+          
+        } else {
+          p <- plot(out, color_by = col, order_by = col)
+        }
+      
     } else {
-      p <- plot(omicsData$objMSU)
+      p <- plot(out)
     }
     
   } else if(input$VS_data_picker == "f_data"){
@@ -193,7 +209,8 @@ observeEvent(input$vscols_options_done, {
   req(input$vscols_options_done > 0)
   
     updateBoxCollapse(session, "vs_collapse_left", close = "use_cols_vs", open = "factor_cols_vs")
-    if(input$user_level_pick == 'beginner') shinyjs::show("done_VS")
+    if(input$user_level_pick == 'beginner' || 
+       (is.null(omicsData$objMSU$f_data) && is.null(omicsData$objMSU$e_meta))) shinyjs::show("done_VS")
     
 })
 

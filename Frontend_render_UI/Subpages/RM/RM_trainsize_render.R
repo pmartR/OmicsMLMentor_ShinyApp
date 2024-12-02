@@ -182,24 +182,48 @@ output$TS_preview_plot <- renderPlotly({
       text <- paste0("For each of ", input$nFolds_cv, " folds")
     }
     
-    set.seed(1024)
-    
-    folds <- rsample::vfold_cv(
-      group_info,
-      v = input$nFolds_cv,
-      repeats = 1,
-      strata = "Group"
-    )
-    
-    plotter <- map2_dfr(folds$splits, folds$id, function(df, id){
-      df <- as.data.frame(df)
-      df$fold <- id
-      df
-    })
-    
-    out <- ggplot(plotter, aes(x = Group, fill = Group)) + 
-      geom_bar(show.legend = F) + facet_wrap(~fold) + 
-      theme_bw() + labs(x = "", y = "Number of samples")
+    if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+      group_info$Group <- as.numeric(as.character(group_info$Group))
+      
+      set.seed(1024)
+      
+      folds <- rsample::vfold_cv(
+        group_info,
+        v = input$nFolds_cv,
+        repeats = 1,
+        strata = "Group"
+      )
+      
+      plotter <- map2_dfr(folds$splits, folds$id, function(df, id){
+        df <- as.data.frame(df)
+        df$fold <- id
+        df
+      })
+      
+      out <- ggplot(plotter, aes(x = "Distribution", y = Group, color = Group)) + 
+        geom_boxplot() + geom_jitter(height = 0) + facet_wrap(~fold) + 
+        theme_bw() + labs(x = "", y = response_cols_ag()) + scale_color_distiller(palette = "Spectral")
+      
+    } else {
+      set.seed(1024)
+      
+      folds <- rsample::vfold_cv(
+        group_info,
+        v = input$nFolds_cv,
+        repeats = 1,
+        strata = "Group"
+      )
+      
+      plotter <- map2_dfr(folds$splits, folds$id, function(df, id){
+        df <- as.data.frame(df)
+        df$fold <- id
+        df
+      })
+      
+      out <- ggplot(plotter, aes(x = Group, fill = Group)) + 
+        geom_bar(show.legend = F) + facet_wrap(~fold) + 
+        theme_bw() + labs(x = "", y = "Number of samples")
+    }
     
     isolate(table_table_current$table$RM__training_structure__performance <- out$data)
     

@@ -1,7 +1,7 @@
 
 ## Examples
 rm_text <- c(
-  HTML("Advanced users only: use user-specified settings"),
+  HTML("Advanced: Use user-specified settings"),
   HTML("Guided: Use default settings supported in literature"),
   HTML("Guided: Optimize settings for best performance"),
   HTML("Being able to understand relationships within the data"),
@@ -118,8 +118,10 @@ output$rm_prompt_hp_UI <- renderUI({
     radioButtons(
       "rm_prompts_hp",
       label = "",
-      choiceNames = choiceNames_rm[c(3,1)],
-      choiceValues = choiceValues_rm[c(3,1)],
+      choiceNames = choiceNames_rm[c(#3,
+                                     1)],
+      choiceValues = choiceValues_rm[c(#3,
+                                       1)],
       inline = T,
       selected = selected
     )
@@ -179,6 +181,7 @@ output$rm_prompt_hp_UI <- renderUI({
 # })
 
 output$warn_few_samps_settings <- renderText({
+  
   req(!holdout_valid() && 
         input$rm_prompts_train == "train")
   paste0("Warning: The number of samples in your dataset is too small ",

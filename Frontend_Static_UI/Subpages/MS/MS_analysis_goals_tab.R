@@ -73,7 +73,7 @@ analysis_goals <- function() {
                             checkboxInput("skip_ag", "I know what model I want to run.")
                           })
                           ),
-                   column(4,
+                   column(6,
                      
                      uiOutput("pick_model_UI"),
                      

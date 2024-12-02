@@ -223,6 +223,29 @@ map(names(models_long_name), function(x){
 
 
 ## Statistical Methods
+
+statistical_methods <- c(`Cross Validation`="cross_validation", 
+                         `Hyperparameter Tuning`="hyperparameter_tuning", 
+                         `Imputation`="imputation",
+                         `Reference Peptide Summarization (rrollup)` = "rrollup",
+                         `Z-Score Peptide Summarization (zrollup)` = "zrollup",
+                         `Quantile Peptide Summarization (qrollup)` = "qrollup",
+                         `SPANS` = "spans",
+                         `Robust Mahalanobis Distance (RMD) Filter` = "rmd_filter",
+                         `Median Normalization` = "median_normalization",
+                         `Mean Normaliaztion` = "mean_normalization",
+                         `Zero-to-One Normalization` = "zero_one_normalization",
+                         `Z-Score Transformation` = "zscore",
+                         `Median Absolute Deviation Transformation` = "mad",
+                         `Select All Biomolecules` = "all_b",
+                         `Select Complete Biomolecules` = "complete_b",
+                         `Normalization Subset - Top L Order Statistics (LOS)` = "los",
+                         `Normalization Subset - Proportion of Peptides Present (PPP)` = "ppp",
+                         `Normalization Subset - Rank-Invariant Biomolecules (RIP)` = "rip",
+                         `Normalization Subset - PPP + RIP` = "ppp_rip",
+                         `Backtransformation` = "backtransform"
+)
+
 map(names(statistical_methods), function(x){
   abbr <- statistical_methods[[x]]
   output[[paste0("SM_", abbr)]] <- renderUI({
@@ -231,7 +254,11 @@ map(names(statistical_methods), function(x){
     label <- NULL
     
     title <- x
-    if(nchar(title) < 30 ) title <- paste0(title, "<br/><br/>")
+    if(nchar(title) < 30 ){
+      title <- paste0(title, "<br/><br/><br/>")
+    } else if (nchar(title) < 59){
+      title <- paste0(title, "<br/><br/>")
+    }
     
     box(
       title = HTML(title),

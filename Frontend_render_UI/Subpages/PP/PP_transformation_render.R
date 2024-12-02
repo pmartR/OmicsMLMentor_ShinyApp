@@ -90,6 +90,8 @@ output$transform_preview_plot <- renderPlotly({
   # req(!inherits(omicsData$objMSU, "seqData"))
   
   out <- omicsData$objMSU
+  cond <- isolate(response_types_ag())
+  col <- isolate(response_cols_ag())
   
   if(inherits(omicsData$objMSU, "seqData")){
     
@@ -117,9 +119,18 @@ output$transform_preview_plot <- renderPlotly({
     }
     
     if(!is.null(get_group_DF(out))){
-      p <- plot(out, color_by = "Group", order_by = "Group")
+      
+      if(cond == "continuous"){
+        
+        p <- plot_continuous(out, plot, col)
+
+      } else {
+        p <- plot(out, color_by = col, order_by = col)
+      }
+      
     } else {
       p <- plot(out)
+      
     }
   }
   

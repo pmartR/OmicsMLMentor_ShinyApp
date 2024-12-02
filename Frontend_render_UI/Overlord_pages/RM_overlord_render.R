@@ -290,6 +290,9 @@ output$RM_unsupervised_progress <- renderUI({
 })
 
 output$RM_supervised_progress <- renderUI({
+  
+  input$super_plot_type
+  
   progress_tab(
     "RM",
     plot_choices = c(

@@ -19,7 +19,7 @@ response_types_ag <- reactive({
 response_cols_ag <- reactive({
   expert_cond <- !is.null(input$skip_ag) && 
     input$skip_ag && 
-    input$pick_model %in% models_supervised
+    !is.null(input$pick_model) && input$pick_model %in% models_supervised
   
   other_cond <- !is.null(input$ag_prompts) && 
     input$ag_prompts == "supervised"
@@ -133,11 +133,6 @@ output$f_data_response_picker_UI <- renderUI({
       width = "60%"
     )
   )
-})
-
-output$ag_advanced_UI_select_model <- renderUI({
-  # req(input$user_level_pick == "expert")
-  checkboxInput("skip_ag", "I know what model I want to run.")
 })
 
 output$pick_model_group_pick_UI <- renderUI({

@@ -156,20 +156,25 @@ observeEvent(
   
   supervised <- supervised()
   
+  req(!is.null(supervised) && !is.na(supervised) &&
+        ((!supervised && is.null(attr(temp_omic, "response_info"))) || 
+           (supervised && !is.null(attr(temp_omic, "response_info"))))
+        )
+  
   handles_regression <- if('continuous' %in% response_types_ag()) {
     TRUE
   } else {
     FALSE
   }
   
-  if(is.null(omicsData$objQC$f_data) && supervised){
+  if(is.null(omicsData$objQC$f_data)){ ## Unsupervised
     temp_omic$f_data <- data.frame(
       SampleID = colnames(temp_omic$e_data)[
         colnames(temp_omic$e_data) != pmartR::get_edata_cname(temp_omic)],
       Temp_col_all = "All"
     )
     temp_omic <- group_designation(temp_omic, "Temp_col_all")
-  } else if(supervised){
+  } else if(supervised && response_types_ag() == "continuous"){ ## Continuous
     temp_omic$f_data$Temp_col_all <- "All"
     temp_omic <- group_designation(temp_omic, "Temp_col_all")
   }
@@ -184,7 +189,10 @@ observeEvent(
   if (dim(temp_omic$e_data)[1] > 20000) {
     correlation <<- TRUE
   } else {
-    correlation <<- any(cor(t(temp_omic$e_data[-id_col])) > .90)
+    cor_use <- cor(t(temp_omic$e_data[-id_col]))
+    diag(cor_use) <- NA
+    correlation <<- any(cor_use > .90)
+    if(is.na(correlation)) correlation <<- FALSE
   }
   
   ## Change based on algorithim for holdout
@@ -192,6 +200,11 @@ observeEvent(
   
   if (inherits(temp_omic, "seqData")) {
     rmd <- FALSE
+  }  else if (min(get_group_table(temp_omic)) < 4) {
+    
+    ## Can't compute rmd with small sample sizes, 4 is cut-off for default rmd metrics as used in expert mentor
+    rmd <- FALSE
+    
   } else if (supervised) {
     rmd <- any(rmd_filter(temp_omic)$pvalue < 0.0001)
   } else {
@@ -199,7 +212,7 @@ observeEvent(
   }
   
   if(input$user_level_pick == "beginner"){
-    
+
     suggests <- expert_mentor(temp_omic,
                               supervised = supervised,
                               handles_regression = handles_regression,
@@ -278,8 +291,17 @@ observeEvent(
     dplyr::select(method, dplyr::everything())
   
   df <- df[df$supervised,] ## supervised/unsupervised
-  df <- df[df$n_levels,] ## Correct number of levels for analysis
-  df$supervised <- unlist(suggests)
+  
+  df <- df[df$naive_bayes_cutoff,] ## nb cutoff check
+  
+  if('continuous' %in% response_types_ag()){
+    df <- df[df$regression,]
+    scores <- map(attr(suggests, "soft_rules"), function(x) sum(unlist(x)))
+    df$supervised <- round(as.numeric(scores[df$method]), 2) ## This essentially assigns this to a score, which is manipulated later
+  } else {
+    df <- df[df$n_levels,] ## Correct number of levels for analysis
+    df$supervised <- unlist(suggests) ## This essentially assigns this to a score, which is manipulated later
+  }
   df <- df %>% dplyr::select(-dplyr::one_of("any_is_na"))
   
   df$n_predictors_per_sample <- signif(df$n_predictors_per_sample, 3)
@@ -301,11 +323,11 @@ observeEvent(
   colnames(df) <- c(
     "Method",
     "Score",
-    paste0("Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"),
     paste0("Runs with ", length(get_group_table(omicsData$objModel)), " classifications?"),
     #paste0("Runs with ", nrow(omicsData$objModel$e_data), " predictors?"),
     #paste0("Runs with a minimum group size of ", group_text, "?"),
     "Can handle a continuous response?",
+    "Can handle few samples?",
     paste0("Performance with a sample/predictor ratio of ", 
            ncol(omicsData$objModel$e_data) - 1, ":", 
            nrow(omicsData$objModel$e_data), "?"),
@@ -317,8 +339,11 @@ observeEvent(
     "Model innately avoids overfitting?",
     "Model handles highly correlated features?",
     "High dimensional?",
-    "Model handles outliers robustly?"
+    "Model handles outliers robustly?",
+    "NB_CUTOFF"
   )
+  
+  df <- df[-which(colnames(df) == "NB_CUTOFF"),]
   
   #if(!input$equal_sort){
   #  
@@ -363,19 +388,6 @@ observeEvent(
   colnames(df) <- c(
     "Method",
     "Score",
-    paste0(
-      "Total Samples ", 
-      div(
-        id = "em_info_total_samples",
-        class = "hint--bottom",
-        icon(
-          name = "circle-info",
-          class = "em-col-info-btn",
-          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'total_samples')",
-          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'total_samples', 'nonce': Math.random() })"
-        )
-      )
-    ), # "Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"
     paste0(
       "Total Classifications ", 
       div(
@@ -428,6 +440,20 @@ observeEvent(
         )
       )
     ), # "Can handle a continuous response?"
+    paste0(
+      "Handles Few Samples ", 
+      div(
+        id = "em_info_few_samples",
+        class = "hint--bottom",
+        icon(
+          name = "circle-info",
+          class = "em-col-info-btn",
+          onmouseover = "Shiny.setInputValue(id = 'em_column_hover', value = 'few_samples')",
+          onclick = "Shiny.setInputValue(id = 'em_column_info', value = {'name': 'few_samples', 'nonce': Math.random() })"
+        )
+      )
+    ), # "Runs with ", ncol(omicsData$objModel$e_data) - 1, " samples?"
+    
     paste0(
       "Sample/Predictor Ratio Performance ", 
       div(
@@ -548,8 +574,17 @@ observeEvent(
   )
   
   ## Add Rank column
+
   df$Rank <- 1:nrow(df)
   df <- df[c(ncol(df), 1:(ncol(df) - 1))]
+  
+  ## Remove classification and regression cols (auto-filtered)
+  df <- df[-4]
+  df <- df[-4]
+  
+  # Remove NB cutoff col
+  df <- df[-14]
+  
   
   # else if(input$user_level_pick == "beginner"){
   #  df <- df[1:4,]
@@ -641,6 +676,7 @@ get_em_column_info <- function() {
   
   titles <- list(
     "total_samples" = paste0("Total Samples: ", ncol(omicsData$objModel$e_data) - 1),
+    "few_samples" = paste0("Total Samples: ", ncol(omicsData$objModel$e_data) - 1),
     "total_classifications" = paste0("Total Classifications: ", length(get_group_table(omicsData$objModel))),
     "continuous_response" = "Continuous Response",
     "sample_predictor_ratio" = paste0("Sample/Predictor Ratio: ", ncol(omicsData$objModel$e_data) - 1, ":", 
@@ -658,6 +694,7 @@ get_em_column_info <- function() {
   
   summary <- list(
     "total_samples" = "This score is a pass/fail metric, where a pass indicates that the number of samples in the data meet or exceed the minimum number of samples required for the respective model.",
+    "few_samples" = "This score indicates the performance of a given model with the few total samples in the data. A higher number indicates better performance.",
     "total_classifications" = "This score is a pass/fail metric, where a pass indicates that the number of classifications in the data meet or exceed the minimum number of classifications required for the respective model.",
     "continuous_response" = "This score indicates how well a given model handles continuous response variables.",
     "sample_predictor_ratio" = "This score indicates the performance of a given model with the ratio of samples to predictors in the data. A higher number indicates better performance.",
@@ -681,14 +718,16 @@ get_em_column_info <- function() {
 observeEvent(input$em_column_hover, {
   req(!is.null(input$em_column_hover))
   
+  get_em <- get_em_column_info()
+  
   addPrompter(
     session, 
     paste0("em_info_", input$em_column_hover),
     title = paste0(
-        get_em_column_info()[["titles"]][[input$em_column_hover]],
+      get_em[["titles"]][[input$em_column_hover]],
         "\n\n",
         paste(
-          strwrap(get_em_column_info()[["summary"]][[input$em_column_hover]], width = 64),
+          strwrap(get_em[["summary"]][[input$em_column_hover]], width = 64),
           collapse = "\n"
         ),
         "\n\n",
@@ -701,15 +740,17 @@ observeEvent(input$em_column_hover, {
 observeEvent(input$em_column_info, {
   req(!is.null(input$em_column_info))
   
+  get_em <- get_em_column_info()
+  
   showModal(
     modalDialog(
-      title = get_em_column_info()[["titles"]][[input$em_column_info$name]],
-      get_em_column_info()[["summary"]][[input$em_column_info$name]],
+      title = get_em[["titles"]][[input$em_column_info$name]],
+      get_em[["summary"]][[input$em_column_info$name]],
       br(),
-      get_em_column_info()[["contents"]][[input$em_column_info$name]],
+      get_em[["contents"]][[input$em_column_info$name]],
       hr(),
       h4("Citations:"),
-      get_em_column_info()[["citations"]][[input$em_column_info$name]]
+      get_em[["citations"]][[input$em_column_info$name]]
     )
   )
 })
@@ -766,7 +807,11 @@ output$pick_EM_model_UI <- renderUI({
   
   selected <- isolate(input$pick_model_EM)
   
-  choices <- models_long_name[dashboard()$Method]
+  if(input$skip_ag && !is.null(input$pick_model)){
+    choices <- models_long_name[models_long_name == input$pick_model]
+  } else {
+    choices <- models_long_name[dashboard()$Method]
+  }
 
   pickerInput("pick_model_EM", label = "Select a model:",
               choices = choices[!is.na(choices)], 
@@ -777,26 +822,25 @@ output$pick_EM_model_UI <- renderUI({
 
 output$em_model_display_slider <- renderUI({
   
+  req(!input$skip_ag)
+  
+  max <- if(supervised()){
+    length(models_supervised)
+  } else length(models_unsupervised)
+  
+  value <- switch(
+    input$user_level_pick,
+    beginner = 3,
+    familiar = 5,
+    expert = max
+  )
+  
   sliderInput(
     "em_model_count",
     "How many top models to show?",
     min = 3,
-    max = ifelse(
-      input$ag_prompts == "supervised",
-      length(models_supervised),
-      length(models_unsupervised)
-    ), 
-    value = 
-      switch(
-        input$user_level_pick,
-        beginner = 3,
-        familiar = 5,
-        expert = ifelse(
-          input$ag_prompts == "supervised",
-          length(models_supervised),
-          length(models_unsupervised)
-        )
-      ),
+    max = max, 
+    value = value,
     step = 1
   )
   

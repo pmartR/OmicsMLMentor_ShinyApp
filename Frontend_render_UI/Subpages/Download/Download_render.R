@@ -114,7 +114,7 @@ reset_qc <- function() {
   
   pepQCData$pepQCData <- NULL
   pepQCData$pepQCData$keep <- FALSE
-  pepQCData$transforms_df <- NULL
+  pepQCData$objQCPro <- NULL
   
   for (name in names(plot_table_current$table)[which(startsWith(names(plot_table_current$table), "QC__"))]) {
     plot_table_current$table[[name]] <- NULL
