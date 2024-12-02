@@ -1,15 +1,15 @@
 ### Additional SLOPE model attributes
 
-add_model_attributes <- function(model, supervised = T){
+add_model_attributes <- function(model, supervised = T, model_name){
   
-  model <- add_SLOPE_model_name(model)
+  model <- add_SLOPE_model_name(model, model_name)
   if(supervised) model <- add_attr_response_perf(model)
   model
   
 }
 
-add_SLOPE_model_name <- function(model){
-  attr(model, "SLOPE_model_name") <- input$pick_model_EM
+add_SLOPE_model_name <- function(model, model_name){
+  attr(model, "SLOPE_model_name") <- model_name
   model
 }
 

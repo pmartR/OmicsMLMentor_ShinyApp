@@ -1176,7 +1176,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
      !input[[paste0(name, "_add_imputefilt")]]) &&
     
     ## Missingness
-    !all(missingval_result(omicsData$objPP)$na.by.molecule$num_NA == 0)
+    any(is.na(omicsData$objPP$e_data))
     
   ){
     
