@@ -269,6 +269,7 @@ output$download_processed_data <- downloadHandler(
         
         s3write_using(update_main_df, 
                       FUN = write.csv, 
+                      row.names = FALSE,
                       object = "SLOPE_model_tags.csv", 
                       bucket = gsub("merged_files.+", new_folder, 
                                     query$s3_bucket))
