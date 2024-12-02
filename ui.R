@@ -3,6 +3,7 @@ ui <- function(request) {
   tagList(
     useShinyjs(),
     use_prompt(),
+    #https://github.com/dreamRs/shinyWidgets/blob/26838f9e9ccdc90a47178b45318d110f5812d6e1/R/useShinydashboardPlus.R
     useShinydashboardPlus(), ## This causes the hovers for picker input, pages
     introjsUI(),
     

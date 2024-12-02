@@ -85,10 +85,15 @@ var_select_tab <- function() {
                              value = "data_preview_all",
                              fluidRow(
                                column(12, uiOutput("preview_all_data_UI"))
-                             )
+                             ),
+                             
+                             br(),
+                             strong("Note: Data preview will only show first 500 rows."),
+                             br()
                  ),
                  
                  uiOutput("detected_box_varsel")
+                 
                  # collapseBox("Data Properties",
                  #             value = "detected_plots",
                  #             uiOutput("vs_tab_boxplots")

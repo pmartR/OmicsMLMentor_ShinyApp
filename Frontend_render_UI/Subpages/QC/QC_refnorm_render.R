@@ -524,7 +524,12 @@ assign_ref_uploads <- function(tabname) {
     {
       input[[paste0(tabname, "_clear_fdata")]]
       
-      omicsData$objQC$e_data
+      df <- omicsData$objQC$e_data
+      
+      if(nrow(df) > 500){
+        df <- df[1:500,]
+      }
+      df
     },
     options = list(dom = "tip", scrollX = TRUE),
     selection = "none"
@@ -547,7 +552,12 @@ assign_ref_uploads <- function(tabname) {
     {
       input[[paste0(tabname, "_clear_fdata")]]
       
-      omicsData$objRefnorm$e_data
+      df <- omicsData$objRefnorm$e_data
+      
+      if(nrow(df) > 500){
+        df <- df[1:500,]
+      }
+      df
     },
     options = list(dom = "tip", scrollX = TRUE),
     selection = "none"

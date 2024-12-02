@@ -176,7 +176,13 @@ output$preview_selected_dwn_UI <- renderUI({
       uiOutput("edit_plot")
     )
   } else {
-    DTOutput("preview_selected_dwn_table")
+    
+    div(
+      DTOutput("preview_selected_dwn_table"),
+      br(),
+      strong("Note: only first 500 rows will be loaded in preview."),
+      br()
+    )
   }
   
 })
@@ -503,7 +509,12 @@ output$preview_selected_dwn_plot_plotly <- renderPlotly({
 })
 output$preview_selected_dwn_table <- renderDT(height = "450px",{
   req(!download_preview$plot)
-  download_preview$current
+  df <- download_preview$current
+  
+  if(nrow(df) > 500){
+    df <- df[1:500,]
+  }
+  df
 }, 
 selection = "none",
 options = list(dom = "tp", 

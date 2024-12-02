@@ -77,7 +77,12 @@ upload_tab <- function() {
             value = "summary_tables",
             collapsed = F,
 
-            tabsetPanel(id = "preview_data")
+            tabsetPanel(id = "preview_data"),
+            
+            br(),
+            strong("Note: Data preview will only show first 500 rows."),
+            br()
+            
           )),
 
           ## Plots and stats here

@@ -42,6 +42,7 @@ observeEvent(input$`__startup__`, {
     
     set_dt <- switch(datatype,
       proteomics = "Label-free",
+      proteomicsTMT = "Isobaric",
       lipidomics = "Negative",
       transcriptomics= "RNA-seq",
       metabolomics = "GC-MS"
@@ -167,21 +168,118 @@ output$download_processed_data <- downloadHandler(
       
       tryCatch({
         
-        new_folder <- "slope_output"
+        id <- query$id
+        if(is.null(id)) id <- 9999
+        
+        file <- paste0("SLOPE_model_full_", gsub("( |:|-)", "_", Sys.time()), ".RDS")
+        
+        new_folder <- "slope_models"
+        
+        model_type <- attr(omicsData$objRM, "SLOPE_model_name")
+        response_performance <- attr(omicsData$objRM, "response_performance")
+        
+        if(is.null(response_performance)){
+          response_performance <- "Not applicable"
+          response_type <- "Not applicable"
+        } else if(nrow(response_performance) > 1){
+          response_performance <- toString(paste0(apply(response_performance, 1, paste, sep = "-"), "%"))
+          response_type <- "Categorical"
+        } else {
+          response_performance <- apply(response_performance, 1, paste, sep = "-")
+          response_type <- "Continuous"
+        }
+        
+        update_main_df <- data.frame(
+          id = id,
+          filename = file,
+          datatype = query$datatype,
+          model_class = ifelse(supervised(), "supervised", "unsupervised"),
+          model_type = model_type, 
+          response_type = response_type,
+          response_performance = response_performance
+        )
+        
+        saveRDS(omicsData$objRM, file = "SLOPE_model.RDS")
         
         aws.s3::put_object(
-          out,
+          file = "SLOPE_model.RDS",
           bucket = gsub("merged_files.+", new_folder, query$s3_bucket),
-          object = paste0(query$id,
-                          "/",
-                          paste0("SLOPE_output_", gsub("( |:|-)", "_",
-                                                       Sys.time()), ".zip")))
+          object = file.path(id, file)
+          )
+        file.remove("SLOPE_model.RDS")
+        
+        if(!is.null(omicsData$objRM_reduced)){
+          
+          
+          file <- paste0("SLOPE_model_reduced_", gsub("( |:|-)", "_", Sys.time()), ".RDS")
+          model_type <- attr(omicsData$objRM_reduced, "SLOPE_model_name")
+          response_performance <- attr(omicsData$objRM_reduced, "response_performance")
+          
+          if(is.null(response_performance)){
+            response_performance <- "Not applicable"
+            response_type <- "Not applicable"
+          } else if(nrow(response_performance) > 1){
+            response_performance <- toString(paste0(apply(response_performance, 1, paste, sep = "-"), "%"))
+            response_type <- "Categorical"
+          } else {
+            response_performance <- apply(response_performance, 1, paste, sep = "-")
+            response_type <- "Continuous"
+          }
+          
+          update_main_df2 <- data.frame(
+            id = id,
+            filename = file,
+            datatype = query$datatype,
+            model_class = ifelse(supervised(), "supervised", "unsupervised"),
+            model_type = model_type, 
+            response_type = response_type,
+            response_performance = response_performance
+          )
+          update_main_df <- rbind(update_main_df, update_main_df2)
+          
+          saveRDS(omicsData$objRM_reduced, file = "SLOPE_model.RDS")
+          
+          aws.s3::put_object(
+            file = "SLOPE_model.RDS",
+            bucket = gsub("merged_files.+", new_folder, query$s3_bucket),
+            object = file.path(id, file)
+          )
+          file.remove("SLOPE_model.RDS")
+        }
+        
+        
+        tryCatch({
+          
+          og_df <- s3read_using(FUN = read.csv,
+                                 object = "SLOPE_model_tags.csv", 
+                                 bucket = gsub("merged_files.+", new_folder, query$s3_bucket))
+          
+          update_main_df <- rbind(og_df, update_main_df)
+          
+        }, error = function(e){
+          
+          if(e$message != "Not Found (HTTP 404)."){
+            sendSweetAlert(
+              session, 
+              "AWS upload Error", 
+              e$message)
+          }
+          
+        })
+        
+        s3write_using(update_main_df, 
+                      FUN = write.csv, 
+                      object = "SLOPE_model_tags.csv", 
+                      bucket = gsub("merged_files.+", new_folder, 
+                                    query$s3_bucket))
+        
+        
         
       }, error = function(e){
         
         sendSweetAlert(
           session, 
-          "AWS download Error", 
+          "AWS upload Error", 
           e$message)
         
       })

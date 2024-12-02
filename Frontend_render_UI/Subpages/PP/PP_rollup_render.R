@@ -67,24 +67,31 @@ load_rollup_observers <- function(tab) {
         attr(omicsData$objPP,"data_info")$norm_info$norm_fn <- norm_attr
         
         if (input$keep_missing != "Yes") {
-          # Remove proteins which got filtered out
-          transforms_df <- pepQCData$transforms_df[
-            -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
-          ]
           
-          if (dim(transforms_df)[1] == 0) {
-            transforms_df <- pepQCData$transforms_df
-          }
+          # thresholds <- pep ### see if we can derive from the object itself in the future?
+          thresholds <- filter_settings[[get_omicsData_type(pep)]]$imputefilt
           
-          omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          ## No further imputation occurs fyi since all imputed peps are complete at the pro level
+          omicsData$objPP <- imputation_function(omicsData$objPP, thresholds)
           
-          # Remove all remaining proteins with missingness.
-          # These occur when a protein is only made up of peptides that are 100% missing.
-          if (any(is.na(omicsData$objPP$e_data))) {
-            transforms_df <- slopeR::get_transform_df(omicsData$objPP, list())
-            transforms_df$Handling[which(transforms_df$`Percentage missing` > 0)] <- "Remove"
-            omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
-          }
+          # # Remove proteins which got filtered out
+          # transforms_df <- pepQCData$transforms_df[
+          #   -which(!pepQCData$transforms_df[[get_edata_cname(omicsData$objPP)]] %in% omicsData$objPP$e_data[[get_edata_cname(omicsData$objPP)]]),
+          # ]
+          # 
+          # if (dim(transforms_df)[1] == 0) {
+          #   transforms_df <- pepQCData$transforms_df
+          # }
+          # 
+          # omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          # 
+          # # Remove all remaining proteins with missingness.
+          # # These occur when a protein is only made up of peptides that are 100% missing.
+          # if (any(is.na(omicsData$objPP$e_data))) {
+          #   transforms_df <- slopeR::get_transform_df(omicsData$objPP, list())
+          #   transforms_df$Handling[which(transforms_df$`Percentage missing` > 0)] <- "Remove"
+          #   omicsData$objPP <- edata_nathresh_transform(as.slData(omicsData$objPP), transforms_df)
+          # }
         }
         
         if(is.null(pep$f_data)){
@@ -151,8 +158,8 @@ assign_rollup_output <- function(tab) {
     } else {
       if(!is.null(get_group_DF(omicsData$objPP))){
         p <- plot(omicsData$objPP, 
-                  color_by = "Group", 
-                  order_by = "Group")
+                  color_by = response_cols_ag(), 
+                  order_by = response_cols_ag())
       } else {
         p <- plot(omicsData$objPP)
       }
