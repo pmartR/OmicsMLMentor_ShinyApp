@@ -765,7 +765,7 @@ observeEvent(input$run_sl, {
       })
       }
     })
-    omicsData$objRM <- add_model_attributes(omicsData$objRM, input$pick_model_EM)
+    omicsData$objRM <- add_model_attributes(omicsData$objRM, model_name = input$pick_model_EM)
     
   } else {
 
@@ -824,7 +824,7 @@ observeEvent(input$run_sl, {
 
   }
   
-  omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F, input$pick_model_EM)
+  omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F, model_name = input$pick_model_EM)
   
   
   shinyjs::show("complete_RM")
