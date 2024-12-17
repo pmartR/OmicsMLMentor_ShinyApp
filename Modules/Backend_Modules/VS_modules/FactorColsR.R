@@ -85,13 +85,15 @@ FactorColsModule <- function() {
                 selected <- colnames(df)[Reduce("|", list(fctr_cols, cat_cols, id_col))]
               } else selected <- c(colnames(df)[id_col], isolate(input[[paste0(lab, "_cats")]]))
               
-              pickerInput((paste0(lab, "_cats")),
+              disabled <- if(any(id_col)) x == colnames(df)[id_col] else NULL
+              
+              pickerInput(paste0(lab, "_cats"),
                           paste0("Select/deselect all categorical columns in ", tablabel),
                           multiple = T,
                           choices = x,
                           selected = selected,
                           options = list( `live-search` = TRUE, `actions-box` = TRUE),
-                          choicesOpt = list(disabled = x == colnames(df)[id_col])
+                          choicesOpt = list(disabled = disabled)
                           )
               }
             })
