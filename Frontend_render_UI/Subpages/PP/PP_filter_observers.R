@@ -707,8 +707,14 @@ observeEvent(omicsData$objPP, {
         title = "Incomplete detection handling filter",
         value = "imputefilt_plot_tab",
         br(),
-        withSpinner(plotOutput("imputefilt_plot"))
+        uiOutput("imputefilt_plot_render")
       )
+      # tabPanel(
+      #   title = "Incomplete detection handling filter",
+      #   value = "imputefilt_plot_tab",
+      #   br(),
+      #   withSpinner(plotOutput("imputefilt_plot"))
+      # )
     )
   })
   
@@ -1705,6 +1711,10 @@ output$missing_options_filter_UI <- renderUI({
       "Estimation of values must be at peptide level data for proteomics data.", 
       "", "")
     disabled <- c(T, F, F)
+  } else if (inherits(omicsData$objMSU, "seqData")){
+    disabled <- c(T, T, T)
+    subtext <- rep("Not avaliable for transcriptomic data", 3)
+    
   } else {
     disabled <- NULL
     subtext <- NULL

@@ -317,6 +317,24 @@ output$Note_nonmissing <- renderText({
 })
 
 observeEvent(input$keep_missing, {
+  
+  req(!is.null(omicsData$objQC))
+  
+  if(inherits(omicsData$objQC, "seqData")){
+    updateRadioGroupButtons(session, "keep_missing", selected = "Yes")
+  }
+}, priority = 1)
+
+observeEvent(input$keep_missing, {
+  
+  req(!is.null(omicsData$objQC))
+  
+  if(inherits(omicsData$objQC, "seqData")){
+    disable("keep_missing")
+  }
+})
+
+observeEvent(input$keep_missing, {
   if(input$keep_missing == "Yes"){
     shinyjs::hide("missing_options")
   } else {
@@ -464,6 +482,9 @@ observeEvent(input$done_qc_rollup, {
 })
 
 observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVals()), {
+  
+  req(!inherits(omicsData$objQC, "seqData"))
+  
   if ((!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
       !is.null(input$missing_options)) {
     # Prevent user from Removing all biomolecules
