@@ -1369,6 +1369,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       res <- NULL
     },
     error = function(e) {
+      warning(e$message)
       res <<- e
     }
   )
@@ -1971,8 +1972,8 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
         rmd_filter(omicsData$objPP, 
                    metrics = metric)
       }, error = function(e){
-        print(e)
-        browser()
+        print(e$message)
+        # browser()
         return(NULL)
       })
       
