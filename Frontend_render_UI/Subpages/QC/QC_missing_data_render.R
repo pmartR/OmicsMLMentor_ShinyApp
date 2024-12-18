@@ -1,6 +1,11 @@
 
 output$missing_options_UI <- renderUI({
   
+  if(!any(is.na(omicsData$objQC$e_data)) || inherits(omicsData$objQC, "seqData")){
+    enable("done_biom_miss")
+    return()
+  }
+  
   if(inherits(omicsData$objQC, "proData")){
     subtext <- c(
       "Estimation of values must be at peptide level data for proteomics data.", 
@@ -281,7 +286,7 @@ output$missing_data_sample_picker_UI <- renderUI({
 
 observeEvent(omicsData$objQC, {
   
-  if(!any(is.na(omicsData$objQC$e_data))){
+  if(!any(is.na(omicsData$objQC$e_data)) || inherits(omicsData$objQC, "seqData")){
     
     do.call(updateRadioGroupButtons, list(
       session = session,
@@ -296,8 +301,6 @@ observeEvent(omicsData$objQC, {
         selected = "keep"
       )
     )
-    
-    disable("missing_options")
   }
 })
 
@@ -486,6 +489,7 @@ observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVal
   req(!inherits(omicsData$objQC, "seqData"))
   
   if ((!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
+      !any(is.na(omicsData$objQC$e_data)) || inherits(omicsData$objQC, "seqData") ||
       !is.null(input$missing_options)) {
     # Prevent user from Removing all biomolecules
     
