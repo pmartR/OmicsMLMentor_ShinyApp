@@ -35,8 +35,8 @@ observeEvent(c(input$holdout_done, input$cv_perform_done, input$cv_hp_done), {
 ## Unique text: holdout valid -- split of holdout and training 
               ##in number of samples and percentage
 
-
-output$TS_preview_plot <- renderPlotly({
+## This needs to be greedy in case the eval function is run
+observe({
   
   update <- omicsData$objRM
   data <- omicsData$objPP
@@ -138,7 +138,7 @@ output$TS_preview_plot <- renderPlotly({
     
     ## tuning and no holdout -- cv hp tuning applied
   } else if (input$rm_prompts_hp == "tuned") {
-   
+    
     req(!is.null(input$cv_hp_option))
     if(input$cv_hp_option == "loocv"){
       test_data <- sample(group_info$SampleID, 1)
@@ -168,7 +168,7 @@ output$TS_preview_plot <- renderPlotly({
       geom_bar(show.legend = F) + facet_wrap(~fold) + 
       theme_bw() + labs(x = "", y = "Number of samples")
     
-  isolate(table_table_current$table$RM__training_structure__performance <- out$data)
+    isolate(table_table_current$table$RM__training_structure__performance <- out$data)
     
   } else if (input$rm_prompts_hp != "tuned") {
     
@@ -229,10 +229,21 @@ output$TS_preview_plot <- renderPlotly({
     
     
   }
-
+  
   isolate(plot_table_current$table$RM__training_structure <- out)
   
   out
+
+})
+
+
+
+output$TS_preview_plot <- renderPlotly({
+  
+  req(!is.null(input$cv_perform_option) || !is.null(input$numb_test) || 
+        !is.null(input$cv_hp_option), cancelOutput = T)
+  
+  plot_table_current$table$RM__training_structure 
   
 })
 
