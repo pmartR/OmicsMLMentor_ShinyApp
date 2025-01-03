@@ -68,7 +68,7 @@ text_get <- function(abbr) switch(
   rf = paste0("The random forest algorithm is an ensemble learning method using an ensemble of decision trees. Each tree in the forest is ",
               " trained on a subset of the data sampled with replacement. A subset of the feature space is also used in each tree, which",
               " helps to create a diverse set of trees. During prediction, the response if the result of a consensus of multiple decision trees",
-              "It is widely used for its robustness against large datasets, missing data, and high-dimensionality."),
+              " It is widely used for its robustness against large datasets, missing data, and high-dimensionality."),
   knn = paste0("The k-Nearest Neighbors (KNN) algorithm is a simple and non-parametric algorithm used for classification and regression.",
                " At its core, KNN operates by identifying the k-nearest data points in the feature space to a given input point and makes predictions based on these neighbors.",
                " In classification, it assigns the most common class among the neighbors to the input point.",

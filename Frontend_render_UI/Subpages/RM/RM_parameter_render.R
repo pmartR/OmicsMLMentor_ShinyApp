@@ -9,7 +9,6 @@ apply_disabled <- function(el) {
 output[["param_opti_UI"]] <- renderUI({
   if(input$rm_prompts_hp == "tuned"){
     out <- actionButton("param_opti", "Optimize parameters")
-    out <- disabled(actionButton("param_opti", "Optimize parameters"))
     if(!any(map_lgl(grep("optimize", names(input), value = T), 
                     function(x) input[[x]])))
       out <- disabled(out)

@@ -339,7 +339,7 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
     reactive_dataholder[[label]]$filename <- minio_upload_data$project_omic$Data[[tmp_key]]
     
     reactive_dataholder[[label]]$file <- if (isTruthy(minio_upload_data$project_omic$Data[[label]])) {
-      default_factor(minio_upload_data$project_omic$Data[[label]])
+      default_factor(as.data.frame(minio_upload_data$project_omic$Data[[label]]))
     } else {
       NULL
     }
