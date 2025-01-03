@@ -57,6 +57,7 @@ suppressPackageStartupMessages({
   ## Don't let these get masked by other functions
   library(dplyr)
   library(purrr)
+  library(pcaMethods)
   library(slopeR) ## Must be installed manually
 })
 
@@ -148,9 +149,9 @@ models_long_name <- c(
   `Probabilistic Principal Components Analysis` = "ppca",
   `Uniform Manifold Approximation and Projection` = "umap",
   `Gradient boosted tree` = "gbtree",
-  `Partial least squares` = "pls",
+  # `Partial least squares` = "pls",
   `K-nearest neighbors` = "knn",
-  `Linear Regression` = "lr",
+  # `Linear Regression` = "lr",
   `Linear Discriminant Analysis` = "lda",
   `Quadratic Discriminant Analysis` = "qda",
   `Naive Bayes Classifier` = "nb"

@@ -140,6 +140,7 @@ observeEvent(omicsData$objPP, once = T, ignoreNULL = T, {
                 "preprocessing",
                 plot_choices = c(
                   "Transformed Boxplots" = "PP__transform",
+                  "Proteomic Filter Preview" = "PP__filters__profilt",
                   "Molecule Filter Preview" = "PP__filters__molfilt",
                   "Missingness Handling Preview" = "PP__filters__imputefilt",
                   "CV Filter Preview" = "PP__filters__cvfilt",

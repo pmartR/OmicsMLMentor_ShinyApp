@@ -116,15 +116,26 @@ supervised_tab <- function() {
 }
 
 
-output$model_summary <-renderUI({
+output$model_summary <- renderUI({
   
   method <- input$pick_model_EM
+  
+  if(method %in% "loglasso"){
+    method <- "logistic"
+    extra_text <- " This method differs from traditional logistic models by using a penalization method to select for the most important molecules to use for prediction."
+  } else if (method %in% "multilasso"){
+    method <- "logistic"
+    extra_text <- " This method differs from traditional multinomial models by using a penalization method to select for the most important molecules to use for prediction."
+  } else {
+    extra_text <- NULL
+  }
+  
   div(
     br(),
     strong(names(models_long_name)[models_long_name == method]),
     br(),
     hr(),
-    text_get(method)
+    paste0(text_get(method), extra_text)
     
   )
 })
@@ -765,7 +776,7 @@ observeEvent(input$run_sl, {
       })
       }
     })
-    omicsData$objRM <- add_model_attributes(omicsData$objRM)
+    omicsData$objRM <- add_model_attributes(omicsData$objRM, model_name = input$pick_model_EM)
     
   } else {
 
@@ -824,7 +835,7 @@ observeEvent(input$run_sl, {
 
   }
   
-  omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F)
+  omicsData$objRM <- add_model_attributes(omicsData$objRM, supervised = F, model_name = input$pick_model_EM)
   
   
   shinyjs::show("complete_RM")

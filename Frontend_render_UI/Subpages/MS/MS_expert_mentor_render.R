@@ -599,6 +599,9 @@ observeEvent(
   if(nrow(df) < 5){
     df[(nrow(df) + 1):5,] <- ""
   }
+  
+  types_dashboard <- df$Method
+  df <- df[types_dashboard %in% names(models_long_name),]
 
   isolate(dashboard(df))
   
@@ -810,7 +813,11 @@ output$pick_EM_model_UI <- renderUI({
   if(input$skip_ag && !is.null(input$pick_model)){
     choices <- models_long_name[models_long_name == input$pick_model]
   } else {
-    choices <- models_long_name[dashboard()$Method]
+    
+    types_dashboard <- dashboard()$Method
+    types_supported <- types_dashboard[types_dashboard %in% names(models_long_name)]
+    
+    choices <- models_long_name[types_supported]
   }
 
   pickerInput("pick_model_EM", label = "Select a model:",

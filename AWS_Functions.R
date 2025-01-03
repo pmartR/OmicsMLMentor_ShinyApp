@@ -181,11 +181,12 @@ output$download_processed_data <- downloadHandler(
         if(is.null(response_performance)){
           response_performance <- "Not applicable"
           response_type <- "Not applicable"
-        } else if(nrow(response_performance) > 1){
-          response_performance <- toString(paste0(apply(response_performance, 1, paste, sep = "-"), "%"))
+        } else if(response_types_ag() != "continuous"){
+          
+          response_performance <- toString(paste0(apply(response_performance, 1, paste, collapse = "-"), "%"))
           response_type <- "Categorical"
         } else {
-          response_performance <- apply(response_performance, 1, paste, sep = "-")
+          response_performance <- apply(response_performance, 1, paste, collapse = "-")
           response_type <- "Continuous"
         }
         
@@ -269,6 +270,7 @@ output$download_processed_data <- downloadHandler(
         
         s3write_using(update_main_df, 
                       FUN = write.csv, 
+                      row.names = FALSE,
                       object = "SLOPE_model_tags.csv", 
                       bucket = gsub("merged_files.+", new_folder, 
                                     query$s3_bucket))

@@ -35,8 +35,8 @@ observeEvent(c(input$holdout_done, input$cv_perform_done, input$cv_hp_done), {
 ## Unique text: holdout valid -- split of holdout and training 
               ##in number of samples and percentage
 
-
-output$TS_preview_plot <- renderPlotly({
+## This needs to be greedy in case the eval function is run
+observe({
   
   update <- omicsData$objRM
   data <- omicsData$objPP
@@ -138,7 +138,7 @@ output$TS_preview_plot <- renderPlotly({
     
     ## tuning and no holdout -- cv hp tuning applied
   } else if (input$rm_prompts_hp == "tuned") {
-   
+    
     req(!is.null(input$cv_hp_option))
     if(input$cv_hp_option == "loocv"){
       test_data <- sample(group_info$SampleID, 1)
@@ -168,7 +168,7 @@ output$TS_preview_plot <- renderPlotly({
       geom_bar(show.legend = F) + facet_wrap(~fold) + 
       theme_bw() + labs(x = "", y = "Number of samples")
     
-  isolate(table_table_current$table$RM__training_structure__performance <- out$data)
+    isolate(table_table_current$table$RM__training_structure__performance <- out$data)
     
   } else if (input$rm_prompts_hp != "tuned") {
     
@@ -229,10 +229,21 @@ output$TS_preview_plot <- renderPlotly({
     
     
   }
-
+  
   isolate(plot_table_current$table$RM__training_structure <- out)
   
   out
+
+})
+
+
+
+output$TS_preview_plot <- renderPlotly({
+  
+  req(!is.null(input$cv_perform_option) || !is.null(input$numb_test) || 
+        !is.null(input$cv_hp_option), cancelOutput = T)
+  
+  plot_table_current$table$RM__training_structure 
   
 })
 
@@ -253,6 +264,9 @@ output$nTest_count_ui <- renderUI({
 output$holdout_set <- renderUI({
   
   req(holdout_valid() && input$rm_prompts_hp == "tuned")
+  
+  rec_button <- actionButton("holdout_rec", "Recommended")
+  if(response_types_ag() == "continuous") rec_button <- disabled(rec_button)
   
   wellPanel(
     br(),
@@ -277,7 +291,7 @@ output$holdout_set <- renderUI({
     br(),
     
     actionButton("holdout_rec", "Recommended"),
-    actionButton("holdout_done", "Done"),
+    rec_button,
     actionButton("holdout_info", "Tell me more")
   )
 })
@@ -285,6 +299,9 @@ output$holdout_set <- renderUI({
 output$crossval_perform <- renderUI({
   
   req(input$rm_prompts_hp != "tuned")
+  
+  rec_button <- actionButton("cv_perform_rec", "Recommended")
+  if(response_types_ag() == "continuous") rec_button <- disabled(rec_button)
   
   wellPanel(
     br(),
@@ -322,7 +339,7 @@ output$crossval_perform <- renderUI({
     
     br(),
     
-    actionButton("cv_perform_rec", "Recommended"),
+    rec_button,
     actionButton("cv_perform_done", "Done"),
     actionButton("cv_perform_info", "Tell me more")
   )
@@ -330,9 +347,9 @@ output$crossval_perform <- renderUI({
 
 cv_eval <- reactiveValues(result = NULL)
 
-observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
+observeEvent(c(input$cv_perform_rec, input$cv_hp_rec, input$holdout_rec), {
   
-  req(input$cv_perform_rec > 0 || input$cv_hp_rec > 0)
+  req(input$cv_perform_rec > 0 || input$cv_hp_rec > 0 || input$holdout_rec > 0)
   
   shinyjs::show("perform_nfold_busy")
   shinyjs::show("tune_nfold_busy")
@@ -417,7 +434,8 @@ observeEvent(c(input$cv_perform_rec, input$cv_hp_rec), {
     slData = data,
     slMethod = method,
     nFolds = 4:max_nfold,
-    pTest = 0.2
+    pTest = 0.2,
+    parallel = F
   )
   
   list_args <- c(list_args, custom_args)
@@ -466,6 +484,9 @@ output$crossval_hp <- renderUI({
   
   req(input$rm_prompts_hp == "tuned")
   
+  rec_button <- actionButton("cv_hp_rec", "Recommended")
+  if(response_types_ag() == "continuous") rec_button <- disabled(rec_button)
+  
   wellPanel(
     br(),
     "Subsets of the original data will be used to determine best model settings. Default options are set to the recommended subsetting for your dataset.",
@@ -501,7 +522,7 @@ output$crossval_hp <- renderUI({
     
     br(),
     
-    actionButton("cv_hp_rec", "Recommended"),
+    rec_button,
     actionButton("cv_hp_done", "Done"),
     actionButton("cv_hp_info", "Tell me more")
   )
