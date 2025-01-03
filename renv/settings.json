@@ -1,5 +1,5 @@
 {
-  "bioconductor.version": "3.16",
+  "bioconductor.version": "3.20",
   "external.libraries": [],
   "ignored.packages": [
     "devtools",

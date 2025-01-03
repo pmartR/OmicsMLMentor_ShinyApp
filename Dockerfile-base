@@ -5,7 +5,7 @@
 ARG cloud_version=aws
 
 # Install latest version of rocker image
-FROM rocker/shiny:4.4.2 AS base
+FROM rocker/shiny:4.3 AS base
 
 # Load general use libraries
 # Keep gettext-base for MultiProbe
@@ -55,8 +55,15 @@ COPY renv.lock .
 # Contains local repos
 COPY renv ./renv
 
+## Bioconductor is silly
 RUN R -e "install.packages('BiocManager')"
 RUN R -e "BiocManager::install('Biobase')"
+RUN R -e "BiocManager::install('BiocGenerics')"
+RUN R -e "BiocManager::install('BiocVersion')"
+RUN R -e "BiocManager::install('BiocParallel')"
+RUN R -e "BiocManager::install('mixOmics')"
+RUN R -e "BiocManager::install('pcaMethods')"
+RUN R -e "BiocManager::install('plsmod')"
 
 FROM base AS aws
 
