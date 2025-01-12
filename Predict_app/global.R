@@ -73,8 +73,8 @@ AWS <- ifelse(Sys.getenv("AWS_VERSION") == "1", TRUE, FALSE)
 
 # Load files
 file_loads <- c(
-  list.files("./Helpers", recursive = T, full.names = T),
-  list.files("./Frontend_Static_UI", recursive = T, full.names = T)
+  list.files("./Predict_app/Helpers", recursive = T, full.names = T),
+  list.files("./Predict_app/Frontend_Static_UI", recursive = T, full.names = T)
 )
 
 for (f in grep(".R$", file_loads, value = T)) source(f, local = TRUE)

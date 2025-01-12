@@ -1,4 +1,4 @@
-ui <- function(request) {
+ui <- div(
   #
   tagList(
     useShinyjs(),
@@ -48,7 +48,7 @@ ui <- function(request) {
                       });'),
       
       ## Css
-      includeCSS("./Helpers/SLOPER.css")
+      includeCSS("./Main_app/Helpers/SLOPER.css")
     ),
     
     list(tags$head(HTML('<link rel="icon", href="slope_icon.png", 
@@ -129,4 +129,4 @@ ui <- function(request) {
     
     shinybusy::add_busy_spinner(spin = "orbit", position = "bottom-left", timeout = 200)
   )
-} # shinyUI + shinyjs tagList
+) # shinyUI + shinyjs tagList

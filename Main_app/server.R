@@ -1,13 +1,5 @@
-options(shiny.maxRequestSize = 250 * 1024^2, 
-        ch.dir = TRUE, 
-        expressions = 5e5,
-        DT.TOJSON_ARGS = list(na = "string"),
-        shiny.fullstacktrace=TRUE
-        )
 
-formals(renderDT)$server <- FALSE
 
-shinyServer(function(session, input, output) {
   onStop(function() {
     # save the session object
     if (Sys.getenv("SHINY_TEST_MODE") == "1") {
@@ -33,12 +25,12 @@ shinyServer(function(session, input, output) {
   })
   
   file_loads <- c(
-    list.files("./Modules/", recursive = T, full.names = T),
-    list.files("./Frontend_render_UI/", recursive = T, full.names = T)
+    list.files("./Main_app/Modules/", recursive = T, full.names = T),
+    list.files("./Main_app/Frontend_render_UI/", recursive = T, full.names = T)
   )
   
   file_loads <- file_loads[file_loads != "./Modules//Module_RV_all.R"]
-  source("./Modules//Module_RV_all.R", local = T) ## must be first
+  source("./Main_app/Modules//Module_RV_all.R", local = T) ## must be first
   
   # file_loads <- grep("filter", file_loads, invert = T, value = T)
   
@@ -72,7 +64,7 @@ shinyServer(function(session, input, output) {
       library(aws.s3)
       
       # Load AWS specific code
-      source("./AWS_Functions.R", local = TRUE)
+      source("./Main_app/AWS_Functions.R", local = TRUE)
       
       ######## comment this out before push
       
@@ -103,7 +95,7 @@ shinyServer(function(session, input, output) {
       launch_tutorial()
     } else if (MAP_ACTIVE){
       
-      source("./MAP_Functions.R", local = TRUE)
+      source("./Main_app/MAP_Functions.R", local = TRUE)
       
     } else {
       hide("loading-gray-overlay")
@@ -117,4 +109,4 @@ shinyServer(function(session, input, output) {
     req(input$collapseTitleClick)
     updateBoxCollapse(session, input$collapseTitleClick$p, toggle = input$collapseTitleClick$id)
   })
-})
+

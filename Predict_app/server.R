@@ -1,15 +1,9 @@
-options(shiny.maxRequestSize = 250 * 1024^2, 
-        ch.dir = TRUE, 
-        expressions = 5e5,
-        DT.TOJSON_ARGS = list(na = "string"),
-        shiny.fullstacktrace=TRUE)
 
-shinyServer(function(session,input,output){
   
-  source("RV_all.R")
+  source("./Predict_app/RV_all.R")
   
   file_loads <- c(
-    list.files("./Frontend_render_UI", recursive = T, full.names = T)
+    list.files("./Predict_app/Frontend_render_UI", recursive = T, full.names = T)
   )
   
   for (f in grep(".R$", file_loads, value = T)) source(f, local = TRUE)
@@ -568,8 +562,13 @@ shinyServer(function(session,input,output){
       button
     )
   })
+  
+  observeEvent(input$collapseTitleClick, {
+    req(input$collapseTitleClick)
+    updateBoxCollapse(session, input$collapseTitleClick$p, toggle = input$collapseTitleClick$id)
+  })
+  
   # BROWSER
   observeEvent(input$Browser,{
     browser()
   })
-})
