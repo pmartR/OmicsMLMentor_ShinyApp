@@ -658,7 +658,7 @@ observeEvent(
 
 # uncomment above and run to regenerate citations
 
-citations <- readRDS("citations.RDS")
+citations <- readRDS("./citations.RDS")
 
 get_em_column_info <- function() {
   missingness <- missingval_result(omicsData$objModel)$na.by.sample

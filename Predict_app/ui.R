@@ -1,4 +1,4 @@
-ui <- function(request) {
+ui <- div(
   #
   tagList(
     useShinyjs(),
@@ -6,7 +6,7 @@ ui <- function(request) {
     useShinydashboardPlus(), ## This causes the hovers for picker input, pages
     introjsUI(),
     
-    extendShinyjs(script = "./Helpers/shinyui.js", functions = c(
+    extendShinyjs(script = "./Predict_app/Helpers/shinyui.js", functions = c(
       "isTabdisabled", # For testing purposes
       "isIconhidden", # For testing purposes
       "disableTab", # Disables a tab
@@ -20,7 +20,7 @@ ui <- function(request) {
     
     tags$script(HTML(addTooltip_handler_script)),
     
-    includeCSS("./Helpers/SLOPER.css"),
+    includeCSS("./Predict_app/Helpers/SLOPER.css"),
     
     list(tags$head(HTML('<link rel="icon", href="slope_icon.png", 
                         type="image/png" />'))),
@@ -51,4 +51,4 @@ ui <- function(request) {
     shinybusy::add_busy_spinner(position = "bottom-left")
     
   )
-} # shinyUI + shinyjs tagList
+) # shinyUI + shinyjs tagList

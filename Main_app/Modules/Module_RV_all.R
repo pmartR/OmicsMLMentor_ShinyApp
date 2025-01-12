@@ -45,6 +45,7 @@ hp_inputs <- reactiveValues(
 
 ## Determine if selected model is supervised
 supervised <- reactive({
+  if(is.null(input$skip_ag)) return(FALSE)
   (input$skip_ag && input$pick_model %in% models_supervised) ||
     (!input$skip_ag && input$ag_prompts == "supervised")
 })
