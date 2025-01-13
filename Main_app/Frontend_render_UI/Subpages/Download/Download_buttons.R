@@ -106,6 +106,25 @@ observeEvent(input$makezipfile, {
   } else file_names_tables <- NULL
   
   # Write .Rdata
+  if (input$include_model) {
+    
+    withProgress(message = "Writing model files...", {
+      
+      file_names_models <- c(paste0("Full_model_", fs::path_sanitize(input$RDS_name)))
+
+    saveRDS(omicsData$objRM, file = file_names_models[1])
+    
+    if(!is.null(omicsData$objRM_reduced)){
+      
+      file_names_models <- c(file_names_models, paste0("Reduced_model_", fs::path_sanitize(input$RDS_name)))
+      
+      saveRDS(omicsData$objRM_reduced, file = file_names_models[2])
+      
+    }
+      
+    })
+    
+  }
 
   # Write report
   if (input$include_report) {
@@ -117,13 +136,16 @@ observeEvent(input$makezipfile, {
           tables = reactiveValuesToList(table_table_current), 
           plots = reactiveValuesToList(plot_table_current), 
           titleName = "SLOPE Report")
-        rmarkdown::render(paste0(orig_wd, "/www/markdowns/Report_Template.Rmd"), output_dir = getwd(), output_file = fs::path_sanitize(input$report_name), params = params, envir = new.env())
+        rmarkdown::render(paste0(orig_wd, "/www/markdowns/Report_Template.Rmd"), 
+                          output_dir = getwd(), 
+                          output_file = fs::path_sanitize(input$report_name), 
+                          params = params, envir = new.env())
       })
     }, error = print)
   }
   
   zip(zipfile = paste0(fname, ".zip"), 
-      files = c(file_names_tables, file_names_plots, fs::path_sanitize(input$report_name)), 
+      files = c(file_names_tables, file_names_plots, file_names_models, fs::path_sanitize(input$report_name)), 
       flags = "-r")
   
   zipped_file$fs <- paste0(fname, ".zip")
