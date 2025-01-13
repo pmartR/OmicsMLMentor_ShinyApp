@@ -25,6 +25,10 @@ upload_tab <- function(){
           
         ),
         
+        
+        actionButton(inputId = "load_example", 
+                              label = "Load example model and data"
+        ),
         disabled(actionButton(inputId = "check_selections_upload", 
                      label = "Confirm selections"
         ))
