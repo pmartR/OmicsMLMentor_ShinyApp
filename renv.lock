@@ -29,7 +29,7 @@
     ]
   },
   "Bioconductor": {
-    "Version": "3.16"
+    "Version": "3.20"
   },
   "Packages": {
     "Amelia": {
@@ -57,72 +57,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "468d9a03ba57f22ebde50060fd13ba9f"
-    },
-    "Biobase": {
-      "Package": "Biobase",
-      "Version": "2.66.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.20",
-      "Requirements": [
-        "BiocGenerics",
-        "R",
-        "methods",
-        "utils"
-      ],
-      "Hash": "f6e716bdfed8acfd2d4137be7d4fa8f9"
-    },
-    "BiocGenerics": {
-      "Package": "BiocGenerics",
-      "Version": "0.52.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.20",
-      "Requirements": [
-        "R",
-        "graphics",
-        "methods",
-        "stats",
-        "utils"
-      ],
-      "Hash": "3a1a587cfadcfcbf849dfc605cbbb965"
-    },
-    "BiocManager": {
-      "Package": "BiocManager",
-      "Version": "1.30.25",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Requirements": [
-        "utils"
-      ],
-      "Hash": "3aec5928ca10897d7a0a1205aae64627"
-    },
-    "BiocParallel": {
-      "Package": "BiocParallel",
-      "Version": "1.40.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.20",
-      "Requirements": [
-        "BH",
-        "R",
-        "codetools",
-        "cpp11",
-        "futile.logger",
-        "methods",
-        "parallel",
-        "snow",
-        "stats",
-        "utils"
-      ],
-      "Hash": "632a54622da61a83153e37de1b49554c"
-    },
-    "BiocVersion": {
-      "Package": "BiocVersion",
-      "Version": "3.20.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.20",
-      "Requirements": [
-        "R"
-      ],
-      "Hash": "3c70eb3b78929c0ee452350cea8432a5"
     },
     "DEoptimR": {
       "Package": "DEoptimR",
@@ -195,7 +129,7 @@
     },
     "MASS": {
       "Package": "MASS",
-      "Version": "7.3-61",
+      "Version": "7.3-59",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -210,7 +144,7 @@
     },
     "Matrix": {
       "Package": "Matrix",
-      "Version": "1.7-1",
+      "Version": "1.6-5",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -1676,39 +1610,6 @@
       ],
       "Hash": "18e9c28c1d3ca1560ce30658b22ce104"
     },
-    "mixOmics": {
-      "Package": "mixOmics",
-      "Version": "6.30.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.20",
-      "Requirements": [
-        "BiocParallel",
-        "MASS",
-        "R",
-        "RColorBrewer",
-        "corpcor",
-        "dplyr",
-        "ellipse",
-        "ggplot2",
-        "ggrepel",
-        "grDevices",
-        "graphics",
-        "gridExtra",
-        "gsignal",
-        "igraph",
-        "lattice",
-        "matrixStats",
-        "methods",
-        "parallel",
-        "rARPACK",
-        "reshape2",
-        "rgl",
-        "stats",
-        "tidyr",
-        "utils"
-      ],
-      "Hash": "7d58067ab783656449c968410e323cb8"
-    },
     "modelenv": {
       "Package": "modelenv",
       "Version": "0.2.0",
@@ -1863,20 +1764,6 @@
       ],
       "Hash": "e23fb9ecb1258207bcb763d78d513439"
     },
-    "pcaMethods": {
-      "Package": "pcaMethods",
-      "Version": "1.98.0",
-      "Source": "Bioconductor",
-      "Repository": "Bioconductor 3.20",
-      "Requirements": [
-        "Biobase",
-        "BiocGenerics",
-        "MASS",
-        "Rcpp",
-        "methods"
-      ],
-      "Hash": "fef9c4d2b138855a87411849e7fd70e4"
-    },
     "pcaPP": {
       "Package": "pcaPP",
       "Version": "2.0-5",
@@ -1946,25 +1833,6 @@
         "viridisLite"
       ],
       "Hash": "a1ac5c03ad5ad12b9d1597e00e23c3dd"
-    },
-    "plsmod": {
-      "Package": "plsmod",
-      "Version": "1.0.0",
-      "Source": "Bioconductor",
-      "Repository": "CRAN",
-      "Requirements": [
-        "R",
-        "dplyr",
-        "generics",
-        "magrittr",
-        "mixOmics",
-        "parsnip",
-        "purrr",
-        "rlang",
-        "tibble",
-        "tidyr"
-      ],
-      "Hash": "1ed0652356d6c5de752d09c92e0debec"
     },
     "plyr": {
       "Package": "plyr",

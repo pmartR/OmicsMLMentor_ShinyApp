@@ -6,6 +6,7 @@ options(shiny.maxRequestSize = 250 * 1024^2,
         )
 
 formals(renderDT)$server <- FALSE
+options(DT.warn.size=FALSE)
 
 shinyServer(function(session, input, output) {
   onStop(function() {
