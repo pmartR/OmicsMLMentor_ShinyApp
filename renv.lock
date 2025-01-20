@@ -1882,7 +1882,7 @@
     "pmartR": {
       "Package": "pmartR",
       "Version": "2.4.6",
-      "Source": "../renv/local/pmartR.zip",
+      "Source": "./renv/local/pmartR.zip",
       "Requirements": [
         "BH",
         "R",
@@ -1912,7 +1912,7 @@
     "pmartRdata": {
       "Package": "pmartRdata",
       "Version": "2.0.0",
-      "Source": "../renv/local/pmartRdata.zip",
+      "Source": "./renv/local/pmartRdata.zip",
       "Requirements": [
         "R"
       ],
@@ -2582,7 +2582,7 @@
     "slopeR": {
       "Package": "slopeR",
       "Version": "0.1.0",
-      "Source": "../renv/local/sloper.zip",
+      "Source": "./renv/local/sloper.zip",
       "Requirements": [
         "Amelia",
         "R",

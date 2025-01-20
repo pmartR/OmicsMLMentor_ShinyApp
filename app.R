@@ -15,7 +15,6 @@ top_server <- function(input, output, session) {
           renv.config.sandbox.enabled = FALSE
   )
 
-  formals(renderDT)$server <- FALSE
   ggplot2::theme_set(ggplot2::theme_bw())
   
   observeEvent(session$clientData$url_search, once = T, {

@@ -64,7 +64,7 @@ output[["model_upload_UI"]] <- renderUI({
 
 output[["e_data_upload_UI"]] <- renderUI({
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   fileinput_UI("e_data_upload", "e_data", is_RNA = "RNA-seq" %in% dt)
 })
@@ -75,14 +75,14 @@ output[["f_data_upload_UI"]] <- renderUI({
         input$use_fdata == "Yes"
       )
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   fileinput_UI("f_data_upload", "f_data", is_RNA = dt == "RNA-seq")
 })
 
 output[["e_meta_upload_UI"]] <- renderUI({
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   fileinput_UI("e_meta_upload", "e_meta", is_RNA = dt == "RNA-seq")
 })
@@ -128,7 +128,7 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
     req(label %in% input_data_types())
     req(!is.null(input[[paste0(label, "_file")]]$name))
     
-    dt <- class(reactive_dataholder$model$model$norm_omics)
+    dt <- class(reactive_dataholder$model$norm_omics)
     
     tablabel <- switch(label,
                        e_data = ifelse(
@@ -164,7 +164,7 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
           reactive_dataholder[[label]]$model <- readRDS(
             input[[paste0(label, "_file")]]$datapath)
         
-          model <- reactive_dataholder[[label]]$model$model
+          model <- reactive_dataholder[[label]]$model
           
         responses <- unique(model$pre$mold$outcomes[[1]])
         og_train_size <- model$pre$mold$blueprint$recipe$tr_info[[1]]
@@ -231,8 +231,6 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
                 session = session
       )
     } else {
-      
-      if(label == "f_data") 
         reactive_dataholder[[label]]$filename <- NULL
       reactive_dataholder[[label]]$file <- NULL
     }
@@ -241,16 +239,17 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
   
   ## If AWS, load it up
   observeEvent(c(AWS, 
-                 reactive_dataholder$model$model, 
+                 AWSobj[[label]], 
+                 AWSobj$model,
                  input$data_select, 
                  input_data_types()
                  ), 
                ignoreInit = FALSE, {
                  
                  req(AWS)
-                 req(!is.null(reactive_dataholder$model$model))
+                 req(!is.null(AWSobj$model))
                  
-                 dt <- class(reactive_dataholder$model$model$norm_omics)
+                 dt <- class(AWSobj$model$norm_omics)
                  
                  tablabel <- switch(label,
                                     e_data = ifelse(dt == "seqData",

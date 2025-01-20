@@ -27,6 +27,11 @@ ui <- div(
     
     div(style = "display:none", titlePanel(title = "", windowTitle = "")),
     
+    ## DT fun
+    tags$script('Shiny.addCustomMessageHandler("unbind-DT-RR", function(x) {
+                      Shiny.unbindAll($(document.getElementById(x)).find(".dataTable"));
+                      });'),
+    
     inlineCSS('.navbar-default .navbar-brand {padding: 2px;}'),
     
     # start navbarPage
@@ -39,7 +44,7 @@ ui <- div(
       tabPanel("Upload",upload_tab()),
       tabPanel("Pre-processing", preprocess_UI()),
       tabPanel("Run Model", RM_tab()),
-      tabPanel("Downloads", downloads_tab_overlord())
+      tabPanel("Downloads", download_tab())
 
     ),
     # end Navbarpage

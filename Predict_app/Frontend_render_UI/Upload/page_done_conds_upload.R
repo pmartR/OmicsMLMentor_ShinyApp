@@ -60,7 +60,7 @@ observeEvent(
     function(str) is.null(input[[str]])
     )
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   if(!(dt == "proData")){
     conds <- conds[-length(conds)]
@@ -135,7 +135,7 @@ observeEvent(
          (is.null(input$specify_emeta_done) || input$specify_emeta_done < 1)) ||
       (is.null(input$use_fdata) && input$specify_fdata_done < 1)
     
-    if(conds){
+    if(conds && input$load_example == 0 && !AWS){
       disable(id = "check_selections_upload")
     } else {
       enable(id = "check_selections_upload")

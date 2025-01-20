@@ -19,17 +19,25 @@ output$model_load_UI <- renderUI({
 
 output$e_data_load_UI <- renderUI({
   
-  req(!is.null(reactive_dataholder$model$model) && input$upload_model_done > 0)
+  req(!is.null(reactive_dataholder$model) && 
+        (AWS || input$upload_model_done > 0 || input$load_example > 0)
+      )
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   # if we slData as well as other datasets, we run into issues
   if("slData" %in% dt){
     dt <- dt[dt != "slData"]
   }
   
+  button <-actionButton("upload_edata_done", "Done", style="float:right")
+  
+  if(is.null(reactive_dataholder$e_data)){
+    button <- disabled(button)
+  }
+  
   collapseBox(
     value = "data_upload_edata",
-    collapsed = F,
+    collapsed = input$load_example > 0 || AWS,
     paste0("Upload ",
            ifelse(dt == "proData",
                   "Proteomic", dt),
@@ -41,7 +49,7 @@ output$e_data_load_UI <- renderUI({
     
     fluidRow(
       column(10, ""),
-      column(2, disabled(actionButton("upload_edata_done", "Done", style="float:right")))
+      column(2, button)
     )
     
   )
@@ -49,11 +57,20 @@ output$e_data_load_UI <- renderUI({
 
 output$f_data_load_UI <- renderUI({
   
-  req(!is.null(reactive_dataholder$e_data) && input$specify_edata_done > 0)
+  req(!is.null(reactive_dataholder$e_data) && 
+        (AWS || input$specify_edata_done > 0 || input$load_example > 0)
+      )
+  
+  
+  button <- actionButton("upload_fdata_done", "Done", style="float:right")
+  
+  if(is.null(reactive_dataholder$f_data)){
+    button <- disabled(button)
+  }
   
   collapseBox(
     value = "data_upload_fdata",
-    collapsed = F,
+    collapsed =  input$load_example > 0 || AWS,
     "Upload Sample Information (optional)",
     
     strong("Note: this file can be used to assess model performance on new data"),
@@ -61,14 +78,15 @@ output$f_data_load_UI <- renderUI({
     br(),br(),br(),
     
     radioGroupButtons(inputId = "use_fdata", "Include Sample Information?",
-                      c("No", "Yes")),
+                      c("No", "Yes"), 
+                      selected = ifelse(input$load_example > 0 || AWS, "Yes", "No")),
     # uiOutput("how_make_fdata_UI"),
     
     uiOutput("f_data_upload_UI"),
     
     fluidRow(
       column(10, ""),
-      column(2, disabled(actionButton("upload_fdata_done", "Done", style="float:right")))
+      column(2, button)
     )
     
   )
@@ -79,15 +97,21 @@ output$e_meta_load_UI <- renderUI({
   req(!is.null(reactive_dataholder$e_data) && 
         (
           (input$upload_fdata_done > 0 && input$use_fdata == "No") || 
-            (input$specify_fdata_done > 0 && input$use_fdata == "Yes")
+            (input$specify_fdata_done > 0 && input$use_fdata == "Yes") ||
+            (AWS || input$load_example > 0)
           )
       )
   
+  button <- actionButton("upload_emeta_done", "Done", style="float:right")
+  
+  if(is.null(reactive_dataholder$e_meta)){
+    button <- disabled(button)
+  }
   
   switch_use <- radioGroupButtons(inputId = "have_emeta", "Include biomolecule information?",
                               c("No", "Yes"), selected = "Yes")
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   if(dt == "pepData"){
     switch_use <- disabled(switch_use)
@@ -95,7 +119,7 @@ output$e_meta_load_UI <- renderUI({
   
   collapseBox(
     value = "data_upload_emeta",
-    collapsed = F,
+    collapsed =  input$load_example > 0  || AWS,
     "Upload biomolecule information",
 
     switch_use,
@@ -104,7 +128,7 @@ output$e_meta_load_UI <- renderUI({
     
     fluidRow(
       column(10, ""),
-      column(2, disabled(actionButton("upload_emeta_done", "Done", style="float:right")))
+      column(2, button)
     )
     
   )
@@ -138,9 +162,13 @@ output$e_meta_load_UI <- renderUI({
 
 output$e_data_spec_UI <- renderUI({
   
-  req(!is.null(reactive_dataholder$e_data) && input$upload_edata_done > 0)
+  req(!is.null(reactive_dataholder$e_data) && 
+        (AWS || input$upload_edata_done > 0 || input$load_example > 0)
+      )
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  
+  
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   if(dt == "seqData"){
     choices <- list(
@@ -158,7 +186,7 @@ output$e_data_spec_UI <- renderUI({
     )
   }
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   pick_datatype <- if(dt == "proData"){
     
@@ -243,7 +271,8 @@ output$f_data_spec_UI <- renderUI({
         !is.null(reactive_dataholder[["f_data"]]$file) &&
         
         ## Upload, example, or generated fdata
-        ((!is.null(input$upload_fdata_done) && input$upload_fdata_done > 0) #|| 
+        ((!is.null(input$upload_fdata_done) && input$upload_fdata_done > 0) || 
+           (AWS || input$load_example > 0)
            # input$fdata_options_done > 0 && 
            # (AWS || input$how_make_fdata == "colnames")
          )
@@ -258,7 +287,7 @@ output$f_data_spec_UI <- renderUI({
   selected <- colnames(f_data)[best_col]
   
   
-  check_cols <- as.character(unique(reactive_dataholder$model$model$model$pre$mold$outcomes[[1]]))
+  check_cols <- as.character(unique(reactive_dataholder$model$model$pre$mold$outcomes[[1]]))
   f_data <- reactive_dataholder[["f_data"]]$file
   
   best_col <- which.max(map_int(colnames(f_data), function(col){
@@ -303,13 +332,13 @@ output$f_data_spec_UI <- renderUI({
 output$e_meta_spec_UI <- renderUI({
 
   req(isTruthy(input$have_emeta) && input$have_emeta == "Yes" &&
-        input$upload_emeta_done > 0 &&
+        (AWS || input$upload_emeta_done > 0 || input$load_example > 0) &&
         !is.null(reactive_dataholder[["e_meta"]]$file))
   
   choices <- colnames(reactive_dataholder[["e_meta"]]$file)
   choices <- choices[choices != input$e_data_id_col]
   
-  dt <- class(reactive_dataholder$model$model$norm_omics)
+  dt <- class(reactive_dataholder$model$norm_omics)
   
   if(dt == "pepData"){
     text <- "Which column identifies proteins?"
