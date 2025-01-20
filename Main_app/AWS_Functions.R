@@ -43,6 +43,7 @@ observeEvent(input$`__startup__`, {
       cat(file=stderr(), datatype)
       
       set_dt <- switch(datatype,
+                       proteomicstmt = "Isobaric",
                        proteomics = "Label-free",
                        lipidomics = "Negative",
                        transcriptomics= "RNA-seq",

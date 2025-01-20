@@ -26,7 +26,7 @@ observeEvent(input$check_selections_upload, {
     emeta_cname <- NULL
   }
   
-  data_type <- class(reactive_dataholder$model$model$norm_omics)
+  data_type <- class(reactive_dataholder$model$norm_omics)
   
   if(!is.null(input$pick_dt)){
     data_type <- input$pick_dt
@@ -96,6 +96,6 @@ observeEvent(input$check_selections_upload, {
   # })
   
   omicsData$obj <-  od
-  omicsData$model <- reactive_dataholder$model$model
+  omicsData$model <- reactive_dataholder$model
   
 })

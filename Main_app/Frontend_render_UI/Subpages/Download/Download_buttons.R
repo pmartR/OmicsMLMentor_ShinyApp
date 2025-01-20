@@ -1,5 +1,5 @@
 
-## Download behavior
+## Download behavoir
 
 observeEvent(input$makezipfile, {
   disable("makezipfile")
@@ -23,6 +23,8 @@ observeEvent(input$makezipfile, {
 
   plots_chk <- reactiveValuesToList(plot_table_current)$table
   tables_chk <- reactiveValuesToList(table_table_current)$table
+  # true/false for if model has been actually ran
+  model_chk <- !is.null(omicsData$objRM)
   
   plots_keep <- getShinyInput(input, "checkplot")
   tables_keep <- getShinyInput(input, "checktable")
@@ -58,6 +60,18 @@ observeEvent(input$makezipfile, {
   
   plots_export <- plots_chk[plot_idx][plots_keep]
   tables_export <- tables_chk[tbl_idx][tables_keep]
+  # if we have include model set to be TRUE then we include the model
+  if((!is.null(input$include_model)) && (input$include_model == TRUE)){
+    model_export_full = list(model = omicsData$objRM,
+                             norm_omics = omicsData$objNorm,
+                             pp_omics = omicsData$objPP)
+    if(!is.null(omicsData$objRM_reduced)){
+      model_export_reduced = list(
+        reduced_model = omicsData$objRM_reduced,
+        norm_omics = omicsData$objNorm,
+        pp_omics = omicsData$objPP)
+    }
+  }
   
   # Write plots
   if (length(plots_export) > 0) {
@@ -106,26 +120,27 @@ observeEvent(input$makezipfile, {
   } else file_names_tables <- NULL
   
   # Write .Rdata
-  if (input$include_model) {
+  if(length(model_export_full) > 0){
     
-    withProgress(message = "Writing model files...", {
+    withProgress(message = "Writing model RDS object...",{
       
       file_names_models <- c(paste0("Full_model_", fs::path_sanitize(input$RDS_name)))
-
-    saveRDS(omicsData$objRM, file = file_names_models[1])
-    
-    if(!is.null(omicsData$objRM_reduced)){
       
-      file_names_models <- c(file_names_models, paste0("Reduced_model_", fs::path_sanitize(input$RDS_name)))
+      saveRDS(model_export_full, file = file_names_models[1])
       
-      saveRDS(omicsData$objRM_reduced, file = file_names_models[2])
-      
-    }
+      if(!is.null(omicsData$objRM_reduced)){
+        
+        file_names_models <- c(file_names_models, paste0("Reduced_model_", fs::path_sanitize(input$RDS_name)))
+        
+        saveRDS(model_export_reduced, file = file_names_models[2])
+        
+      }
       
     })
     
-  }
-
+    
+  } else file_names_models <- NULL
+  
   # Write report
   if (input$include_report) {
     tryCatch({

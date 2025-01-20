@@ -1,4 +1,4 @@
-
+formals(renderDT)$server <- FALSE
 
   onStop(function() {
     # save the session object
