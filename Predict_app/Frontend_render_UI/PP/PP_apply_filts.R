@@ -272,6 +272,7 @@ observeEvent(input$apply_filters,{
 })
 
 observeEvent(input$confirm_filters,{
+   browser()
   req(omicsData$obj_scaled)
   req(input$apply_filters)
 
@@ -284,7 +285,6 @@ observeEvent(input$confirm_filters,{
   tmp <- omics_processed
 
   if(input$apply_filters == "Yes"){
-
 
     # this will be used in all scenarios - will need to build this up
     # more with more filters in the future
@@ -417,10 +417,13 @@ observeEvent(input$confirm_filters,{
       }
     }
 
-    # # need to filter out molecules that are never identified (which should not affect the process at all)
+    # need to filter out molecules that are never identified (which should not affect the process at all)
     molfilt_zero <- pmartR::molecule_filter(tmp)
     tmp_zero <- pmartR::applyFilt(molfilt_zero, tmp, min_num = 1)
+    # convert to sl object
+
     omics_processed_sl <- as.slData(tmp_zero)
+
 
     # separate step for imputation
     if(("imputationFilt" %in% names(all_filter_requirements_specific))){
