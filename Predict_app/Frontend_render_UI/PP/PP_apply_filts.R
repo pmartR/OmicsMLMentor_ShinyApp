@@ -434,23 +434,24 @@ observeEvent(input$confirm_filters,{
       imputed_dat <- imputation_function(omics_processed_sl, thresholds = thresholds)
 
       ## Where og molecules would be removed, restore them
-
       missing_mols <- !(og_molecules %in% imputed_dat$e_data[[new_edata_cname]])
 
-      #browser()
-      if(any(missing_mols)){
+      e_data_keep <- og_molecules[missing_mols]
+      e_data_keep <- e_data_keep[e_data_keep %in% omics_processed_sl]
 
-        missing_omics <- applyFilt(
-          custom_filter(tmp, e_data_keep = og_molecules[missing_mols]), tmp
-          )
+      if(length(e_data_keep) > 0){
 
-        ## Missing molecules may just not be present
-        if(nrow(missing_omics$e_data) > 0){
-          tmp <- combine_omicsdata(missing_omics, imputed_dat)
-        }
+         missing_omics <- applyFilt(
+            custom_filter(omics_processed_sl, e_data_keep = e_data_keep),tmp
+         )
+
+         ## Missing molecules may just not be present
+         if(nrow(missing_omics$e_data) > 0){
+            tmp <- combine_omicsdata(missing_omics, imputed_dat)
+         }
 
       } else {
-        tmp <- imputed_dat
+         tmp <- imputed_dat
       }
 
       attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt")))
@@ -508,11 +509,7 @@ observeEvent(input$confirm_filters,{
       e_data_keep <- og_proteins[missing_mols]
       e_data_keep <- e_data_keep[e_data_keep %in% omicsData$obj_sl_rollup$e_data]
 
-      if(length(e_data_keep) != nrow(imputed_dat$e_data)){
-
-      }
-
-      if(length(e_data_keep) != nrow(imputed_dat$e_data)){
+      if(length(e_data_keep) > 0){
 
         missing_omics <- applyFilt(
           custom_filter(omicsData$obj_sl_rollup, e_data_keep = e_data_keep),
@@ -524,6 +521,8 @@ observeEvent(input$confirm_filters,{
           omicsData$obj_sl_rollup <- combine_omicsdata(missing_omics, imputed_dat)
         }
 
+      } else {
+         omicsData$obj_sl_rollup <- imputed_dat
       }
     }
 
