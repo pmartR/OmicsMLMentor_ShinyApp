@@ -272,7 +272,7 @@ observeEvent(input$apply_filters,{
 })
 
 observeEvent(input$confirm_filters,{
-   browser()
+   #browser()
   req(omicsData$obj_scaled)
   req(input$apply_filters)
 
@@ -283,6 +283,10 @@ observeEvent(input$confirm_filters,{
   pp_data <- omicsData$model$pp_omics
 
   tmp <- omics_processed
+
+  # need to filter out molecules that are never identified (which should not affect the process at all)
+  molfilt_zero <- pmartR::molecule_filter(tmp)
+  tmp <- pmartR::applyFilt(molfilt_zero, tmp, min_num = 1)
 
   if(input$apply_filters == "Yes"){
 
@@ -417,12 +421,8 @@ observeEvent(input$confirm_filters,{
       }
     }
 
-    # need to filter out molecules that are never identified (which should not affect the process at all)
-    molfilt_zero <- pmartR::molecule_filter(tmp)
-    tmp_zero <- pmartR::applyFilt(molfilt_zero, tmp, min_num = 1)
     # convert to sl object
-
-    omics_processed_sl <- as.slData(tmp_zero)
+    omics_processed_sl <- as.slData(tmp)
 
 
     # separate step for imputation
@@ -505,10 +505,17 @@ observeEvent(input$confirm_filters,{
       ## Where og molecules would be removed, restore them
       missing_mols <- !(og_proteins %in% imputed_dat$e_data[[get_edata_cname(imputed_dat)]])
 
-      if(any(missing_mols)){
+      e_data_keep <- og_proteins[missing_mols]
+      e_data_keep <- e_data_keep[e_data_keep %in% omicsData$obj_sl_rollup$e_data]
+
+      if(length(e_data_keep) != nrow(imputed_dat$e_data)){
+
+      }
+
+      if(length(e_data_keep) != nrow(imputed_dat$e_data)){
 
         missing_omics <- applyFilt(
-          custom_filter(omicsData$obj_sl_rollup, e_data_keep = og_proteins[missing_mols]),
+          custom_filter(omicsData$obj_sl_rollup, e_data_keep = e_data_keep),
           omicsData$obj_sl_rollup
         )
 
