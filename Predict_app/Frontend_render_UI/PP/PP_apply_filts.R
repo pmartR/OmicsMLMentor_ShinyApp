@@ -437,12 +437,13 @@ observeEvent(input$confirm_filters,{
       missing_mols <- !(og_molecules %in% imputed_dat$e_data[[new_edata_cname]])
 
       e_data_keep <- og_molecules[missing_mols]
-      e_data_keep <- e_data_keep[e_data_keep %in% omics_processed_sl]
+      e_data_keep <- e_data_keep[e_data_keep %in% omics_processed_sl$e_data[[new_edata_cname]]]
 
       if(length(e_data_keep) > 0){
 
          missing_omics <- applyFilt(
-            custom_filter(omics_processed_sl, e_data_keep = e_data_keep),tmp
+            custom_filter(omics_processed_sl, e_data_keep = e_data_keep),
+            tmp
          )
 
          ## Missing molecules may just not be present
@@ -507,7 +508,7 @@ observeEvent(input$confirm_filters,{
       missing_mols <- !(og_proteins %in% imputed_dat$e_data[[get_edata_cname(imputed_dat)]])
 
       e_data_keep <- og_proteins[missing_mols]
-      e_data_keep <- e_data_keep[e_data_keep %in% omicsData$obj_sl_rollup$e_data]
+      e_data_keep <- e_data_keep[e_data_keep %in% omicsData$obj_sl_rollup$e_data[[get_edata_cname(omicsData$obj_sl_rollup)]]]
 
       if(length(e_data_keep) > 0){
 
