@@ -1,24 +1,21 @@
 {
-  "bioconductor.version": [],
+  "bioconductor.version": "3.20",
   "external.libraries": [],
   "ignored.packages": [
-    "pmartR",
-    "malbacR",
-    "mapDataAccess",
-    "shinytest2",
+    "devtools",
     "testthat",
-    "vdiffr",
-    "pmartRdata",
-    "trelliscopejs"
+    "mapDataAccess",
+    "shinytest2"
   ],
   "package.dependency.fields": [
+    "Imports",
     "Depends",
-    "Imports"
+    "LinkingTo"
   ],
   "ppm.enabled": null,
   "ppm.ignored.urls": [],
   "r.version": [],
-  "snapshot.type": "explicit",
+  "snapshot.type": "implicit",
   "use.cache": true,
   "vcs.ignore.cellar": true,
   "vcs.ignore.library": true,

@@ -109,10 +109,10 @@ missing_data <- function(){
                  hidden(div(
                    id = "qc_biomolecule_detect",
                    br(),
-                   "Observed biomolecules may not be detected in all samples.",
+
                    paste0("Observed biomolecules may not be detected in all samples.",
-                          "Most supported models in SLOPE do not handle incomplete detection of biomolecules",
-                          "The following models can handle incomplete detection: ",
+                          " Most supported models in SLOPE do not handle incomplete detection of biomolecules.",
+                          " The following models can handle incomplete detection: ",
                           toString(names(missing_designation[missing_designation])),
                           "."),
                    br(),

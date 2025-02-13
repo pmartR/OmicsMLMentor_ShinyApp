@@ -10,24 +10,23 @@ output$param_preview_plot_ui <- renderUI({
   
   if(!is.null(omicsData$objHP)){
     
-    hp_res <- attr(omicsData$objHP, "hp_info")
+    # hp_res <- attr(omicsData$objHP, "hp_info")
+    # 
+    # p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
+    #   ggplot2::theme_bw()
     
-    p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
-      ggplot2::theme_bw()
-    
-    if(which(colnames(p$data) == "mean") < 3){
+    # if(which(colnames(p$data) == "mean") < 3){
       withSpinner(plotlyOutput("param_preview_plotly"))
-    } else {
-      withSpinner(plotlyOutput("param_preview_plot"))
-    }
+    # } else {
+    #   withSpinner(plotlyOutput("param_preview_plot"))
+    # }
     
   } else {
     "No parameters have been optimized."
   }
 })
 
-output$param_preview_plotly <- renderPlotly({
-  
+observeEvent(omicsData$objHP, {
   req(!is.null(omicsData$objHP), cancelOutput = T)
   
   hp_res <- attr(omicsData$objHP, "hp_info")
@@ -35,28 +34,26 @@ output$param_preview_plotly <- renderPlotly({
   p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
     ggplot2::theme_bw()
   
-  isolate(plot_table_current$table$RM__param_optim <- p)
-  isolate(table_table_current$table$RM__param_optim <- unnest(
-    hp_res[2:3], cols = c(".metrics")))
+  plot_table_current$table$RM__param_optim <- p
+  table_table_current$table$RM__param_optim <- unnest(
+    hp_res[2:3], cols = c(".metrics"))
+})
+
+output$param_preview_plotly <- renderPlotly({
+  
+  req(!is.null(plot_table_current$table$RM__param_optim), cancelOutput = T)
+  
+  plot_table_current$table$RM__param_optim
   
 })
 
-output$param_preview_plot <- renderPlotly({
-  
-  req(!is.null(omicsData$objHP), cancelOutput = T)
-  
-  hp_res <- attr(omicsData$objHP, "hp_info")
-  
-  p <- autoplot(hp_res, metric = "roc_auc", select_best = F) + 
-    ggplot2::theme_bw()
-  
-  isolate(plot_table_current$table$RM__param_optim <- p)
-  isolate(table_table_current$table$RM__param_optim <- unnest(
-    hp_res[2:3], cols = c(".metrics")))
-  
-  p
-  
-})
+# output$param_preview_plot <- renderPlotly({
+#   
+#   req(!is.null(plot_table_current$table$RM__param_optim), cancelOutput = T)
+#   
+#   plot_table_current$table$RM__param_optim
+#   
+# })
 
 ## Set the optimum
 observeEvent(c(omicsData$objHP, input$rec_param_option), {
