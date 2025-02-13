@@ -655,6 +655,10 @@ umap_params <- function(){
   div(strong("Not available for selected model"), br(), br())
 }
 
+lda_params <- function(){
+  div(strong("Not available for selected model"), br(), br())
+}
+
 ### Not yet available
 pca_params <- function(){
   n_samps = attributes(omicsData$objPP)$data_info$num_samps

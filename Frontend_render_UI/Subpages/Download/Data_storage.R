@@ -24,7 +24,6 @@ plot_table_current <- reactiveValues(
     RM__param_optim = NULL,
     RM__training_structure = NULL,
     RM__model_eval__full__roc_curve = NULL,
-    RM__model_eval__full__roc_curve = NULL,
     RM__model_eval__full__confidence_bar = NULL,
     RM__model_eval__full__prediction_bar = NULL,
     RM__model_eval__full__confusion_heatmap = NULL,

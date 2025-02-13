@@ -81,6 +81,8 @@ file_loads <- c(
   list.files("./Frontend_Static_UI", recursive = T, full.names = T)
 )
 
+file_loads <- file_loads[file_loads != "./Helpers/Helper_obs.R"]
+
 for (f in grep(".R$", file_loads, value = T)) source(f, local = TRUE)
 
 ### To do: if these are only used in one or two modules, take as many outta here as possible

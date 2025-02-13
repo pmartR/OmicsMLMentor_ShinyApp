@@ -180,7 +180,7 @@ observeEvent(input$em_select, ignoreInit = T, {
 
   updateProgressBar(session, "EM_done", value = 100)
   
-  shinyjs::show("model_reccomendations")
+  # shinyjs::show("model_reccomendations")
   
 })
 

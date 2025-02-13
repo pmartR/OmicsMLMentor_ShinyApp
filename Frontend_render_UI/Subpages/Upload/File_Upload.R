@@ -419,6 +419,8 @@ purrr::map(c("e_data", "f_data", "e_meta"), function(label){
     
     df <- reactive_dataholder[[label]]$file
     
+    req(length(df) > 0)
+    
     if(nrow(df) > 500){
       df <- df[1:500,]
     }

@@ -813,6 +813,17 @@ load_norm_observers <- function(tab) {
     }
 
     ## General
+  
+  output[[paste0(tab, "_normalize_eval_location")]] <- renderPlotly({
+    req(!is.null(plot_table_current$table$PP__bias__location))
+    plot_table_current$table$PP__bias__location
+  })
+  
+  output[[paste0(tab, "_normalize_eval_scale")]] <- renderPlotly({
+    req(!is.null(plot_table_current$table$PP__bias__scale))
+    plot_table_current$table$PP__bias__scale
+  })
+  
     ## Evaluate global normalization; process and UI loading
     observeEvent(input[[paste0(tab, "_inspect_norm")]], {
 
@@ -904,11 +915,8 @@ load_norm_observers <- function(tab) {
           )
         )
 
-        output[[paste0(tab, "_normalize_eval_location")]] <- renderPlotly({
-          p <- eval$loc_boxplot
-          isolate(plot_table_current$table$PP__bias__location <- p)
-          p
-        })
+        p <- eval$loc_boxplot
+        plot_table_current$table$PP__bias__location <- p
 
         updateTabsetPanel(
           session,
@@ -943,11 +951,9 @@ load_norm_observers <- function(tab) {
           )
         )
 
-        output[[paste0(tab, "_normalize_eval_scale")]] <- renderPlotly({
-          p <- eval$scale_boxplot
-          isolate(plot_table_current$table$PP__bias__scale <- p)
-          p
-        })
+        
+        p <- eval$scale_boxplot
+        plot_table_current$table$PP__bias__scale <- p
 
         updateTabsetPanel(
           session,
@@ -2279,17 +2285,22 @@ assign_norm_output <- function(tab) {
     
     ## SPANS results ##
     
-    #'@details SPANS plot
-    output[[paste0(tab, "_spans_plot")]] <- renderPlotly({
+    observeEvent(SPANS_res[[tab]], {
       
-      req(!is.null(SPANS_res) && !is.null(SPANS_res[[tab]]))
+      req(!is.null(SPANS_res[[tab]]))
       
       p <- plot(SPANS_res[[tab]], interactive = T)
       p$x$source <- "SPANS"
       
-      isolate(plot_table_current$table$PP__SPANS <- p)
+      plot_table_current$table$PP__SPANS <- p
+    }),
+    
+    #'@details SPANS plot
+    output[[paste0(tab, "_spans_plot")]] <- renderPlotly({
       
-      p
+      req(!is.null(plot_table_current$table$PP__SPANS))
+      
+      plot_table_current$table$PP__SPANS
     }),
     
     #'@details Table of SPANS scores
@@ -2341,7 +2352,7 @@ assign_norm_output <- function(tab) {
       
       if(all(unlist(omicsData$objPP$e_data[-drop]) %in% c(0, 1))){
         df <- as.data.frame(table(melt(omicsData$objPP$e_data)[2:3]))
-        p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+        p <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
           geom_col() + theme_bw() + 
           labs(
             paste0("Un-Normalized: ", tab, " Data"),

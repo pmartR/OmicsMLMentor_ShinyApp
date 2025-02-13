@@ -65,6 +65,7 @@ observeEvent(input$makezipfile, {
     withProgress(message = "Writing plot files...", {
       
       file_names_plots <- map2(plots_export, names(plots_export), function(plot, handle){
+        
         if (inherits(plot, "plotly")) {
           fname <- paste0(handle, ".html")
           saveWidget(plot, fname)
@@ -106,6 +107,26 @@ observeEvent(input$makezipfile, {
   } else file_names_tables <- NULL
   
   # Write .Rdata
+  if(!is.null(input$include_model) && input$include_model){
+    
+    withProgress(message = "Writing model RDS object...",{
+      
+      file_names_models <- c(paste0("Full_model_", fs::path_sanitize(input$RDS_name)))
+      
+      saveRDS(omicsData$objRM, file = file_names_models[1])
+      
+      if(!is.null(omicsData$objRM_reduced)){
+        
+        file_names_models <- c(file_names_models, paste0("Reduced_model_", fs::path_sanitize(input$RDS_name)))
+        
+        saveRDS(omicsData$objRM_reduced, file = file_names_models[2])
+        
+      }
+      
+    })
+    
+    
+  } else file_names_models <- NULL
 
   # Write report
   if (input$include_report) {
@@ -123,7 +144,7 @@ observeEvent(input$makezipfile, {
   }
   
   zip(zipfile = paste0(fname, ".zip"), 
-      files = c(file_names_tables, file_names_plots, fs::path_sanitize(input$report_name)), 
+      files = c(file_names_tables, file_names_plots, file_names_models, fs::path_sanitize(input$report_name)), 
       flags = "-r")
   
   zipped_file$fs <- paste0(fname, ".zip")

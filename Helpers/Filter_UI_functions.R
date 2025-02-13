@@ -28,9 +28,10 @@ filter_tab_temp <- function(tabname, keep_missing, user_level, datascale, no_cv)
         # "imputefilt",
         # "cvfilt", 
         # "imdanovafilt",
+        
+        "totalCountFilt", # default excluded
         "customfilt",
         # "profilt" # default excluded
-        "totalCountFilt" # default excluded
       )
       sampfilt_UI <- c(
         # "corr_mol",
@@ -47,10 +48,10 @@ filter_tab_temp <- function(tabname, keep_missing, user_level, datascale, no_cv)
       # "lowvar_mol",
       # "corr_mol",
       "molfilt", 
-      "imputefilt",
+      "profilt",
       "cvfilt", 
-      "customfilt",
-      "profilt"
+      "imputefilt",
+      "customfilt"
     )
     
     if(!(tabname %in% c("Pepdata", "Isobaricpepdata"))){ ## no profilt
