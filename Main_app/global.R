@@ -78,11 +78,11 @@ VALID_HEADER_PARAMS = c("map-data")
 
 # Load files
 file_loads <- c(
-  list.files("./Helpers", recursive = T, full.names = T),
-  list.files("./Frontend_Static_UI", recursive = T, full.names = T)
+  list.files("./Main_app/Helpers", recursive = T, full.names = T),
+  list.files("./Main_app//Frontend_Static_UI", recursive = T, full.names = T)
 )
 
-file_loads <- file_loads[file_loads != "./Helpers/Helper_obs.R"]
+file_loads <- file_loads[file_loads != "./Main_app/Helpers/Helper_obs.R"]
 
 for (f in grep(".R$", file_loads, value = T)) source(f, local = TRUE)
 

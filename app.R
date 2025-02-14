@@ -53,7 +53,7 @@ top_server <- function(input, output, session) {
     } else {
       
       # Dynamically source App 2
-      source("./Main_app/server.R", local = T)
+      source(file.path("./Main_app/server.R"), local = T)
 
     }
     
