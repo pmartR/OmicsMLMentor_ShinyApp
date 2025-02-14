@@ -521,6 +521,18 @@ options = list(dom = "tp",
 
 ## Load up previews
 
+flattenlist <- function(x){  
+  morelists <- sapply(x, function(xprime) {
+    'list' %in% class(xprime) & !('gg' %in% class(xprime))
+  })
+  out <- c(x[!morelists], unlist(x[morelists], recursive=FALSE))
+  if(sum(morelists)){ 
+    Recall(out)
+  }else{
+    return(out)
+  }
+}
+
 map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
   map(c("table", "plot"), function(type){
     

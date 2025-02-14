@@ -798,7 +798,6 @@ observeEvent(input$run_sl, {
       })
       }
     })
-
     omicsData$objRM <- add_model_attributes(omicsData$objRM, model_name = input$pick_model_EM)
     
   } else {

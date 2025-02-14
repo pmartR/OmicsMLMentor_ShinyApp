@@ -2,8 +2,8 @@ suppressPackageStartupMessages({
   
   ## R stuff
   library(pmartR)
-  library(pmartRdata)
   # devtools::install_github("pmartR/pmartRdata")
+  library(pmartRdata)
   library(readr)
   library(reshape2)
   library(stringr)
@@ -25,7 +25,6 @@ suppressPackageStartupMessages({
   
   ## Reporting
   library(yaml)
-  library(devtools)
   library(markdown)
   
   ## Shiny stuff
@@ -37,16 +36,12 @@ suppressPackageStartupMessages({
   library(shinyalert)
   library(prompter)
   library(shinydashboardPlus)
-  library(shinyFiles)
-  library(shinyjqui)
   library(rintrojs)
   library(shinybusy)
   library(shiny.blueprint)
   
   ## Model stuff
   library(mixOmics)
-  # BiocManager::install('mixOmics')
-  library(factoextra)
   library(xgboost)
   library(kernlab)
   library(tidyclust)
@@ -58,10 +53,12 @@ suppressPackageStartupMessages({
   library(glmnet)
   library(plsmod)
   library(embed)
+  library(discrim)
   
   ## Don't let these get masked by other functions
   library(dplyr)
   library(purrr)
+  library(pcaMethods)
   library(slopeR) ## Must be installed manually
 })
 
@@ -81,8 +78,8 @@ VALID_HEADER_PARAMS = c("map-data")
 
 # Load files
 file_loads <- c(
-  list.files("./Main_app/Helpers", recursive = T, full.names = T),
-  list.files("./Main_app/Frontend_Static_UI", recursive = T, full.names = T)
+  list.files("./Helpers", recursive = T, full.names = T),
+  list.files("./Frontend_Static_UI", recursive = T, full.names = T)
 )
 
 file_loads <- file_loads[file_loads != "./Helpers/Helper_obs.R"]
@@ -155,9 +152,33 @@ models_long_name <- c(
   `Probabilistic Principal Components Analysis` = "ppca",
   `Uniform Manifold Approximation and Projection` = "umap",
   `Gradient boosted tree` = "gbtree",
-  `Partial least squares` = "pls",
+  # `Partial least squares` = "pls",
   `K-nearest neighbors` = "knn",
-  `Linear Regression` = "lr",
+  # `Linear Regression` = "lr",
+  `Linear Discriminant Analysis` = "lda",
+  `Quadratic Discriminant Analysis` = "qda",
+  `Naive Bayes Classifier` = "nb"
+)
+
+
+models_long_name <- c(
+  `Linear support vector machine` = "lsvm",
+  `Polynomial support vector machine` = "psvm",
+  `Radial basis support vector machine` = "rsvm",
+  `Multinomial regression` = "multi",
+  `Multinomial regression with LASSO` = "multilasso",
+  `Logistic regression` = "logistic",
+  `Logistic regression with LASSO` = "loglasso",
+  `Random forest` = "rf",
+  `K-means clustering` = "kmeans",
+  `Hierarchical clustering` = "hclust",
+  `Principal Components Analysis` = "pca",
+  `Probabilistic Principal Components Analysis` = "ppca",
+  `Uniform Manifold Approximation and Projection` = "umap",
+  `Gradient boosted tree` = "gbtree",
+  # `Partial least squares` = "pls",
+  `K-nearest neighbors` = "knn",
+  # `Linear Regression` = "lr",
   `Linear Discriminant Analysis` = "lda",
   `Quadratic Discriminant Analysis` = "qda",
   `Naive Bayes Classifier` = "nb"

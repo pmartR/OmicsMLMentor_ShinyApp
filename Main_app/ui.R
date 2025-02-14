@@ -95,10 +95,10 @@ ui <- div(
                         class = "btn-warning", 
                         style = "position:fixed;left:15px;bottom:15px")),
     
-    hidden(actionButton("model_reccomendations", 
-                 "Model Requirements",
-                 width = "170px",
-                 style = "position:absolute;top:8px;right:325px;z-index:1100;")),
+    # hidden(actionButton("model_reccomendations", 
+    #              "Model Requirements",
+    #              width = "170px",
+    #              style = "position:absolute;top:8px;right:325px;z-index:1100;")),
     
     actionButton("glossary_button", 
                  "Glossary",

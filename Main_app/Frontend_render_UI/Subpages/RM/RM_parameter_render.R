@@ -7,24 +7,19 @@ apply_disabled <- function(el) {
 }
 
 output[["param_opti_UI"]] <- renderUI({
-  
-  recs <- actionButton("rec_param_option", "Recommended")
-  opti <- actionButton("param_opti", "Optimize parameters")
-  
-  if(input$rm_prompts_hp == "tuned" && 
-     !any(map_lgl(grep("optimize", names(input), value = T), function(x) input[[x]]))){
-    opti <- disabled(opti)
-  } else if (input$rm_prompts_hp == "default") {
-    recs <- disabled(recs)
-    opti <- NULL
+  if(input$rm_prompts_hp == "tuned"){
+    out <- actionButton("param_opti", "Optimize parameters")
+    if(!any(map_lgl(grep("optimize", names(input), value = T), 
+                    function(x) input[[x]])))
+      out <- disabled(out)
   } else {
-    opti <- NULL
+    out <- NULL
   }
 
   
   div(
-    opti,
-    recs,
+    out,
+    actionButton("rec_param_option", "Recommended"),
     actionButton("done_param_option", "Done")
   )
 

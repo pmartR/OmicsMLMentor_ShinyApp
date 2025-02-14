@@ -487,8 +487,9 @@ observeEvent(input$done_qc_rollup, {
 observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVals()), {
  
   req(!inherits(omicsData$objQC, "seqData"))
-
-  if ((!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
+  
+  if ((!is.null(pepQCData$objQCPro) || !is.null(omicsData$objQC))
+      && (!is.null(input$keep_missing) && input$keep_missing == "Yes") || 
       !any(is.na(omicsData$objQC$e_data)) || inherits(omicsData$objQC, "seqData") ||
       !is.null(input$missing_options)) {
     # Prevent user from Removing all biomolecules
@@ -506,6 +507,8 @@ observeEvent(c(input$keep_missing, input$missing_options, missingHandleSliderVal
       if (inherits(omicsData$objQC, "pepData")) {
         transform_df <- slopeR::get_transform_df(pepQCData$objQCPro, thresholds)
       } else {
+        
+        req(!is.null(omicsData$objQC))
         transform_df <- slopeR::get_transform_df(omicsData$objQC, thresholds)
       }
       
