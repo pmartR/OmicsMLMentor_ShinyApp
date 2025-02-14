@@ -584,6 +584,8 @@ if (!is.null(params$plots$table$PP__rollup)) {
 ## Run Model
 
 ```{r Run Model}
+
+text <- ""
 if (str_to_lower(params$user_inputs$msu$model_type) == "supervised") {
 text <- paste0("A ", params$user_inputs$msu$model_selected, " model predicting the ")
 text <- paste0(text, params$user_inputs$msu$response_var, " value was created with the purpose of running on ")
@@ -641,6 +643,8 @@ if (!is.null(params$plots$table$RM__rec_folds)) {
 `r if (!is.null(params$plots$table$RM__rec_folds)) "\\"`
 
 ```{r}
+
+text <- ""
 if (params$user_inputs$msu$model_type == "Supervised") {
   text <- "Training Structure: \\"
 }
@@ -673,6 +677,8 @@ if (params$user_inputs$msu$model_type == "Supervised") {
 `r text`
 
 ```{r Accuracy}
+
+text <- ""
 if (params$user_inputs$msu$model_type == "Supervised") {
   if (is.null(params$plots$table$RM__model_eval__reduced__roc_curve)) {
     params$plots$table$RM__model_eval__full__roc_curve
