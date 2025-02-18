@@ -804,7 +804,6 @@ observeEvent(input$run_sl, {
 
     runner <- as.slData(omicsData$objPP)
 
-
     # method <- models_long_name[input$pick_model_EM] ## While summary getting fixed
 
     method <- input$pick_model_EM
@@ -820,18 +819,28 @@ observeEvent(input$run_sl, {
       }
 
       linkage_method <- input$linkage_method
-
-      omicsData$objRM <- slopeR:::cluster_unsup(runner,
-                                                slMethod = method,
-                                                axis = input$pick_axis,
-                                                num_clusters = input$num_clust,
-
-                                                ## Not supported at the moment
-                                                #,
-                                                cut_height = cut_height,
-                                                linkage_method = linkage_method,
-                                                seed = input$the_seed
+      
+      args <- list(
+        slData = runner,
+        slMethod = method,
+        axis = input$pick_axis,
+        num_clusters = num_clust,
+        ## Not supported at the moment
+        #,
+        cut_height = cut_height,
+        linkage_method = linkage_method,
+        seed = input$the_seed
       )
+      
+      ## Unclear if seed is an actual argument in some models so we set it twice to make sure
+      set.seed(input$the_seed)
+      
+      omicsData$objRM <- do.call(
+        slopeR:::cluster_unsup,
+        args
+      )
+      
+      attr(omicsData$objRM, "args_unsup") <- c(args, list(func = "cluster_unsup"))
 
     } else {
       args = list(
@@ -852,6 +861,8 @@ observeEvent(input$run_sl, {
         slopeR:::embed_unsup,
         args
       )
+      
+      attr(omicsData$objRM, "args_unsup") <- c(args, list(seed = input$the_seed, func = "embed_unsup"))
 
     }
 
@@ -1297,12 +1308,15 @@ output$structure_plot <- renderPlot({
   input$redraw_unsup_structure_plot
   omicsData$objRM
   
+  req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
+        (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
+  
+  validate(
+    need(!is.null(omicsData$objRM), 
+         "No model results found.  Please run the model to see results plots."))
+  
   isolate({
-    req(!is.null(input$pick_model_EM) && 
-          !supervised())
-    validate(
-      need(!is.null(omicsData$objRM), 
-           "No model results found.  Please run the model to see results plots."))
+    req(!is.null(input$pick_model_EM) && !supervised())
   
     method <- input$pick_model_EM ## While summary getting fixed
   
@@ -1310,6 +1324,7 @@ output$structure_plot <- renderPlot({
                   input$color_by_unsup else NULL
   
     runner <- as.slData(omicsData$objPP)
+    
   
   
    
@@ -1376,8 +1391,6 @@ output$structure_plot <- renderPlot({
         
         if(method %in% c("pca", "ppca", "umap")){
           
-          browser()
-          
           plot_call = rlang::call_modify(
             plot_call, 
             slData = as.slData(omicsData$objPP),
@@ -1416,7 +1429,8 @@ output$structure_plot <- renderPlot({
     req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
           (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
     
-    p <- rlang::eval_tidy(plot_call)
+    set.seed(input$set.seed)
+    p <- rlang::eval_tidy(plot_call, env = environment())
     
     isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
     isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))

@@ -290,6 +290,7 @@ output$f_data_spec_UI <- renderUI({
   selected <- colnames(f_data)[best_col]
 
 
+  if(supervised()){
   check_cols <- as.character(unique(reactive_dataholder$model$model$pre$mold$outcomes[[1]]))
   f_data <- reactive_dataholder[["f_data"]]$file
 
@@ -330,6 +331,31 @@ output$f_data_spec_UI <- renderUI({
       column(2, actionButton("specify_fdata_done", "Done", style="float:right"))
     )
   )
+  } else {
+    
+    collapseBox(
+      "Specify Sample Information Properties",
+      icon_id = "fdata_params_icon",
+      icon = icon("exclamation-sign", lib = "glyphicon"),
+      value = "data_props_fdata",
+      collapsed = F,
+      
+      pickerInput(
+        "f_data_id_col",
+        "Which column identifies unique samples?",
+        choices = colnames(reactive_dataholder[["f_data"]]$file),
+        selected = isolate(if(!is.null(input$f_data_id_col)) input$f_data_id_col else selected)
+      ),
+      # div(style="display:inline-block",actionButton("specify_fdata_done", "Done", style="float:right"))
+      
+      
+      fluidRow(
+        column(10, ""),
+        column(2, actionButton("specify_fdata_done", "Done", style="float:right"))
+      )
+    )
+    
+  }
 })
 
 output$e_meta_spec_UI <- renderUI({

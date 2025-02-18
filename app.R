@@ -1,5 +1,16 @@
 # Main App UI
 top_ui <- fluidPage(
+  
+  includeCSS("./Main_app/Helpers/SLOPER.css"),
+  
+  div(
+    id = "loading-gray-overlay-top",
+    class = "loading-mask",
+    div(class = "fadein-out busy relative-centered",
+        style = "font-size:xx-large",
+        "Generating appropriate pipeline...")
+  ),
+  
   uiOutput("dynamic_ui")
 )
 
@@ -46,6 +57,7 @@ top_server <- function(input, output, session) {
     
     query <- parseQueryString(session$clientData$url_search)
     
+    hide("loading-gray-overlay-top")
     if (!is.null(query$model)) {
 
       source(file.path("./Predict_app/server.R"), local = T)

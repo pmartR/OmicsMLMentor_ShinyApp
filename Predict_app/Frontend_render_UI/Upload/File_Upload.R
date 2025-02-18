@@ -311,7 +311,36 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
   ## Render from uploaded files
   output[[paste0("DT_", label)]] <- renderDT({
 
-    reactive_dataholder[[label]]$file
+    if(label != "model"){
+      validate(need(reactive_dataholder[[label]]$file, "Not available for this data"))
+      reactive_dataholder[[label]]$file
+    } else {
+      if(is.null(reactive_dataholder[[label]]$file)){
+        
+        info <- attr(reactive_dataholder$model$model, "args")
+        
+        specs <- reactive_dataholder$model$model$fit$fit$spec
+        
+        type <- class(reactive_dataholder$model$model$fit$fit$fit)
+        
+        text <- switch(info$slMethod,
+               kmeans = "K-means clustering",
+               umap = "Uniform Manifold Approximation and Projection",
+               hclust = "Hierarchical clustering",
+               ppca = "Probabilistic Principal Components Analysis",
+               pca = "Principal Components Analysis"
+               )
+
+        make_tbl <- c(list(Model = text), map(specs$args, rlang::eval_tidy))
+        
+        make_tbl <- make_tbl[!map_lgl(make_tbl, is.null)]
+        
+        as.data.frame(make_tbl)
+        
+      } else {
+        reactive_dataholder[[label]]$file
+      }
+    }
   },
   selection = 'none',
   options = list(dom = 'tpi',
