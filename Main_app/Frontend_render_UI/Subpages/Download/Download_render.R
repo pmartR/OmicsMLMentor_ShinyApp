@@ -8,7 +8,9 @@ output$Bundle_button <- renderUI({
   plots <- getShinyInput(input, "checkplot_")
   tables <- getShinyInput(input, "checktable_")
   
-  cond <- any(as.logical(unlist(c(plots, tables))))
+  cond <- any(as.logical(unlist(c(plots, tables)))) &&
+    (!input$include_model || nchar(input$RDS_name) > 0) &&
+    (!input$include_report ||  nchar(input$report_name) > 0)
   
   button <- appButton(inputId = "makezipfile",
             label = tags$b("Bundle up all selected items"),

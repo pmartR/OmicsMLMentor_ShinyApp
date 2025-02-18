@@ -12,8 +12,6 @@ observeEvent(input$`__startup__`, {
   # If true, put data from the AWS bucket where it belongs
   if (cond) {
     
-    # check to see if we are working with creating a model or uploading new data to predict using old model
-    if(newdata != TRUE){
       # Create a loading screen
       html("loading-gray-overlay",
            paste0("<div class='fadein-out busy relative-centered',", 
@@ -42,16 +40,17 @@ observeEvent(input$`__startup__`, {
                             object = "SLOPE_model_tags.csv", 
                             bucket = gsub("merged_files.+", new_folder, query$s3_bucket))
       
-      id_use <- og_df$id[og_df$filename == model,][1]
+      id_use <- og_df$id[og_df$filename == model][1]
       
-      AWSobj$model <- s3read_using(FUN = readRDS, object = file.path(id, model), 
+      # fp <- "./Predict_app/example/data/demo/rf_new.RDS"
+      # 
+      # AWSobj$model <- readRDS(fp)
+      
+      AWSobj$model <- s3read_using(FUN = readRDS, object = file.path(id, model),
                                    bucket=gsub("merged_files.+", new_folder, query$s3_bucket))
       
       cat(file=stderr(), "Test 2")
       
-      
-    }
-
   }
   
   

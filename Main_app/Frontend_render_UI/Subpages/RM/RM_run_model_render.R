@@ -124,7 +124,7 @@ output$model_summary <- renderUI({
     method <- "logistic"
     extra_text <- " This method differs from traditional logistic models by using a penalization method to select for the most important molecules to use for prediction."
   } else if (method %in% "multilasso"){
-    method <- "logistic"
+    method <- "multi"
     extra_text <- " This method differs from traditional multinomial models by using a penalization method to select for the most important molecules to use for prediction."
   } else {
     extra_text <- NULL
@@ -402,16 +402,20 @@ output$VI_tabset_UI <- renderUI({
   
 })
 
-output$Variable_importance_plot <- renderPlotly({
+observeEvent(c(omicsData$objRM_reduced, input$full_vi), {
   
   req(!is.null(attr(omicsData$objRM, "feature_info")) &&
-        !is.null(attr(omicsData$objRM, "vi_info")))
+        !is.null(attr(omicsData$objRM, "vi_info")) &&
+        !is.null(input$full_vi))
   
   plotting_df <- left_join(attr(omicsData$objRM, "feature_info"), 
                            attr(omicsData$objRM, "vi_info"), 
                            by = c(names_compact = "var_name"))
   
   plotting_df <- arrange(plotting_df, desc(var_import))
+
+  isolate(table_table_current$table$RM__variable_importance__full <- plotting_df)
+  
   plotting_df <- plotting_df[1:input$full_vi,]
   
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
@@ -437,13 +441,19 @@ output$Variable_importance_plot <- renderPlotly({
     )
   
   isolate(plot_table_current$table$RM__variable_importance__full <- p)
-  isolate(table_table_current$table$RM__variable_importance__full <- plotting_df)
   
-  p
   
 })
 
-output$Variable_importance_plot_reduced <- renderPlotly({
+output$Variable_importance_plot <- renderPlotly({
+  
+  req(!is.null(plot_table_current$table$RM__variable_importance__full))
+  
+  plot_table_current$table$RM__variable_importance__full
+  
+})
+
+observeEvent(c(omicsData$objRM_reduced, input$reduced_vi), {
   
   req(!is.null(omicsData$objRM_reduced) && !is.null(input$reduced_vi))
   
@@ -452,6 +462,9 @@ output$Variable_importance_plot_reduced <- renderPlotly({
                            by = c(names_compact = "var_name"))
   
   plotting_df <- arrange(plotting_df, desc(var_import))
+  
+  isolate(table_table_current$table$RM__variable_importance__reduced <- plotting_df)
+  
   plotting_df <- plotting_df[1:input$reduced_vi,]
   
   plotting_df$names_orig <- factor(plotting_df$names_orig, 
@@ -477,10 +490,17 @@ output$Variable_importance_plot_reduced <- renderPlotly({
     )
   
   isolate(plot_table_current$table$RM__variable_importance__reduced <- p)
-  isolate(table_table_current$table$RM__variable_importance__reduced <- plotting_df)
   
-  p
   
+})
+
+
+output$Variable_importance_plot_reduced <- renderPlotly({
+  
+  req(!is.null(plot_table_current$table$RM__variable_importance__reduced))
+  
+  plot_table_current$table$RM__variable_importance__reduced
+
 })
 
 output$performance_tabset_UI <- renderUI({
@@ -678,6 +698,8 @@ observeEvent(input$run_sl, {
         ptest <- input$nTest_count/ncol(runner$e_data[-1])
       }
     } else ptest <- 0
+    
+    
     ## Get custom/optimized parameters
     custom_args <- list()
     
@@ -776,13 +798,11 @@ observeEvent(input$run_sl, {
       })
       }
     })
-
     omicsData$objRM <- add_model_attributes(omicsData$objRM, model_name = input$pick_model_EM)
     
   } else {
 
     runner <- as.slData(omicsData$objPP)
-
 
     # method <- models_long_name[input$pick_model_EM] ## While summary getting fixed
 
@@ -799,18 +819,28 @@ observeEvent(input$run_sl, {
       }
 
       linkage_method <- input$linkage_method
-
-      omicsData$objRM <- slopeR:::cluster_unsup(runner,
-                                                slMethod = method,
-                                                axis = input$pick_axis,
-                                                num_clusters = input$num_clust,
-
-                                                ## Not supported at the moment
-                                                #,
-                                                cut_height = cut_height,
-                                                linkage_method = linkage_method,
-                                                seed = input$the_seed
+      
+      args <- list(
+        slData = runner,
+        slMethod = method,
+        axis = input$pick_axis,
+        num_clusters = num_clust,
+        ## Not supported at the moment
+        #,
+        cut_height = cut_height,
+        linkage_method = linkage_method,
+        seed = input$the_seed
       )
+      
+      ## Unclear if seed is an actual argument in some models so we set it twice to make sure
+      set.seed(input$the_seed)
+      
+      omicsData$objRM <- do.call(
+        slopeR:::cluster_unsup,
+        args
+      )
+      
+      attr(omicsData$objRM, "args_unsup") <- c(args, list(func = "cluster_unsup"))
 
     } else {
       args = list(
@@ -831,6 +861,8 @@ observeEvent(input$run_sl, {
         slopeR:::embed_unsup,
         args
       )
+      
+      attr(omicsData$objRM, "args_unsup") <- c(args, list(seed = input$the_seed, func = "embed_unsup"))
 
     }
 
@@ -975,6 +1007,10 @@ observeEvent(input$feature_select_posthoc, {
     
     unregister()
     omicsData$objRM_reduced <- do.call(slopeR::variable_importance, list_args)
+    
+    omicsData$objRM_reduced <- add_model_attributes(omicsData$objRM_reduced, 
+                                                    supervised = T, 
+                                                    model_name = input$pick_model_EM)
   
     shinyjs::show("complete_RM")
 
@@ -1020,41 +1056,64 @@ output$true_pos_picker_ui_reduced <- renderUI({
 
 #### Performance Plots ####
 
-#' Consolidated performance plot, takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
-output$performance_plot_RM <- renderPlotly({
-  req(!is.null(omicsData$objRM))
-  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
-  validate(need(input$super_plot_type, "Specify which plot type"))
+observeEvent(c(omicsData$objRM, input$visualize_perf_which_split, input$super_plot_type, input$true_pos_picker), {
   
-  p <- plot(omicsData$objRM, input$super_plot_type, split = input$visualize_perf_which_split)
+  req(!is.null(omicsData$objRM) && !is.null(input$visualize_perf_which_split) && !is.null(input$super_plot_type))
+  
+  p <- plot(omicsData$objRM, input$super_plot_type, 
+            split = input$visualize_perf_which_split, 
+            pos_class = input$true_pos_picker)
+  
   
   if (input$super_plot_type == "confidence_bar") {
     p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
   }
   
-  isolate(plot_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p)
-  isolate(plot_table_current$names[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- "Regression performance")
-  isolate(table_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p$data)
+  plot_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p
+  plot_table_current$names[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- "Regression performance"
+  table_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]] <- p$data
+  
+  
+})
 
-  return(p)
+#' Consolidated performance plot, takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
+output$performance_plot_RM <- renderPlotly({
+  validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
+  validate(need(input$super_plot_type, "Specify which plot type"))
+  req(!is.null(plot_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]]))
+  
+  plot_table_current$table[[paste0("RM__model_eval__full__", input$super_plot_type)]]
+  
+})
+
+observeEvent(c(omicsData$objRM_reduced, input$visualize_perf_which_split, input$super_plot_type, input$true_pos_picker_reduced), {
+  
+  req(!is.null(omicsData$objRM_reduced) && !is.null(input$visualize_perf_which_split) && !is.null(input$super_plot_type))
+  
+  p <- plot(omicsData$objRM_reduced, input$super_plot_type, 
+            split = input$visualize_perf_which_split, 
+            pos_class = input$true_pos_picker_reduced)
+  
+  
+  if (input$super_plot_type == "confidence_bar") {
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
+  }
+  
+  plot_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- p
+  plot_table_current$names[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- "Regression performance"
+  table_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- p$data
+  
+  
 })
 
 #' Consolidated performance plot for the reduced model, for comparison.  Takes in the input `super_plot_type` which maps to the `plotType` argument in `plot.slRes`.  Plot-type-specific adjustments are made in some cases.
 output$performance_plot_RM_reduced <- renderPlotly({
-  req(!is.null(omicsData$objRM_reduced))
   validate(need(input$visualize_perf_which_split, "Specify which data split to evaluate performance on"))
   validate(need(input$super_plot_type, "Specify which plot type"))
+  req(!is.null(plot_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]]))
   
-  p <- plot(omicsData$objRM_reduced, input$super_plot_type, split = input$visualize_perf_which_split)
-  
-  if (input$super_plot_type == "confidence_bar") {
-    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 0, vjust = 0.5))
-  }
-  
-  isolate(plot_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- p)
-  isolate(table_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]] <- p$data)
-
-  return(p)
+ plot_table_current$table[[paste0("RM__model_eval__reduced__", input$super_plot_type)]]
+ 
 })
 
 # 
@@ -1149,11 +1208,13 @@ output$unsup_res_aes_UI <- renderUI({
                                  get_edata_cname(omicsData$objPP)))]
   
   choices <- if(inherits(omicsData$objRM, "slRes.embed")){
-    colors
     
     if(!(length(colors) > 0)){
       return(do.call(div, c(list(class = "inline-wrapper-1"), element_list)))
     }
+    
+    
+    colors
     
   } else {
     c("Parameter clusters", colors)
@@ -1244,12 +1305,15 @@ output$structure_plot <- renderPlot({
   input$redraw_unsup_structure_plot
   omicsData$objRM
   
+  req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
+        (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
+  
+  validate(
+    need(!is.null(omicsData$objRM), 
+         "No model results found.  Please run the model to see results plots."))
+  
   isolate({
-    req(!is.null(input$pick_model_EM) && 
-          !supervised())
-    validate(
-      need(!is.null(omicsData$objRM), 
-           "No model results found.  Please run the model to see results plots."))
+    req(!is.null(input$pick_model_EM) && !supervised())
   
     method <- input$pick_model_EM ## While summary getting fixed
   
@@ -1257,6 +1321,7 @@ output$structure_plot <- renderPlot({
                   input$color_by_unsup else NULL
   
     runner <- as.slData(omicsData$objPP)
+    
   
   
    
@@ -1299,10 +1364,17 @@ output$structure_plot <- renderPlot({
           )
         } else {
           
+          temp_slData <- as.slData(omicsData$objPP)
+          temp_slData$f_data <- data.frame(
+            SampleID = colnames(temp_slData$e_data)[
+              -which(colnames(temp_slData$e_data) %in% get_edata_cname(omicsData$objPP))
+              ]
+            )
+          
           plot_call = rlang::call_modify(
             plot_call,
-            slData = as.slData(omicsData$objPP),
-            #label_obs = TRUE,
+            slData = temp_slData,
+            label_obs = TRUE,
             k = input$dendro_num_k,
             color_by = color_by,
             label.vjust = input$dendro_vjust,
@@ -1312,12 +1384,24 @@ output$structure_plot <- renderPlot({
           
         }
       } else if (plot_type == "pca") {
-        plot_call = rlang::call_modify(
-          plot_call, 
-          slData = as.slData(omicsData$objPP),
-          color_by = color_by,
-          ellipse = TRUE
-        )
+        
+        if(method %in% c("pca", "ppca", "umap")){
+          
+          plot_call = rlang::call_modify(
+            plot_call, 
+            slData = as.slData(omicsData$objPP),
+            color_by = color_by,
+            ellipse = TRUE
+          )
+          
+        } else {
+          plot_call = rlang::call_modify(
+            plot_call, 
+            slData = as.slData(omicsData$objPP),
+            color_by = color_by,
+            ellipse = TRUE
+          )
+        }
       }
       
     } else if (inherits(omicsData$objRM, "slRes.embed")) {
@@ -1338,11 +1422,31 @@ output$structure_plot <- renderPlot({
 
     }
     
-    p <- rlang::eval_tidy(plot_call)
+    req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
+          (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
+    
+    set.seed(input$set.seed)
+    p <- rlang::eval_tidy(plot_call, env = environment())
     
     isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
     isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
-    isolate(table_table_current$table$RM__model_eval <- p$data)
+    
+    if(plot_type != "dendro"){
+      isolate(table_table_current$table$RM__model_eval <- p$data)
+    } else {
+      
+      fit_obj <- workflows::extract_fit_engine(omicsData$objRM)
+      
+      fit_obj$labels <- colnames(omicsData$objPP$e_data)[
+        -which(colnames(omicsData$objPP$e_data) == pmartR::get_edata_cname(omicsData$objPP))
+        ]
+      
+      hcdata <- dendro_data_k(fit_obj, h = NULL, k = input$dendro_num_k)
+      
+      label_data <- ggdendro::label(hcdata)
+      
+      isolate(table_table_current$table$RM__model_eval <- label_data[3:4])
+    }
   
     p
   })

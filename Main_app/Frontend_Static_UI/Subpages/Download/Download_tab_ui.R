@@ -227,7 +227,8 @@ download_tab <- function(tabname) {
            # div(
              hr(),
              uiOutput("Bundle_button"),
-             uiOutput("Download_button")
+             uiOutput("New_model_button"),
+             uiOutput("Download_button"),
            #   style = "float:left;"
            # )
 

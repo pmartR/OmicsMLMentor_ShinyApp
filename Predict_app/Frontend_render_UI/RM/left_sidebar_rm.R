@@ -4,10 +4,10 @@ output$run_model_UI <- renderUI({
     value = "run_model_page",
     "Run Model",
     
-    br(), br(),
+    # textOutput("rm_text"),
     strong(paste0(
-      "Click the button below to use the model to predict the response in the new data.",
-      " Predictions of data with a known response will generate additional metrics for assessment."
+      "Click the button below to apply the model to the new data.",
+      " Additional visualization options are available if Sample Information is provided."
       )),
     
     br(),

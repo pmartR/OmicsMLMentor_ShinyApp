@@ -49,9 +49,9 @@ ui <- div(
     ),
     # end Navbarpage
     
-    div(style="position:fixed;z-index:9999;bottom:10px;right:10px;",
-        actionButton("Browser","whats wrong")
-    ),
+    # div(style="position:fixed;z-index:9999;bottom:10px;right:10px;",
+    #     actionButton("Browser","whats wrong")
+    # ),
     
     shinybusy::add_busy_spinner(position = "bottom-left")
     

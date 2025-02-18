@@ -11,59 +11,52 @@ observeEvent(input$`__startup__`, {
   
   # If true, put data from the AWS bucket where it belongs
   if (cond) {
-    
-    # check to see if we are working with creating a model or uploading new data to predict using old model
-    if(newdata != TRUE){
-      # Create a loading screen
-      html("loading-gray-overlay",
-           paste0("<div class='fadein-out busy relative-centered',", 
-                  "style='font-size:xx-large'>Pulling data from S3 bucket...</div>")
-      )
-      
-      cat(file=stderr(), "Test 1")
-      
-      # Load into AWS obj
-      csv_reader <- function(x) {read.csv(x, check.names = FALSE)}
-      AWSobj$e_data <- s3read_using(FUN = csv_reader, object = query$e_data, bucket=query$s3_bucket)
-      if(!is.null(query$e_meta)){
-        AWSobj$e_meta <- s3read_using(FUN = csv_reader, object = query$e_meta, bucket=query$s3_bucket)
-        ## Temp fix for razor proteins
-        AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
-      }
-      if(!is.null(query$f_data)){
-        AWSobj$f_data <- s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket)
-      }
-      
-      cat(file=stderr(), "Test 2")
-      
-      # Specify file type and disable input
-      datatype <- query$datatype
-      
-      cat(file=stderr(), "Test 3")
-      cat(file=stderr(), datatype)
-      
-      set_dt <- switch(datatype,
-                       proteomicstmt = "Isobaric",
-                       proteomics = "Label-free",
-                       lipidomics = "Negative",
-                       transcriptomics= "RNA-seq",
-                       metabolomics = "GC-MS"
-      )
-      
-      cat(file=stderr(), "Test 4")
-      
-      if(!is.null(AWSobj$e_meta)){
-        
-        updatePickerInput(session, "data_select", 
-                          selected = c("e_data", "e_meta"))
-      }
-      
-      updatePickerInput(session, "data_type", selected = set_dt)
-    } else {
-      
-    }
 
+    # Create a loading screen
+    html("loading-gray-overlay",
+      paste0("<div class='fadein-out busy relative-centered',", 
+             "style='font-size:xx-large'>Pulling data from S3 bucket...</div>")
+    )
+
+    cat(file=stderr(), "Test 1")
     
+    # Load into AWS obj
+    csv_reader <- function(x) {read.csv(x, check.names = FALSE)}
+    AWSobj$e_data <- s3read_using(FUN = csv_reader, object = query$e_data, bucket=query$s3_bucket)
+    if(!is.null(query$e_meta)){
+      AWSobj$e_meta <- s3read_using(FUN = csv_reader, object = query$e_meta, bucket=query$s3_bucket)
+      ## Temp fix for razor proteins
+      AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
+    }
+    if(!is.null(query$f_data)){
+      AWSobj$f_data <- s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket)
+    }
+    
+    cat(file=stderr(), "Test 2")
+
+    # Specify file type and disable input
+    datatype <- query$datatype
+    
+    cat(file=stderr(), "Test 3")
+    cat(file=stderr(), datatype)
+    
+    set_dt <- switch(datatype,
+      proteomics = "Label-free",
+      proteomicstmt = "Isobaric",
+      lipidomics = "Negative",
+      transcriptomics= "RNA-seq",
+      metabolomics = "GC-MS"
+    )
+    
+    cat(file=stderr(), "Test 4")
+    
+    if(!is.null(AWSobj$e_meta)){
+      
+      updatePickerInput(session, "data_select", 
+                        selected = c("e_data", "e_meta"))
+    }
+    
+    updatePickerInput(session, "data_type", selected = set_dt)
   }
   
   
@@ -129,8 +122,8 @@ output$data_select_UI <- renderUI({
   
 })
 
-observeEvent(input$use_example, {
-  if(!is.null(input$use_example)) disable(id = "use_example")
+observeEvent(input$load_example, {
+  if(!is.null(input$load_example)) hide(id = "load_example")
 })
 
 
@@ -190,6 +183,8 @@ output$download_processed_data <- downloadHandler(
           response_type <- "Not applicable"
         } else if(response_types_ag() != "continuous"){
           
+          response_performance$`AUC of ROC` <-  response_performance$`AUC of ROC`*100
+          
           response_performance <- toString(paste0(apply(response_performance, 1, paste, collapse = "-"), "%"))
           response_type <- "Categorical"
         } else {
@@ -210,7 +205,7 @@ output$download_processed_data <- downloadHandler(
         saveRDS(omicsData$objRM, file = "SLOPE_model.RDS")
         
         aws.s3::put_object(
-          out,
+          file = "SLOPE_model.RDS",
           bucket = gsub("merged_files.+", new_folder, query$s3_bucket),
           object = file.path(id, file)
           )
@@ -226,11 +221,14 @@ output$download_processed_data <- downloadHandler(
           if(is.null(response_performance)){
             response_performance <- "Not applicable"
             response_type <- "Not applicable"
-          } else if(nrow(response_performance) > 1){
-            response_performance <- toString(paste0(apply(response_performance, 1, paste, sep = "-"), "%"))
+          } else if(response_types_ag() != "continuous"){
+            
+            response_performance$`AUC of ROC` <-  response_performance$`AUC of ROC`*100
+            
+            response_performance <- toString(paste0(apply(response_performance, 1, paste, collapse = "-"), "%"))
             response_type <- "Categorical"
           } else {
-            response_performance <- apply(response_performance, 1, paste, sep = "-")
+            response_performance <- apply(response_performance, 1, paste, collapse = "-")
             response_type <- "Continuous"
           }
           
@@ -283,11 +281,12 @@ output$download_processed_data <- downloadHandler(
                                     query$s3_bucket))
         
         
+        
       }, error = function(e){
         
         sendSweetAlert(
           session, 
-          "AWS download Error", 
+          "AWS upload Error", 
           e$message)
         
       })

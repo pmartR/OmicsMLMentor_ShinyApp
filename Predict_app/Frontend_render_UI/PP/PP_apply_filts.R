@@ -259,14 +259,15 @@ combine_omicsdata <- function(obj_1, obj_2){
 observeEvent(input$apply_filters,{
   req(!is.null(input$apply_filters))
   if(input$apply_filters == "Yes"){
-    showModal(
-      modalDialog(
-        title = "Alert!",
-        "Any filters (molecule, cv, etc.) performed on the original dataset will also be performed on this new data. Any molecules used for predictions will remain regardless.",
-        easyClose = TRUE,
-        footer = modalButton("OK")
+    shinyalert(
+        title = "Filters will be applied",
+        type = "info",
+        paste0("By selecting this option, any filters previously performed on the model ",
+               "dataset will also be performed on the new data to replicate similar.",
+               "changes in data structure. Any molecules",
+               " required by the model with be retained regardless of ",
+               "filtering criteria.")
       )
-    )
     #enable(id = "confirm_filters")
   }
 })

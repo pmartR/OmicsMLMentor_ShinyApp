@@ -1,4 +1,12 @@
+options(shiny.maxRequestSize = 250 * 1024^2, 
+        ch.dir = TRUE, 
+        expressions = 5e5,
+        DT.TOJSON_ARGS = list(na = "string"),
+        shiny.fullstacktrace=TRUE
+        )
+
 formals(renderDT)$server <- FALSE
+options(DT.warn.size=FALSE)
 
   onStop(function() {
     # save the session object
@@ -104,9 +112,10 @@ formals(renderDT)$server <- FALSE
      
   })
   
+  hide("loading-gray-overlay")
+  
   # Observe any collapsible panels
   observeEvent(input$collapseTitleClick, {
     req(input$collapseTitleClick)
     updateBoxCollapse(session, input$collapseTitleClick$p, toggle = input$collapseTitleClick$id)
   })
-
