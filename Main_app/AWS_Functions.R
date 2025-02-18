@@ -122,8 +122,8 @@ output$data_select_UI <- renderUI({
   
 })
 
-observeEvent(input$use_example, {
-  if(!is.null(input$use_example)) disable(id = "use_example")
+observeEvent(input$load_example, {
+  if(!is.null(input$load_example)) hide(id = "load_example")
 })
 
 

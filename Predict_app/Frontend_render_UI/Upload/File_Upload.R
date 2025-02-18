@@ -166,45 +166,6 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
 
           model <- reactive_dataholder[[label]]$model
 
-        # responses <- unique(model$pre$mold$outcomes[[1]])
-        # og_train_size <- model$pre$mold$blueprint$recipe$tr_info[[1]]
-        # n_predictors <- ncol(model$pre$mold$blueprint$ptypes$predictors)
-        #
-        #
-        # hyperparams <- model$fit$actions$model$spec$args
-        # # this originally was map_int but issues when not dealing with integers
-        # hyperparams <- map_dbl(hyperparams, rlang::quo_get_expr)
-        # hp_df <- as.data.frame(hyperparams)
-        # colnames(hp_df) <- "Metrics"
-        # row.names(hp_df) <- paste0("Hyperparameter ", row.names(hp_df))
-        #
-        # # classification error
-        # performance <- attributes(model)$prediction_train %>%
-        #   data.frame() %>%
-        #   dplyr::group_by(response) %>%
-        #   dplyr::select(response,.pred_class) %>%
-        #   dplyr::summarise(class_error = sum(response != .pred_class)/n()) %>%
-        #   tibble::column_to_rownames(var = "response")
-        # per_df <- signif(performance[ncol(performance)])
-        # colnames(per_df) <- "Metrics"
-        # row.names(per_df) <- paste0(row.names(per_df), " class error")
-        #
-        # df <- data.frame(
-        #   "Metrics" = c(
-        #     "Protein", ####### TEMP
-        #     toString(responses),
-        #     og_train_size,
-        #     n_predictors
-        #   ) )
-        #
-        # row.names(df) <- c(
-        #   "Datatype scope",
-        #   "Predicted outcomes",
-        #   "Number of samples trained on",
-        #   "Number of predictors used")
-        #
-
-
           reactive_dataholder[[label]]$file <- attr(reactive_dataholder$model$model, "response_performance")
 
         }, error = function(e){
@@ -241,8 +202,7 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
   observeEvent(c(AWS,
                  AWSobj[[label]],
                  AWSobj$model,
-                 input$data_select,
-                 input_data_types()
+                 input$data_select
                  ),
                ignoreInit = FALSE, {
 
@@ -263,12 +223,35 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
                  removeTab(preview_tabset, tablabel, session = session)
 
                  use_example_val <- input$use_example
-                 data_select_val <- input_data_types()
-
+                 
+                 dts <- c("e_data", "f_data", "e_meta", "model")
+                 data_select_val <- dts[dts %in% names(query)]
+                 
                  if(label %in% data_select_val){
+                   
+                   
+                   if(label == "model"){
+                     
+                     tryCatch({
+                       
+                       reactive_dataholder[[label]] <- AWSobj[[label]]
+                       
+                       model <- reactive_dataholder[[label]]$model
+                       
+                       reactive_dataholder[[label]]$file <- attr(reactive_dataholder$model$model, "response_performance")
+                       
+                       
+                     }, error = function(e){
+                       shinyalert(title = "Something went wrong!", text = e$message)
+                     })
+                     
+                   } else {
 
                    reactive_dataholder[[label]]$filename <- "Loaded from S3 bucket"
+                   
                    reactive_dataholder[[label]]$file <- default_factor(AWSobj[[label]])
+                   
+                   }
 
                    appendTab(preview_tabset,
                              select = T,
@@ -317,6 +300,7 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
     } else {
       if(is.null(reactive_dataholder[[label]]$file)){
         
+        req(!is.null(reactive_dataholder$model$model))
         info <- attr(reactive_dataholder$model$model, "args")
         
         specs <- reactive_dataholder$model$model$fit$fit$spec

@@ -2,7 +2,8 @@
 observeEvent(omicsData$obj_predictions, {
   
   if(supervised()){
-    if(input$use_fdata == "No"){
+    if(input$use_fdata == "No" || 
+       !attr(get_group_DF(omicsData$model$norm_omics), "main_effects") %in% colnames(omicsData$obj$f_data)){
       plot_table_current$table$RM__model_eval__full__roc_curve <- NULL
       plot_table_current$table$RM__model_eval__full__confusion_heatmap <- NULL
     } else {
@@ -289,7 +290,8 @@ observeEvent(c(omicsData$obj_predictions, input$true_pos_select), {
   
   req(!is.null(input$true_pos_select))
   
-  if(input$use_fdata == "Yes"){
+  if(input$use_fdata == "Yes" && 
+     attr(get_group_DF(omicsData$model$norm_omics), "main_effects") %in% colnames(omicsData$obj$f_data)){
     
     plot_table_current$table$RM__model_eval__full__confidence_scatter = plot(
       omicsData$obj_predictions, plotType = "confidence_scatter", 

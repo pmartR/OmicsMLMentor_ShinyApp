@@ -79,7 +79,13 @@ observeEvent(omicsData$obj,{
   # add in group designation if needed for downstream filters
   if(!is.null(attr(norm_data, "group_DF")) && 
      !is.null(omics_processed$f_data) &&
-     input$use_fdata == "Yes"){
+     input$use_fdata == "Yes"
+     ){
+    
+    if(!attr(get_group_DF(norm_data), "main_effects") %in% colnames(omics_processed$f_data)){
+      omics_processed$f_data[[attr(get_group_DF(norm_data), "main_effects")]] <- "Unknown"
+    }
+    
     # need check that main effect column is in both original and new dataset
     omics_processed <- pmartR::group_designation(
       omics_processed,
