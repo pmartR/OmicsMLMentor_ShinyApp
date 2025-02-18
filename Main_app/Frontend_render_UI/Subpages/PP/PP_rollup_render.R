@@ -71,7 +71,9 @@ load_rollup_observers <- function(tab) {
 
           # thresholds <- pep ### see if we can derive from the object itself in the future?
           thresholds <- filter_settings[[get_omicsData_type(pep)]]$imputefilt
-
+          
+          set.seed(2025)
+          
           ## No further imputation occurs fyi since all imputed peps are complete at the pro level
           omicsData$objPP <- imputation_function(omicsData$objPP, thresholds)
 

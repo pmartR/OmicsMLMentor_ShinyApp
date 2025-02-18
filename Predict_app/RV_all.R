@@ -41,6 +41,11 @@ Model_spec <- reactiveValues(
 )
 
 
+supervised <- reactive({
+  !is.null(reactive_dataholder$model) && !is.null(reactive_dataholder$model$file)
+})
+
+
 ## Downloads -- Plot and table saving
 plots <- reactiveValues(plot_table = data.frame("Select a plot" = character(0), 
                                                 "Download?" = character(0), 

@@ -49,6 +49,9 @@ holdout_valid <- reactive({
       loglasso = 20,
       knn = 20,
       rf = 20,
+      lda = 20,
+      qda = 20,
+      nb = 20,
       kmeans = 20, ## For cluster optimization, might have to snag group stufff
       hclust = 0,
       pls = 20,
@@ -58,7 +61,7 @@ holdout_valid <- reactive({
       gbtree = 20,
     )
     
-    if(.3*nsamp < rec_minimum){
+    if(.3*ncol(omicsData$objPP$e_data[-1]) < rec_minimum){
       return(FALSE)
     } else return (TRUE)
     

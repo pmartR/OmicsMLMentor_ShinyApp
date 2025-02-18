@@ -10,8 +10,8 @@ observeEvent(input$rec_split, {
 observeEvent(c(input$holdout_done, input$cv_perform_done, input$cv_hp_done), {
   
   inspect_items <- c(!is.null(input$holdout_done), 
-    !is.null(input$cv_perform_done), 
-    !is.null(input$cv_hp_done))
+    !is.null(input$cv_perform_done) && input$rm_prompts_hp != "tuned", ## In case of switching, the ui still loads
+    !is.null(input$cv_hp_done)  && input$rm_prompts_hp == "tuned")
   
   items <- list(input$holdout_done, 
                 input$cv_perform_done, 
@@ -290,8 +290,9 @@ output$holdout_set <- renderUI({
     
     br(),
     
-    actionButton("holdout_rec", "Recommended"),
+    
     rec_button,
+    actionButton("holdout_done", "Done"),
     actionButton("holdout_info", "Tell me more")
   )
 })
@@ -465,20 +466,28 @@ observeEvent(cv_eval$result, {
     )
     )
   
-  output$cv_eval_plot <- renderPlotly({
-    p <- plot(cv_eval$result) + theme_bw() + 
-      scale_x_continuous(breaks = cv_eval$result$nFolds)
-    
-    isolate(plot_table_current$table$RM__rec_folds <- p)
-    isolate(table_table_current$table$RM__rec_folds <- p$data)
-    
-    ggplotly(p) %>%
-      layout(
-        showlegend = F
-      )
-    
-  })
+  p <- plot(cv_eval$result) + theme_bw() + 
+    scale_x_continuous(breaks = cv_eval$result$nFolds)
+  
+  isolate(plot_table_current$table$RM__rec_folds <- p)
+  isolate(table_table_current$table$RM__rec_folds <- p$data)
+  
 })
+
+
+output$cv_eval_plot <- renderPlotly({
+  
+  req(!is.null(plot_table_current$table$RM__rec_folds))
+  
+  p <- plot_table_current$table$RM__rec_folds
+  
+  ggplotly(p) %>%
+    layout(
+      showlegend = F
+    )
+  
+})
+
 
 output$crossval_hp <- renderUI({
   

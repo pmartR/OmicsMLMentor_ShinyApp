@@ -24,7 +24,6 @@ plot_table_current <- reactiveValues(
     RM__param_optim = NULL,
     RM__training_structure = NULL,
     RM__model_eval__full__roc_curve = NULL,
-    RM__model_eval__full__roc_curve = NULL,
     RM__model_eval__full__confidence_bar = NULL,
     RM__model_eval__full__prediction_bar = NULL,
     RM__model_eval__full__confusion_heatmap = NULL,
@@ -521,6 +520,18 @@ options = list(dom = "tp",
                scrollY = "300px"))
 
 ## Load up previews
+
+flattenlist <- function(x){  
+  morelists <- sapply(x, function(xprime) {
+    'list' %in% class(xprime) & !('gg' %in% class(xprime))
+  })
+  out <- c(x[!morelists], unlist(x[morelists], recursive=FALSE))
+  if(sum(morelists)){ 
+    Recall(out)
+  }else{
+    return(out)
+  }
+}
 
 map(c("Upload", "QC", "MSU", "PP", "RM"), function(pg){
   map(c("table", "plot"), function(type){

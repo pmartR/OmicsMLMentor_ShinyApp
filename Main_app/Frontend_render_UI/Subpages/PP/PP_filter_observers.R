@@ -641,10 +641,12 @@ observeEvent(omicsData$objPP, {
     req(length(input$missing_options_filter) > 0)
 
     removeTab("filter_previews", target = "imputefilt_plot_tab")
-
-    make_filter(name,
-                "imputefilt",
-                "Something went wrong assigning your imputation filter.",
+    
+    set.seed(2025)
+    
+    make_filter(name, 
+                "imputefilt", 
+                "Something went wrong assigning your imputation filter.", 
                 imputation_function,
                 settings = list(
                   keep = missingHandleSliderValsFilter()$md_keep,
@@ -687,6 +689,8 @@ observeEvent(omicsData$objPP, {
 
     removeTab("filter_previews", target = "imputefilt_plot_tab")
 
+    set.seed(2025)
+    
     make_filter(dataname = name,
                 filter_tag = "imputefilt",
                 message = "Something went wrong assigning your imputation filter.",
@@ -707,8 +711,14 @@ observeEvent(omicsData$objPP, {
         title = "Incomplete detection handling filter",
         value = "imputefilt_plot_tab",
         br(),
-        withSpinner(plotOutput("imputefilt_plot"))
+        uiOutput("imputefilt_plot_render")
       )
+      # tabPanel(
+      #   title = "Incomplete detection handling filter",
+      #   value = "imputefilt_plot_tab",
+      #   br(),
+      #   withSpinner(plotOutput("imputefilt_plot"))
+      # )
     )
   })
 
@@ -1176,8 +1186,8 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
      !input[[paste0(name, "_add_imputefilt")]]) &&
 
     ## Missingness
-    !all(missingval_result(omicsData$objPP)$na.by.molecule$num_NA == 0)
-
+    any(is.na(omicsData$objPP$e_data))
+    
   ){
 
     # shinyalert(
@@ -1251,56 +1261,15 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
         thresholds <- filter_settings[[name]]$imputefilt
 
         tmp <- auto_remove_na(tmp)
-
+        
+        set.seed(2025)
+        
         tmp <- imputation_function(tmp, thresholds = thresholds)
         user_inputs$filters$imputefilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
         biom_rm_count <- tmp
 
-        # # Only apply impute
-        # if (get_omicsData_type(tmp) == "Pepdata") {
-        #   # Impute all of e_data
-        #   imputed_data <- slopeR::imputation(as.slData(tmp))
-        #   imputed_data <- cbind(E_DATA_CNAME = tmp$e_data[[get_edata_cname(tmp)]], imputed_data)
-        #   names(imputed_data)[1] <- get_edata_cname(tmp)
-        #
-        #   browser()
-        #
-        #   # Get the proteins whose peptides will be imputed
-        #   impute_proteins <- pepQCData$transforms_df[
-        #     which(pepQCData$transforms_df$Handling == "Estimate"),][[get_edata_cname(pepQCData$objQCPro)]]
-        #
-        #   # Replace just those peptides with their imputed versions
-        #   impute_pro_idx <- which(tmp$e_meta[[get_emeta_cname(tmp)]] %in% impute_proteins)
-        #   impute_peps <- tmp$e_meta[[get_edata_cname(tmp)]][impute_pro_idx]
-        #   impute_pep_idx <- which(tmp$e_data[[get_edata_cname(tmp)]] %in% impute_peps)
-        #   tmp$e_data[impute_pep_idx,] <- imputed_data[impute_pep_idx,]
-        # } else {
-        #   tmp <- edata_nathresh_transform(as.slData(tmp), thresholds)
-        #   user_inputs$filters$imputefilt <- nrow(biom_rm_count$e_data) - nrow(tmp$e_data)
-        #   biom_rm_count <- tmp
-        # }
-
         attr(tmp, "filters") <- c(attr(tmp, "filters"), list(list(type = "imputationFilt",
                                                                   thresholds = thresholds)))
-        # sldata_temp <- edata_nathresh_transform(as.slData(tmp), thresholds)
-
-        # tmp$e_data <- sldata_temp$e_data
-        # tmp$f_data <- sldata_temp$f_data
-        # tmp$e_meta <- sldata_temp$e_meta
-
-          # Update the data_info attribute.
-          # attr(tmp, 'data_info') <- pmartR:::set_data_info(
-          #   e_data = tmp$e_data,
-          #   edata_cname = get_edata_cname(tmp),
-          #   data_scale_orig = get_data_scale_orig(tmp),
-          #   data_scale = get_data_scale(tmp),
-          #   data_types = dInfo$data_types,
-          #   norm_info = dInfo$norm_info,
-          #   is_normalized = dInfo$norm_info$is_normalized,
-          #   batch_info = dInfo$batch_info,
-          #   is_bc = dInfo$batch_info$is_bc
-          # )
-          #
       }
 
       # cv filter
@@ -1364,6 +1333,7 @@ observeEvent(input$apply_filters, ignoreInit = T, ignoreNULL = T, {
       res <- NULL
     },
     error = function(e) {
+      warning(e$message)
       res <<- e
     }
   )
@@ -1706,6 +1676,10 @@ output$missing_options_filter_UI <- renderUI({
       "Estimation of values must be at peptide level data for proteomics data.",
       "", "")
     disabled <- c(T, F, F)
+  } else if (inherits(omicsData$objMSU, "seqData")){
+    disabled <- c(T, T, T)
+    subtext <- rep("Not avaliable for transcriptomic data", 3)
+    
   } else {
     disabled <- NULL
     subtext <- NULL
@@ -1801,7 +1775,7 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
   #       p2 <- plot(tmp, color_by = response_cols_ag(), order_by = response_cols_ag()) +
   #         labs(title = "After handling missingness")
   #     } else {
-  #       p1 <- plot(omicsData$objPP) +
+  #       p1 <- plot(omicsData$objPP) + 
   #         labs(title = "Before handling missingness")
   #       p2 <- plot(tmp) +
   #         labs(title = "After handling missingness")
@@ -1962,8 +1936,8 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
         rmd_filter(omicsData$objPP,
                    metrics = metric)
       }, error = function(e){
-        print(e)
-        browser()
+        print(e$message)
+        # browser()
         return(NULL)
       })
 
@@ -2040,7 +2014,7 @@ observeEvent(input$em_select, ignoreNULL = T, once = T, {
 
 output$imputefilt_plot_render <- renderUI({
   if (isTruthy(input$imputefilt_plot_load) || dim(omicsData$objPP$e_data)[1] < 20000) {
-    withSpinner(plotOutput("imputefilt_plot2"))
+    withSpinner(plotOutput("imputefilt_plot"))
   } else {
     div(
       "This plot is large and may take a while to render.",
@@ -2049,245 +2023,171 @@ output$imputefilt_plot_render <- renderUI({
   }
 })
 
-## Y'all lemme know if you can get a plotly version going, for the life of me I can't :/ (maybe versioning?)
 output[["imputefilt_plot"]] <- renderPlot({
-
-  filter_tag <- "imputefilt"
-  tabname <- isolate(get_omicsData_type(omicsData$objPP))
-  settings <- filter_settings[[tabname]][[filter_tag]]
-  filter <- filters[[tabname]][[filter_tag]]
-  isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
-  isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-  selections <- filter_settings[[tabname]]$imputefilt
-
-  tmp <- filter
-  out <- omicsData$objPP
-  col <- response_cols_ag()
-
-  if(!is.null(isolate(get_group_DF(out)))){
-
-    if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
-
-      p1 <- plot_continuous(out, plot, col)
-
-    } else {
-    p1 <- plot(out, color_by = col, order_by = col)
-    }
-
-
-    p1 <- p1 + labs(title = "Before handling missingness")
-
-    drop <- which(colnames(tmp$e_data) == get_edata_cname(tmp))
-
-    if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
-
-      ## Still need group designation for color, order
-      df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
-      p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) +
-        geom_col() + theme_bw() +
-        labs(
-          title = "After handling missingness",
-          fill = "Conversion",
-          y = "Number of biomolecules",
-          x = "Sample",
-        ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-
-    } else {
-
-      if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
-
-        p2 <- plot_continuous(as.slData(tmp), plot_noconv, col)
-
-      } else {
-      p2 <- plot_noconv(as.slData(tmp), color_by = col, order_by = col)
-      }
-
-
-      p2 <- p2 + labs(title = "After handling missingness")
-
-    }
-
-  } else {
-    p1 <- plot(isolate(omicsData$objPP)) +
-      labs(title = "Before handling missingness")
-
-    drop <- which(colnames(tmp$e_data) == get_edata_cname(tmp))
-
-    if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
-      df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
-      p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) +
-        geom_col() + theme_bw() +
-        labs(
-          title = "After handling missingness",
-          fill = "Conversion",
-          y = "Number of biomolecules",
-          x = "Sample",
-        ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-    } else {
-      p2 <- plot_noconv(as.slData(tmp)) +
-        labs(title = "After handling missingness")
-    }
-  }
-
-  p <- wrap_plots(p1, p2, guides = "collect")
-
-  isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
-  isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-  p
-
-})
-
-output[["imputefilt_plot2"]] <- renderPlot({
-
-  filter_tag <- "imputefilt"
-  tabname <- isolate(get_omicsData_type(omicsData$objPP))
-  settings <- filter_settings[[tabname]][[filter_tag]]
-  filter <- filters[[tabname]][[filter_tag]]
-  isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
-  isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-  selections <- filter_settings[[tabname]]$imputefilt
-
-  tmp <- filter
-  out <- omicsData$objPP
-  col <- response_cols_ag()
-
-  if(!is.null(isolate(get_group_DF(out)))){
-
-    if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
-
-      p1 <- plot_continuous(out, plot, col)
-
-    } else {
-      p1 <- plot(out, color_by = col, order_by = col)
-    }
-
-
-    p1 <- p1 + labs(title = "Before handling missingness")
-
-    drop <- which(colnames(tmp$e_data) == get_edata_cname(out))
-
-    if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
-
-      ## Still need group designation for color, order
-      df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
-      p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) +
-        geom_col() + theme_bw() +
-        labs(
-          title = "After handling missingness",
-          fill = "Conversion",
-          y = "Number of biomolecules",
-          x = "Sample",
-        ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-
-    } else {
-
-      if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
-
-        p2 <- plot_continuous(tmp, plot_noconv, col)
-
-      } else {
-        p2 <- plot_noconv(as.slData(tmp), color_by = col, order_by = col)
-      }
-
-
-      p2 <- p2 + labs(title = "After handling missingness")
-
-    }
-
-  } else {
-    p1 <- plot(isolate(omicsData$objPP)) +
-      labs(title = "Before handling missingness")
-
-    drop <- which(colnames(tmp$e_data) == get_edata_cname(out))
-
-    if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
-      df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
-      p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) +
-        geom_col() + theme_bw() +
-        labs(
-          title = "After handling missingness",
-          fill = "Conversion",
-          y = "Number of biomolecules",
-          x = "Sample",
-        ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-    } else {
-      p2 <- plot_noconv(tmp) +
-        labs(title = "After handling missingness")
-    }
-  }
-
-  p <- wrap_plots(p1, p2, guides = "collect")
-
-  isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
-  isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-  p
-
+  
+  req(!is.null(plot_table_current$table[["PP__filters__imputefilt"]]))
+  plot_table_current$table[["PP__filters__imputefilt"]]
+  
 })
 
 
-## Plots for tabpanel
-map(c(#"imputefilt",
-      "NZfilt", "cvfilt", "molfilt",
-      # "fdata_customfilt", "emeta_customfilt",
-      "profilt", "totalCountFilt", "Libfilt", "rmdfilt"
-      ),
-    function(filter_tag){
+observeEvent(omicsData$objPP, once = T, {
+  
+  tabname <- isolate(get_omicsData_type(omicsData$objPP))
+  ## Plots for tabpanel
+  map(c(#"imputefilt", 
+    "NZfilt", "cvfilt", "molfilt", 
+    # "fdata_customfilt", "emeta_customfilt", 
+    "profilt", "totalCountFilt", "Libfilt", "rmdfilt"
+  ), 
+  function(filter_tag){
+    
+    
+    observeEvent(filters[[tabname]][[filter_tag]], {
 
-
-  output[[paste0(filter_tag, "_plot")]] <- renderPlotly({
-
+      settings <- filter_settings[[tabname]][[filter_tag]]
+      filter <- filters[[tabname]][[filter_tag]]
+      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
+      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
+      req(!is.null(filter))
+      
+      if (filter_tag == "cvfilt" ){
+        
+        isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+        isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+        
+        
+        if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
+          p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
+                               settings))
+        } else {
+          p <- do.call(plot, list(filters[[tabname]][[filter_tag]]))
+        }
+        
+        p <- p + labs(title = "Coefficient of Variation (CV)")
+        
+      } else if ((filter_tag == "profilt" )){
+        
+        filter_obj <- filters[[tabname]][[filter_tag]]
+        
+        isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter_obj$counts_by_pro)
+        isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+        
+        settings$x <- filter_obj
+        settings$min_num_peps <- as.numeric(settings$min_num_peps)
+        
+        p <- do.call(plot, settings)
+        
+      } else {
+        
+        isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
+        isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+        
+        p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
+                             settings))
+      }
+      
+      isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
+      isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
+      
+    })
+    
+    
+    output[[paste0(filter_tag, "_plot")]] <- renderPlotly({
+      
+      req(!is.null(plot_table_current$table[[paste0("PP__filters__", filter_tag)]]))
+      
+      plot_table_current$table[[paste0("PP__filters__", filter_tag)]]
+      
+    })
+  })
+  
+  observeEvent(filters[[tabname]][["imputefilt"]], {
+    
+    filter_tag <- "imputefilt"
     tabname <- isolate(get_omicsData_type(omicsData$objPP))
     settings <- filter_settings[[tabname]][[filter_tag]]
     filter <- filters[[tabname]][[filter_tag]]
     isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filter$e_data)
     isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-    req(!is.null(filter))
-
-    if (filter_tag == "cvfilt" ){
-
-      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
-      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-
-      if(settings$cv_threshold < max(filters[[tabname]][[filter_tag]]$CV, na.rm = T)){
-        p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
-                              settings))
+    
+    selections <- filter_settings[[tabname]]$imputefilt
+    
+    tmp <- filter
+    out <- omicsData$objPP
+    col <- response_cols_ag()
+    
+    if(!is.null(isolate(get_group_DF(out)))){
+      
+      if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+        
+        p1 <- plot_continuous(out, plot, col)
+        
       } else {
-        p <- do.call(plot, list(filters[[tabname]][[filter_tag]]))
+        p1 <- plot(out, color_by = col, order_by = col)
       }
-
-      p <- p + labs(title = "Coefficient of Variation (CV)")
-
-    } else if ((filter_tag == "profilt" )){
-
-      filter_obj <- filters[[tabname]][[filter_tag]]
-
-      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
-      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-      settings$x <- filter_obj
-      settings$min_num_peps <- as.numeric(settings$min_num_peps)
-
-      p <- do.call(plot, settings)
-
+      
+      
+      p1 <- p1 + labs(title = "Before handling missingness")
+      
+      drop <- which(colnames(tmp$e_data) == get_edata_cname(tmp))
+      
+      if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
+        
+        ## Still need group designation for color, order
+        df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
+        p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+          geom_col() + theme_bw() + 
+          labs(
+            title = "After handling missingness",
+            fill = "Conversion",
+            y = "Number of biomolecules",
+            x = "Sample",
+          ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+        
+      } else {
+        
+        if(!is.null(response_types_ag()) && response_types_ag() == "continuous"){
+          
+          p2 <- plot_continuous(as.slData(tmp), plot_noconv, col)
+          
+        } else {
+          p2 <- plot_noconv(as.slData(tmp), color_by = col, order_by = col)
+        }
+        
+        
+        p2 <- p2 + labs(title = "After handling missingness")
+        
+      }
+      
     } else {
-
-      isolate(table_table_current$table[[paste0("PP__filters__", filter_tag)]] <- filters[[tabname]][[filter_tag]])
-      isolate(table_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-      p <- do.call(plot, c(list(filters[[tabname]][[filter_tag]]),
-                      settings))
+      p1 <- plot(isolate(omicsData$objPP)) +
+        labs(title = "Before handling missingness")
+      
+      drop <- which(colnames(tmp$e_data) == get_edata_cname(tmp))        
+      
+      if(all(unlist(tmp$e_data[-drop]) %in% c(0, 1))){
+        df <- as.data.frame(table(melt(tmp$e_data)[2:3]))
+        p2 <- ggplot(data = df, aes(x = variable, fill = value, y = Freq)) + 
+          geom_col() + theme_bw() + 
+          labs(
+            title = "After handling missingness",
+            fill = "Conversion",
+            y = "Number of biomolecules",
+            x = "Sample",
+          ) + theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
+      } else {
+        p2 <- plot_noconv(as.slData(tmp)) +
+          labs(title = "After handling missingness")
+      }
     }
-
+    
+    p <- wrap_plots(p1, p2, guides = "collect")
+    
     isolate(plot_table_current$table[[paste0("PP__filters__", filter_tag)]] <- p)
     isolate(plot_table_current$names[[paste0("PP__filters__", filter_tag)]] <- paste0("Filter: ", filter_tag))
-
-    p
+    
   })
 })
 

@@ -1,5 +1,5 @@
 
-## Download behavoir
+## Download behavior
 
 observeEvent(input$makezipfile, {
   disable("makezipfile")

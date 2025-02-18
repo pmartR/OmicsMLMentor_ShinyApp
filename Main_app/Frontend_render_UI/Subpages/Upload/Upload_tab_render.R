@@ -309,10 +309,12 @@ observeEvent(input$use_example, {
 
 observeEvent(input$data_type, {
   
-  ## Clear all loaded e_data, e_meta, f_data
-  reactive_dataholder$e_data <- NULL
-  reactive_dataholder$f_data <- NULL
-  reactive_dataholder$e_meta <- NULL
+  if(!AWS){
+    ## Clear all loaded e_data, e_meta, f_data
+    reactive_dataholder$e_data <- NULL
+    reactive_dataholder$f_data <- NULL
+    reactive_dataholder$e_meta <- NULL
+  }
   
   if (!is.null(input$data_type)) {
     shinyjs::enable("data_type_done")

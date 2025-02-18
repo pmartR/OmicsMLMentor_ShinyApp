@@ -4,7 +4,7 @@ ui <- div(
     useShinyjs(),
     use_prompt(),
     #https://github.com/dreamRs/shinyWidgets/blob/26838f9e9ccdc90a47178b45318d110f5812d6e1/R/useShinydashboardPlus.R
-    useShinydashboardPlus(), ## This causes the hovers for picker input, pages
+    suppressWarnings(useShinydashboardPlus()), ## This causes the hovers for picker input, pages
     introjsUI(),
     
     extendShinyjs(script = "./Helpers/shinyui.js", functions = c(
@@ -95,10 +95,10 @@ ui <- div(
                         class = "btn-warning", 
                         style = "position:fixed;left:15px;bottom:15px")),
     
-    hidden(actionButton("model_reccomendations", 
-                 "Model Requirements",
-                 width = "170px",
-                 style = "position:absolute;top:8px;right:325px;z-index:1100;")),
+    # hidden(actionButton("model_reccomendations", 
+    #              "Model Requirements",
+    #              width = "170px",
+    #              style = "position:absolute;top:8px;right:325px;z-index:1100;")),
     
     actionButton("glossary_button", 
                  "Glossary",

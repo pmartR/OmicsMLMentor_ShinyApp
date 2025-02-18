@@ -33,25 +33,29 @@ observeEvent(omicsData$obj,{
   all_filter_requirements_specific <- all_filter_requirements[
     which(names(all_filter_requirements) %in% filter_types)]
   
-  # iterate through the specific filters for this dataset
-  for(i in 1:length(all_filter_requirements_specific)){
-    
-    # molecule filter
-    if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
-      # which filter in original matches this ?
-      og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
-      # add in attributes
-      all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
-      all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
-      all_filter_requirements_specific[[i]]$method$use_batch = attr(norm_data,"filters")[[og_filter_id]]$method$use_batch
-    }
-    # cv filter
-    if(names(all_filter_requirements_specific)[i] == "cvFilt"){
-      # which filter in original matches this ?
-      og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
-      # add in attributes
-      all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
-      all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
+  
+  ### Figure out how this differs from the calls to all_filter_requirements_specific in PP_apply_filts
+  if(length(all_filter_requirements_specific) > 0){
+    # iterate through the specific filters for this dataset
+    for(i in 1:length(all_filter_requirements_specific)){
+      
+      # molecule filter
+      if(names(all_filter_requirements_specific)[i] == "moleculeFilt"){
+        # which filter in original matches this ?
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "moleculeFilt")
+        # add in attributes
+        all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
+        all_filter_requirements_specific[[i]]$method$use_batch = attr(norm_data,"filters")[[og_filter_id]]$method$use_batch
+      }
+      # cv filter
+      if(names(all_filter_requirements_specific)[i] == "cvFilt"){
+        # which filter in original matches this ?
+        og_filter_id = which(unlist(sapply(filter_info,function(x) x['type'])) == "cvFilt")
+        # add in attributes
+        all_filter_requirements_specific[[i]]$threshold = attr(norm_data,"filters")[[og_filter_id]]$threshold
+        all_filter_requirements_specific[[i]]$method$use_groups = attr(norm_data,"filters")[[og_filter_id]]$method$use_groups
+      }
     }
   }
   
@@ -75,20 +79,33 @@ observeEvent(omicsData$obj,{
   # add in group designation if needed for downstream filters
   if(!is.null(attr(norm_data, "group_DF")) && 
      !is.null(omics_processed$f_data) &&
-     input$use_fdata == "Yes"){
+     input$use_fdata == "Yes"
+     ){
+    
+    if(!attr(get_group_DF(norm_data), "main_effects") %in% colnames(omics_processed$f_data)){
+      omics_processed$f_data[[attr(get_group_DF(norm_data), "main_effects")]] <- "Unknown"
+    }
+    
     # need check that main effect column is in both original and new dataset
     omics_processed <- pmartR::group_designation(
       omics_processed,
       main_effects = attr(get_group_DF(norm_data), "main_effects"))
-  } else {
+  } else if (supervised()){
     omics_processed$f_data <- data.frame(
       SampleID = colnames(omics_processed$e_data)[
         colnames(omics_processed$e_data) != get_edata_cname(omics_processed)],
-      ` ` = "Unknown", check.names = F)
+      Group = "Unknown", check.names = F)
     
     omics_processed <- pmartR::group_designation(
       omics_processed,
-      main_effects = " ")
+      main_effects = "Group")
+  } else if (is.null(omics_processed$f_data)){
+    
+    omics_processed$f_data <- data.frame(
+      SampleID = colnames(omics_processed$e_data)[
+        colnames(omics_processed$e_data) != get_edata_cname(omics_processed)],
+      Group = "Unknown", check.names = F)
+    
   }
   
   # convert to log2 scale immediately
