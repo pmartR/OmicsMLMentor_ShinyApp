@@ -45,7 +45,11 @@ upload_tab <- function(){
             
             tabsetPanel(
               id = "preview_data"
-            )
+            ),
+            
+            br(),
+            strong("Note: Data preview will only show first 500 rows."),
+            br()
             
           )
           

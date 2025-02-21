@@ -296,7 +296,14 @@ purrr::map(c("e_data", "f_data", "e_meta", "model"), function(label){
 
     if(label != "model"){
       validate(need(reactive_dataholder[[label]]$file, "Not available for this data"))
-      reactive_dataholder[[label]]$file
+      
+      df <- reactive_dataholder[[label]]$file
+      req(length(df) > 0)
+      if(nrow(df) > 500){
+        df <- df[1:500,]
+      }
+      df
+      
     } else {
       if(is.null(reactive_dataholder[[label]]$file)){
         

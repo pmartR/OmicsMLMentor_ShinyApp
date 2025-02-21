@@ -1308,9 +1308,6 @@ output$structure_plot <- renderPlot({
   input$redraw_unsup_structure_plot
   omicsData$objRM
   
-  req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
-        (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
-  
   validate(
     need(!is.null(omicsData$objRM), 
          "No model results found.  Please run the model to see results plots."))
@@ -1321,7 +1318,7 @@ output$structure_plot <- renderPlot({
     method <- input$pick_model_EM ## While summary getting fixed
   
     color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
-                  input$color_by_unsup else NULL
+      input$color_by_unsup else NULL
   
     runner <- as.slData(omicsData$objPP)
     
@@ -1341,6 +1338,9 @@ output$structure_plot <- renderPlot({
         input$unsup_plot_type
       }
     }
+    
+    req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
+          (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
     
     # base plot call
     plot_call = rlang::expr(
@@ -1426,17 +1426,20 @@ output$structure_plot <- renderPlot({
 
     }
     
-    req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
-          (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
-    
     set.seed(input$set.seed)
     p <- rlang::eval_tidy(plot_call, env = environment())
     
     isolate(plot_table_current$table[[paste0("RM__model_eval__", method)]] <- p)
     isolate(plot_table_current$names[[paste0("RM__model_eval__", method)]] <- paste0("Model evaluation: ", method))
     
+    df <- p$data
+    
+    ## Account for centroids
+    df$SampleID <- c(as.character(omicsData$objPP$f_data[[get_fdata_cname(omicsData$objPP)]]), 
+                     rep(NA, nrow(df) - nrow(omicsData$objPP$f_data)))
+    
     if(plot_type != "dendro"){
-      isolate(table_table_current$table$RM__model_eval <- p$data)
+      isolate(table_table_current$table$RM__model_eval <- df)
     } else {
       
       fit_obj <- workflows::extract_fit_engine(omicsData$objRM)

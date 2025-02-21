@@ -160,30 +160,6 @@ models_long_name <- c(
   `Naive Bayes Classifier` = "nb"
 )
 
-
-models_long_name <- c(
-  `Linear support vector machine` = "lsvm",
-  `Polynomial support vector machine` = "psvm",
-  `Radial basis support vector machine` = "rsvm",
-  `Multinomial regression` = "multi",
-  `Multinomial regression with LASSO` = "multilasso",
-  `Logistic regression` = "logistic",
-  `Logistic regression with LASSO` = "loglasso",
-  `Random forest` = "rf",
-  `K-means clustering` = "kmeans",
-  `Hierarchical clustering` = "hclust",
-  `Principal Components Analysis` = "pca",
-  `Probabilistic Principal Components Analysis` = "ppca",
-  `Uniform Manifold Approximation and Projection` = "umap",
-  `Gradient boosted tree` = "gbtree",
-  # `Partial least squares` = "pls",
-  `K-nearest neighbors` = "knn",
-  # `Linear Regression` = "lr",
-  `Linear Discriminant Analysis` = "lda",
-  `Quadratic Discriminant Analysis` = "qda",
-  `Naive Bayes Classifier` = "nb"
-)
-
 sup_designation <- 
   map_lgl(models_long_name, 
           function(x){

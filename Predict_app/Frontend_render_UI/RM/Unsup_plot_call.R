@@ -92,6 +92,8 @@ unsup_plot_call <- function(model, slData, method,
   
   if(plot_type != "dendro"){
     tbl <- p$data
+    tbl$SampleID <- slData$f_data[[attr(slData, "cnames")$fdata_cname]]
+    
   } else {
     
     fit_obj <- workflows::extract_fit_engine(model)

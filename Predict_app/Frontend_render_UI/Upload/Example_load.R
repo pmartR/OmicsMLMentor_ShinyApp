@@ -4,12 +4,12 @@
 ## Backend
 observeEvent(input$load_example, {
   
-  fp <- "./Predict_app/example/data/unsup_models/Full_model_hclust_lipid_fdata.RDS"
+  # fp <- "./Predict_app/example/data/unsup_models/Full_model_hclust_lipid_fdata.RDS"
   # fp <- "./Predict_app/example/data/unsup_models/Full_model_kmeans_fdata.RDS"
   # fp <- "./Predict_app/example/data/unsup_models/Full_model_ppca.RDS"
   # fp <- "./Predict_app/example/data/unsup_models/Full_model_SLOPE_kmeans.RDS"
   # fp <- "./Predict_app/example/data/unsup_models/Full_model_SLOPE_model_pca_fdata.RDS"
-  # fp <- "./Predict_app/example/data/unsup_models/umap.RDS"
+  fp <- "./Predict_app/example/data/unsup_models/umap.RDS"
   
   # fp <-"./Predict_app/example/data/Full_model_SLOPE_model_2025_01_15_16_17_29.638369.RDS"
   

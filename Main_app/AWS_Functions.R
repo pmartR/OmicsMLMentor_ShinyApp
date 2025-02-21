@@ -164,7 +164,7 @@ output$download_processed_data <- downloadHandler(
     })
     
     
-    if(cond){
+    if(cond && get_data_info(omicsData$objNorm)$norm_info$norm_fn == "zero_to_one"){
       
       tryCatch({
         
@@ -188,6 +188,7 @@ output$download_processed_data <- downloadHandler(
           response_performance <- toString(paste0(apply(response_performance, 1, paste, collapse = "-"), "%"))
           response_type <- "Categorical"
         } else {
+          response_performance[[1]] <- response_cols_ag()
           response_performance <- apply(response_performance, 1, paste, collapse = "-")
           response_type <- "Continuous"
         }
@@ -202,7 +203,7 @@ output$download_processed_data <- downloadHandler(
           response_performance = response_performance
         )
         
-        saveRDS(omicsData$objRM, file = "SLOPE_model.RDS")
+        saveRDS(model_export_full, file = "SLOPE_model.RDS")
         
         aws.s3::put_object(
           file = "SLOPE_model.RDS",
@@ -228,6 +229,7 @@ output$download_processed_data <- downloadHandler(
             response_performance <- toString(paste0(apply(response_performance, 1, paste, collapse = "-"), "%"))
             response_type <- "Categorical"
           } else {
+            response_performance[[1]] <- response_cols_ag()
             response_performance <- apply(response_performance, 1, paste, collapse = "-")
             response_type <- "Continuous"
           }
@@ -243,7 +245,12 @@ output$download_processed_data <- downloadHandler(
           )
           update_main_df <- rbind(update_main_df, update_main_df2)
           
-          saveRDS(omicsData$objRM_reduced, file = "SLOPE_model.RDS")
+          model_export_reduced = list(
+            model = omicsData$objRM_reduced,
+            norm_omics = omicsData$objNorm,
+            pp_omics = omicsData$objPP)
+          
+          saveRDS(model_export_reduced, file = "SLOPE_model.RDS")
           
           aws.s3::put_object(
             file = "SLOPE_model.RDS",

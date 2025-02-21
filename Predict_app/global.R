@@ -132,6 +132,8 @@ TABS_CHANGE_STATE <- c(
 
 # models <- names(algo_rules)
 
+
+
 models_long_name <- c(
   `Linear support vector machine` = "lsvm",
   `Polynomial support vector machine` = "psvm",
@@ -145,10 +147,14 @@ models_long_name <- c(
   `Hierarchical clustering` = "hclust",
   `Principal Components Analysis` = "pca",
   `Probabilistic Principal Components Analysis` = "ppca",
-  `Uniform Manifold Approximation and Projection (UMAP)` = "umap",
+  `Uniform Manifold Approximation and Projection` = "umap",
   `Gradient boosted tree` = "gbtree",
-  `Partial least squares` = "pls"
-  # `K-nearest neighbors` = "knn" ## not implemented yet
+  # `Partial least squares` = "pls",
+  `K-nearest neighbors` = "knn",
+  # `Linear Regression` = "lr",
+  `Linear Discriminant Analysis` = "lda",
+  `Quadratic Discriminant Analysis` = "qda",
+  `Naive Bayes Classifier` = "nb"
 )
 
 sup_designation <- 

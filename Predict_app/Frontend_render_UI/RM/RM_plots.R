@@ -134,7 +134,7 @@ output$structure_plot <- renderPlot({
 
 output$structure_plot_style_ui <- renderUI({
   
-  method <- attr(omicsData$model$model, "args_use")$method
+  method <- attr(omicsData$model$model, "args_unsup")$slMethod
   
   comb_omics <- omicsData$obj_predictions$combine_data
   
