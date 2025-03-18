@@ -83,6 +83,7 @@ download_tab <- function(tabname) {
              #        })
              # ),
              
+             ## Not for MP!
              column(6, 
                     checkboxInput(label = "Include model as an R object (RDS file)?",
                                   "include_model", value = T),

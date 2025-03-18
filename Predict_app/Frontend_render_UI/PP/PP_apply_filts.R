@@ -481,11 +481,6 @@ observeEvent(input$confirm_filters,{
 
   table_table_current$table$PP__normalization <-  omicsData$obj_norm$e_data
 
-  # convert to sl object
-  omics_sl <- as.slData(omicsData$obj_norm)
-  omicsData$obj_sl <- omics_sl
-
-
   # rollup
   # if we have pepdata in normalized object but prodata in pp omics object
   # this means that we have undergone protein rollup
@@ -495,7 +490,7 @@ observeEvent(input$confirm_filters,{
 
 
     rollup_method <- attr(pp_data,"pro_quant_info")$method
-    omicsData$obj_sl_rollup <- slopeR::protein_rollup(omics_sl, method = rollup_method)
+    omicsData$obj_sl_rollup <- pmartR::protein_quant(omicsData$obj_norm, method = rollup_method)
 
     if(input$apply_filters == "Yes" && "imputationFilt" %in% names(all_filter_requirements_specific)){
 
@@ -530,8 +525,16 @@ observeEvent(input$confirm_filters,{
 
     table_table_current$table$PP__rollup <-   omicsData$obj_sl_rollup$e_data
   }
+  
+  # convert to sl object
+  omics_sl <- as.slData(omicsData$obj_norm)
+  omicsData$obj_sl <- omics_sl
 
   if(!is.null(omicsData$obj_sl_rollup)){
+    
+    # convert to sl object
+    omicsData$obj_sl_rollup <- as.slData(omicsData$obj_sl_rollup)
+
     omicsData$obj_pp <- omicsData$obj_sl_rollup
 
     updateTabsetPanel(session, "plots_preprocess", selected = "Rollup")

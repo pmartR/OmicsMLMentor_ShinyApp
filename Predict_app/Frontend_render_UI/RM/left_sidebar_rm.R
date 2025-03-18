@@ -20,7 +20,11 @@ output$run_model_UI <- renderUI({
 
 output$model_summary <- renderUI({
 
-  method <- attr(omicsData$model$model, "args_unsup")$slMethod
+
+  method <- attr(omicsData$model$model, "SLOPE_model_name")
+  if(is.null(method)){
+    method <- attr(omicsData$model$model, "args_unsup")$slMethod
+  }
   
   if(method %in% "loglasso"){
     method <- "logistic"

@@ -57,12 +57,14 @@ observeEvent(input$new_model, {
     title = "Select page to rewind to...", 
     div(
       style = "text-align: center;",
+      "Note: Current bundle will be lost on rewind!",
+      br(), br(),
       appButton(inputId = "rewind_qc", label = "Change quality control filtering [Quality Control]"),
-      br(),
+      br(),br(),
       appButton(inputId = "rewind_msu", label = "Choose a different model [Model Set-up]"),
-      br(),
+      br(),br(),
       appButton(inputId = "rewind_pp", label = "Change pre-processing filtering [Pre-processing]"),
-      br(),
+      br(),br(),
       appButton(inputId = "rewind_rm", label = "Run the model with different parameters [Run Model]")
     )
   ))

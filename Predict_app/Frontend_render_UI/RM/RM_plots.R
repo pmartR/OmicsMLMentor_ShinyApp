@@ -278,6 +278,10 @@ output$true_pos_picker_UI <- renderUI({
 
   groups <- unique(attr(omicsData$model$model, "response_performance")$Group)
   
+  if(length(groups) == 1 && str_detect(groups, ":")){
+    groups <- unlist(str_split(groups, ":"))
+  }
+  
   req(!is.null(groups))
   pickerInput(inputId = "true_pos_select",
               label = "Designate true positive event",

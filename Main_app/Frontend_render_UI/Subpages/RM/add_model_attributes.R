@@ -53,6 +53,10 @@ add_attr_response_perf <- function(model){
   names(auc_by_level)[1] <- "Group"
   names(auc_by_level)[2] <- "AUC of ROC"
   
+  if (length(unique(pred_df$response)) == 2) {
+    auc_by_level$Group <- paste0(unique(pred_df$response), collapse = ":")
+  }
+
   attr(model, "response_performance") <- auc_by_level
   
   model

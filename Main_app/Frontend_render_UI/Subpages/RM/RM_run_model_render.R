@@ -178,6 +178,7 @@ output$super_plot_type_UI <- renderUI({
 # determine the split used
 output$visualize_perf_split_ui <- renderUI({
   req(input$performance_tabset)
+  req(supervised())
   has_test_preds <- if(input$performance_tabset == "Full model") {
     !is.null(attr(omicsData$objRM, "prediction_test"))
   } else if (input$performance_tabset == "Reduced model") {
@@ -1058,7 +1059,8 @@ output$true_pos_picker_ui_reduced <- renderUI({
 
 observeEvent(c(omicsData$objRM, input$visualize_perf_which_split, input$super_plot_type, input$true_pos_picker), {
   
-  req(!is.null(omicsData$objRM) && !is.null(input$visualize_perf_which_split) && !is.null(input$super_plot_type))
+  req(!is.null(omicsData$objRM) && 
+        !is.null(input$visualize_perf_which_split) && !is.null(input$super_plot_type) && supervised())
   
   p <- plot(omicsData$objRM, input$super_plot_type, 
             split = input$visualize_perf_which_split, 
@@ -1317,11 +1319,10 @@ output$structure_plot <- renderPlot({
   
     method <- input$pick_model_EM ## While summary getting fixed
   
-    color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters") 
+    color_by <- if(isTruthy(input$color_by_unsup) && input$color_by_unsup != "Parameter clusters")
       input$color_by_unsup else NULL
   
     runner <- as.slData(omicsData$objPP)
-    
   
   
    
@@ -1354,13 +1355,27 @@ output$structure_plot <- renderPlot({
     if (inherits(omicsData$objRM, "slRes.cluster")) {
       if (plot_type == "dendro") {
         
+        k <- input$dendro_num_k
+        
+        if(is.null(input$dendro_num_k)){
+          fit_obj <- workflows::extract_fit_engine(model)
+          
+          fit_obj$labels <- colnames(slData$e_data)[
+            -which(colnames(slData$e_data) == get_edata_cname(slData))
+          ]
+          
+          hcdata <- dendro_data_k(fit_obj, h =  input$cut_height)
+          
+          k <- max(hcdata$labels$clust)
+        }
+        
         if(!is.null(omicsData$objPP$f_data)){
           
           plot_call = rlang::call_modify(
             plot_call,
             slData = as.slData(omicsData$objPP),
             label_obs = TRUE,
-            k = input$dendro_num_k,
+            k = k,
             color_by = color_by,
             label.vjust = input$dendro_vjust,
             label.hjust = input$dendro_hjust,
@@ -1379,7 +1394,7 @@ output$structure_plot <- renderPlot({
             plot_call,
             slData = temp_slData,
             label_obs = TRUE,
-            k = input$dendro_num_k,
+            k = k,
             color_by = color_by,
             label.vjust = input$dendro_vjust,
             label.hjust = input$dendro_hjust,
@@ -1426,6 +1441,9 @@ output$structure_plot <- renderPlot({
 
     }
     
+    req((inherits(omicsData$objRM, "slRes.embed") && plot_type == "scatter") || 
+          (inherits(omicsData$objRM, "slRes.cluster") && plot_type %in% c("pca", "dendro") ))
+    
     set.seed(input$set.seed)
     p <- rlang::eval_tidy(plot_call, env = environment())
     
@@ -1434,11 +1452,12 @@ output$structure_plot <- renderPlot({
     
     df <- p$data
     
-    ## Account for centroids
-    df$SampleID <- c(as.character(omicsData$objPP$f_data[[get_fdata_cname(omicsData$objPP)]]), 
-                     rep(NA, nrow(df) - nrow(omicsData$objPP$f_data)))
-    
     if(plot_type != "dendro"){
+      isolate(table_table_current$table$RM__model_eval <- df)
+      
+      df$SampleID <- c(as.character(omicsData$objPP$f_data[[get_fdata_cname(omicsData$objPP)]]), 
+                       rep(NA, nrow(df) - nrow(omicsData$objPP$f_data)))
+      
       isolate(table_table_current$table$RM__model_eval <- df)
     } else {
       

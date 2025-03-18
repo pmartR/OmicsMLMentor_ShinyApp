@@ -601,8 +601,8 @@ hclust_params <- function(){
     
     
     radioGroupButtons("height_clust", "Define clusters by:", 
-                      choices = c("Height", "Number of clusters")),
-    
+                      choices = c("Number of clusters", "Height")),
+
     conditionalPanel("input.height_clust == 'Height'", {
       hp_inputs$input_labels <- list(
         "Linkage method",

@@ -57,10 +57,14 @@ suppressPackageStartupMessages({
   library(glmnetUtils)
   library(glmnet)
   library(plsmod)
+  library(embed)
+  library(discrim)
   
   ## Don't let these get masked by other functions
   library(dplyr)
   library(purrr)
+  library(pcaMethods)
+
   library(slopeR) ## Must be installed manually
 })
 

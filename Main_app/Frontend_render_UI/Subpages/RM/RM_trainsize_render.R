@@ -41,8 +41,15 @@ observe({
   update <- omicsData$objRM
   data <- omicsData$objPP
   
-  req(!is.null(input$cv_perform_option) || !is.null(input$numb_test) || 
-        !is.null(input$cv_hp_option))
+  req(!is.null(input$cv_perform_option) || 
+        !is.null(input$numb_test) || 
+        !is.null(input$cv_hp_option)
+      )
+  
+  req(!is.null(update) && 
+        !is.null(data)  && 
+        supervised()
+  )
   
   group_info <- get_group_DF(data)
   

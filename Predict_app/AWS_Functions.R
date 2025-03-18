@@ -22,14 +22,14 @@ observeEvent(input$`__startup__`, {
       
       # Load into AWS obj
       csv_reader <- function(x) {read.csv(x, check.names = FALSE)}
-      AWSobj$e_data <- s3read_using(FUN = csv_reader, object = query$e_data, bucket=query$s3_bucket)
+      AWSobj$e_data <- unique(s3read_using(FUN = csv_reader, object = query$e_data, bucket=query$s3_bucket))
       if(!is.null(query$e_meta)){
         AWSobj$e_meta <- s3read_using(FUN = csv_reader, object = query$e_meta, bucket=query$s3_bucket)
         ## Temp fix for razor proteins
         AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
       }
       if(!is.null(query$f_data)){
-        AWSobj$f_data <- s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket)
+        AWSobj$f_data <- unique(s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket))
       }
       
       ## Find the associated id (passed id in URL likely data specific and not model specific)
@@ -46,7 +46,7 @@ observeEvent(input$`__startup__`, {
       # 
       # AWSobj$model <- readRDS(fp)
       
-      AWSobj$model <- s3read_using(FUN = readRDS, object = file.path(id, model),
+      AWSobj$model <- s3read_using(FUN = readRDS, object = file.path(id_use, model),
                                    bucket=gsub("merged_files.+", new_folder, query$s3_bucket))
       
       cat(file=stderr(), "Test 2")
@@ -65,9 +65,19 @@ observeEvent(input$`__startup__`, {
 
 }, priority = -10, ignoreNULL = FALSE, once = TRUE)
 
-# observeEvent(input$use_example, {
-#   if(!is.null(input$use_example)) disable(id = "use_example")
-# })
 
+observeEvent(input$load_example, ignoreNULL = F, {
+  if(!is.null(input$load_example)) disable(id = "load_example")
+})
+
+
+observeEvent(input$model_file, ignoreNULL = F, ignoreInit = F, {
+  updateBoxCollapse(session, "", open = c("params_box", "data_props_fdata", "data_props"), 
+                    close = c("model_upload", "data_upload_edata", "data_upload_fdata", "data_upload_emeta"))
+})
+
+observeEvent(input$specify_fdata_done, ignoreNULL = F, ignoreInit = F, {
+  enable("specify_fdata_done")
+})
       
       

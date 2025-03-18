@@ -11,6 +11,10 @@ unsup_combine <- function(new_omics, backfill_info, model_omics){
       fdata_cname <- get_fdata_cname(new_omics)
       f1 <- new_omics$f_data
       f2 <- model_omics$f_data
+
+      ## Prevent problems where samples are named the same
+      f1[[fdata_cname]] <- paste0(f1[[fdata_cname]], "_new")
+      f2[[fdata_cname]] <- paste0(f2[[fdata_cname]], "_model")
       
       f1$Source <- "New data"
       f2$Source <- "Model data"
@@ -39,6 +43,11 @@ unsup_combine <- function(new_omics, backfill_info, model_omics){
       )
       colnames(f2) <- c(fdata_cname, "Source")
       
+
+      ## Prevent problems where samples are named the same
+      f1[[fdata_cname]] <- paste0(f1[[fdata_cname]], "_new")
+      f2[[fdata_cname]] <- paste0(f2[[fdata_cname]], "_model")
+      
       new_fdata <- full_join(f1, f2)
       
     } else if (!is.null(model_omics$f_data)){
@@ -53,6 +62,10 @@ unsup_combine <- function(new_omics, backfill_info, model_omics){
       
       f2 <- model_omics$f_data
       f2$Source <- "Model data"
+      
+      ## Prevent problems where samples are named the same
+      f1[[fdata_cname]] <- paste0(f1[[fdata_cname]], "_new")
+      f2[[fdata_cname]] <- paste0(f2[[fdata_cname]], "_model")
       
       new_fdata <- full_join(f1, f2)
       
@@ -72,6 +85,10 @@ unsup_combine <- function(new_omics, backfill_info, model_omics){
       )
       colnames(f2) <- fdata_cname
       
+      ## Prevent problems where samples are named the same
+      f1[[fdata_cname]] <- paste0(f1[[fdata_cname]], "_new")
+      f2[[fdata_cname]] <- paste0(f2[[fdata_cname]], "_model")
+      
       new_fdata <- full_join(f1, f2)
       
     }
@@ -90,6 +107,19 @@ unsup_combine <- function(new_omics, backfill_info, model_omics){
     
     ## Should be the same # of rows at this point in the same order
     new_edata <- cbind(backfill_info, model_omics$e_data[!(colnames(model_omics$e_data) %in% get_edata_cname(model_omics))])
+
+    e1 <- backfill_info
+    e2 <- model_omics$e_data[!(colnames(model_omics$e_data) %in% get_edata_cname(model_omics))]
+    
+    
+    ## Prevent problems where samples are named the same
+    colnames(e1)[!(colnames(e1) %in% get_edata_cname(new_omics))]  <- paste0(colnames(e1), "_new")[!(colnames(e1) %in% get_edata_cname(new_omics))]
+    colnames(e2) <- paste0(colnames(e2), "_model")
+    
+    ## Should be the same # of rows at this point in the same order
+    new_edata <- cbind(e1, 
+                       e2
+                       )
     edata_cname <- get_edata_cname(new_omics)
     
     ## Should knock out double rows

@@ -22,14 +22,14 @@ observeEvent(input$`__startup__`, {
     
     # Load into AWS obj
     csv_reader <- function(x) {read.csv(x, check.names = FALSE)}
-    AWSobj$e_data <- s3read_using(FUN = csv_reader, object = query$e_data, bucket=query$s3_bucket)
+    AWSobj$e_data <- unique(s3read_using(FUN = csv_reader, object = query$e_data, bucket=query$s3_bucket))
     if(!is.null(query$e_meta)){
       AWSobj$e_meta <- s3read_using(FUN = csv_reader, object = query$e_meta, bucket=query$s3_bucket)
       ## Temp fix for razor proteins
       AWSobj$e_meta <- unique(AWSobj$e_meta[colnames(AWSobj$e_meta) != "Proteins"])
     }
     if(!is.null(query$f_data)){
-      AWSobj$f_data <- s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket)
+      AWSobj$f_data <- unique(s3read_using(FUN = csv_reader, object = query$f_data, bucket=query$s3_bucket))
     }
     
     cat(file=stderr(), "Test 2")
@@ -122,8 +122,9 @@ output$data_select_UI <- renderUI({
   
 })
 
-observeEvent(input$load_example, {
-  if(!is.null(input$load_example)) hide(id = "load_example")
+
+observeEvent(input$use_example, ignoreNULL = F, {
+  if(!is.null(input$use_example)) hide(id = "use_example")
 })
 
 
@@ -203,6 +204,10 @@ output$download_processed_data <- downloadHandler(
           response_performance = response_performance
         )
         
+        model_export_full <- list(model = omicsData$objRM,
+                                 norm_omics = omicsData$objNorm,
+                                 pp_omics = omicsData$objPP)
+        
         saveRDS(model_export_full, file = "SLOPE_model.RDS")
         
         aws.s3::put_object(
@@ -245,7 +250,7 @@ output$download_processed_data <- downloadHandler(
           )
           update_main_df <- rbind(update_main_df, update_main_df2)
           
-          model_export_reduced = list(
+          model_export_reduced <- list(
             model = omicsData$objRM_reduced,
             norm_omics = omicsData$objNorm,
             pp_omics = omicsData$objPP)

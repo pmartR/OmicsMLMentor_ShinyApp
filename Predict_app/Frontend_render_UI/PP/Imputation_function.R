@@ -16,7 +16,8 @@ imputation_function <- function(omicsData_use, thresholds){
     #                                     parallel = TRUE
     # )
     rollup_method = attr(omicsData$model$pp_omics,"pro_quant_info")$method
-    objQCPro <- slopeR::protein_rollup(omicsData_use,method = rollup_method)
+
+    objQCPro <- pmartR::protein_quant(omicsData_use, method = rollup_method)
     transform_df <- get_transform_df(as.slData(objQCPro), thresholds)
     
     ## Determine peptide handling based on protein handling
