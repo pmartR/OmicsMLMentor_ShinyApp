@@ -72,9 +72,6 @@ RUN R -e 'renv::restore()'
 ## Keep for MultiProbe AWS
 RUN R -e "install.packages('aws.s3')"
 RUN R -e "install.packages('aws.ec2metadata')"
-RUN R -e "BiocManager::install('mixOmics')"
-RUN R -e "BiocManager::install('pcaMethods')"
-RUN R -e "BiocManager::install('plsmod')"
 
 FROM base AS map
 
@@ -84,9 +81,6 @@ RUN echo "Building MAP image."
 RUN R -e "options(repos=c('CRAN' = 'https://cloud.r-project.org', BiocManager::repositories()));renv::restore()"
 
 RUN R -e "remotes::install_local('./renv/local/mapdataaccess-lib.zip')" 
-RUN R -e "BiocManager::install('mixOmics')"
-RUN R -e "BiocManager::install('pcaMethods')"
-RUN R -e "BiocManager::install('plsmod')"
 
 FROM ${cloud_version} AS final
 

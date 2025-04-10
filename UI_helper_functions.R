@@ -128,22 +128,6 @@ add_plot_styling <- function(input, pagename, plot, subplot = F) {
   
 }
 
-#'@details A helper to make an inline set of colorpicker inputs
-#'@param cpicker_args list of lists, each sub-element being a list of arguments
-#'passed to one instance of colourpicker::pickerInput
-#'@param ... Extra UI elements to put at the front of the inline div
-inline_cpickers <- function(cpicker_args, ...) {
-  cpickers = purrr::map(cpicker_args, function(x) do.call(colourpicker::colourInput, x))
-  do.call(
-    div,
-    c(
-      list(...),
-      list(class = "inline-wrapper-1"),
-      cpickers
-    )
-  )
-}
-
 #'@details Create one button or two inline buttons that will be used to update
 #'the axes styling of a one or two ggplots.
 #'
