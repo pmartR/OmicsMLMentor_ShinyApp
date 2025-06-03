@@ -20,6 +20,21 @@ imputation_function <- function(omicsData_use, thresholds = NULL){
     ## Get handling of protein-level data
     transform_df <- get_transform_df(as.slData(pepQCData$objQCPro), thresholds)
     
+    ## Make sure these are compatible ##
+    omicsData_use$e_meta[[get_edata_cname(omicsData_use)]] <- as.character(
+      omicsData_use$e_meta[[get_edata_cname(omicsData_use)]])
+    
+    omicsData_use$e_meta[[get_emeta_cname(omicsData_use)]] <- as.character(
+      omicsData_use$e_meta[[get_emeta_cname(omicsData_use)]])
+    
+    transform_df[[get_edata_cname(omicsData_use)]] <- as.character(
+      transform_df[[get_edata_cname(omicsData_use)]])
+    
+    if(get_emeta_cname(omicsData_use) %in% colnames(transform_df)){
+      transform_df[[get_emeta_cname(omicsData_use)]] <- as.character(
+        transform_df[[get_emeta_cname(omicsData_use)]])
+    }
+    
     ## Determine peptide handling based on protein handling
     combined_handling <- left_join(
       omicsData_use$e_meta[c(get_edata_cname(omicsData_use), get_emeta_cname(omicsData_use))],

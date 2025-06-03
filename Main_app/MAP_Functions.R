@@ -24,7 +24,7 @@ observeEvent(input$`__startup__`, {
         html(selector = "#loading-gray-overlay > div", html = "Loading MAP data...")
         
         # get the appropriate minio config for retrieving CoreMS files
-        cfg_location = if (Sys.getenv("MINIO_CONFIG_PATH") == "") "../cfg/minio_config.yml" else Sys.getenv("MINIO_CONFIG_PATH")
+        cfg_location = if (Sys.getenv("MINIO_CONFIG_PATH") == "") "cfg/minio_config.yml" else Sys.getenv("MINIO_CONFIG_PATH")
         minio_con <<- mapDataAccess::map_data_connection(cfg_location)
 
         res <- store_minio_data(query[['map-data']])

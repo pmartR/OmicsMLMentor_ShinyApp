@@ -40,7 +40,7 @@ USER root
 WORKDIR /srv/shiny-server/slope
 
 # pre-install renv
-ENV RENV_VERSION 1.0.3
+ENV RENV_VERSION 1.0.11
 ENV RENV_WATCHDOG_ENABLED FALSE
 
 RUN echo "Installing remotes and renv..."
@@ -84,6 +84,9 @@ RUN echo "Building MAP image."
 RUN R -e "options(repos=c('CRAN' = 'https://cloud.r-project.org', BiocManager::repositories()));renv::restore()"
 
 RUN R -e "remotes::install_local('./renv/local/mapdataaccess-lib.zip')" 
+RUN R -e "BiocManager::install('mixOmics')"
+RUN R -e "BiocManager::install('pcaMethods')"
+RUN R -e "BiocManager::install('plsmod')"
 
 FROM ${cloud_version} AS final
 

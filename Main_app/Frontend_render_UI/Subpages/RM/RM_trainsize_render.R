@@ -38,7 +38,6 @@ observeEvent(c(input$holdout_done, input$cv_perform_done, input$cv_hp_done), {
 ## This needs to be greedy in case the eval function is run
 observe({
   
-  update <- omicsData$objRM
   data <- omicsData$objPP
   
   req(!is.null(input$cv_perform_option) || 
@@ -46,7 +45,7 @@ observe({
         !is.null(input$cv_hp_option)
       )
   
-  req(!is.null(update) && 
+  req(
         !is.null(data)  && 
         supervised()
   )

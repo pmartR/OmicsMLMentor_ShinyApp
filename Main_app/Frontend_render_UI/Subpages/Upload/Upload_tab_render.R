@@ -298,7 +298,6 @@ output$boxplot_UI_render <- renderUI({
 })
 
 observeEvent(input$use_example, {
-  
   if(!input$use_example){
     ## Clear all loaded e_data, e_meta, f_data
     reactive_dataholder$e_data <- NULL
@@ -308,8 +307,7 @@ observeEvent(input$use_example, {
 })
 
 observeEvent(input$data_type, {
-  
-  if(!AWS){
+  if(!AWS && !MAP_ACTIVE){
     ## Clear all loaded e_data, e_meta, f_data
     reactive_dataholder$e_data <- NULL
     reactive_dataholder$f_data <- NULL
