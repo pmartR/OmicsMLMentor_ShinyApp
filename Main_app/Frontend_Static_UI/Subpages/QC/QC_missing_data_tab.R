@@ -111,7 +111,7 @@ missing_data <- function(){
                    br(),
 
                    paste0("Observed biomolecules may not be detected in all samples.",
-                          " Most supported models in SLOPE do not handle incomplete detection of biomolecules.",
+                          " Most supported models in Omics ML Mentor do not handle incomplete detection of biomolecules.",
                           " The following models can handle incomplete detection: ",
                           toString(names(missing_designation[missing_designation])),
                           "."),

@@ -1,9 +1,9 @@
-# SLOPE-app
+# Omics ML Mentor
 
 <!-- badges: start -->
 <!-- badges: end -->
 
-SLOPE is a shiny application that serves as the frontend to the slopeR package.  
+Omics ML Mentor is a shiny application that serves as the frontend to the slopeR package.  
 It provides an interface to the machine learning capabilities of slopeR, including 
 expert mentor, which recommends machine learning models to use based on user 
 goals and data.  Users can upload data, perform various preprocessing steps such 
@@ -11,7 +11,7 @@ as filtering, normalization, and imputation, before running desired machine lear
 methods.  Results, including performance metrics and visualizations, as well as a 
 report are available for download at the end of the workflow.
 
-The MAP project version is available at `https://map.emsl.pnnl.gov/app/slope`.  
+The MAP project version is available at `https://map.emsl.pnnl.gov/app/omicsmlmentor`.  
 The Multiprobe project version is available at `https://multiprobe.us/slope/`. 
 
 # Running Locally

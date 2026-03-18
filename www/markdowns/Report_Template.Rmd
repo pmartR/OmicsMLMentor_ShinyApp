@@ -48,7 +48,7 @@ if (params$user_inputs$upload$edata_source == "Uploaded Data") {
   text <- paste0(text, " called ", params$user_inputs$upload$edata_filename)
 }
 
-text <- paste0(text, " was uploaded to the SLOPE application. This file contains ")
+text <- paste0(text, " was uploaded to the Omics ML Mentor application. This file contains ")
 text <- paste0(text, length(params$omicsData$obj$e_data) - 1)
 text <- paste0(text, " samples and ")
 text <- paste0(text, length(unique(params$omicsData$obj$e_data[[params$user_inputs$upload$edata_idcol]])))
@@ -75,7 +75,7 @@ if (!is.null(params$user_inputs$upload$fdata_source) && params$user_inputs$uploa
     text <- paste0(text, " called ", params$user_inputs$upload$fdata_filename)
   }
   
-  text <- paste0(text, " was also uploaded to the SLOPE application. The sample identifier column was designated as **")
+  text <- paste0(text, " was also uploaded to the Omics ML Mentor application. The sample identifier column was designated as **")
   text <- paste0(text, params$user_inputs$upload$fdata_idcol)
   text <- paste0(text, "**. The file contains ")
   text <- paste0(text, length(params$omicsData$obj$f_data))
@@ -91,7 +91,7 @@ if (!is.null(params$user_inputs$upload$emeta_source) && params$user_inputs$uploa
     text <- paste0(text, " called ", params$user_inputs$upload$emeta_filename)
   }
   
-  text <- paste0(text, " was also uploaded to the SLOPE application. The molecule identifier column was designated as **")
+  text <- paste0(text, " was also uploaded to the Omics ML Mentor application. The molecule identifier column was designated as **")
   text <- paste0(text, params$user_inputs$upload$emeta_idcol)
   text <- paste0(text, "**. The file contains ")
   text <- paste0(text, length(params$omicsData$obj$e_meta))
@@ -146,7 +146,7 @@ Abundance Data Boxplots: \
 ```{r Upload boxplot}
 if (is.null(params$plots$table$Upload__boxplot))
 {
-  "Plot was not generated in the SLOPE session."
+  "Plot was not generated in the Omics ML Mentor session."
 } else {
   params$plots$table$Upload__boxplot
 }
@@ -186,7 +186,7 @@ Single Observation Biomolecules: \
 ```{r Single Obs}
 if (is.null(params$plots$table$QC__single_obs))
 {
-  "Plot was not generated in the SLOPE session."
+  "Plot was not generated in the Omics ML Mentor session."
 } else {
   params$plots$table$QC__single_obs
 }
@@ -212,7 +212,7 @@ if(!inherits(omicsData$objQC, "seqData")) {
     params$plots$table$QC__rmd_overall
   ))
   {
-    "Plot was not generated in the SLOPE session."
+    "Plot was not generated in the Omics ML Mentor session."
   } else {
     params$plots$table$QC__rmd_overall
   }
@@ -260,7 +260,7 @@ if (is.null(
   params$plots$table$QC__missing_samples
   ))
 {
-  "Plot was not generated in the SLOPE session."
+  "Plot was not generated in the Omics ML Mentor session."
 } else {
   params$plots$table$QC__missing_samples
 }
@@ -274,7 +274,7 @@ if (params$user_inputs$qc$missingdata_kept != "Yes") {
     params$plots$table$QC__missing_features
     ))
   {
-    "Plot was not generated in the SLOPE session."
+    "Plot was not generated in the Omics ML Mentor session."
   } else {
     suppressWarnings(
       params$plots$table$QC__missing_features
@@ -343,7 +343,7 @@ if (is.null(
   params$plots$table$PP__transform
   ))
 {
-  "Plot was not generated in the SLOPE session."
+  "Plot was not generated in the Omics ML Mentor session."
 } else {
   params$plots$table$PP__transform
 }
@@ -550,7 +550,7 @@ if (params$user_inputs$pp$norm_method != "No Normalization") {
   params$plots$table$PP__normalization__post
   ))
 {
-  "Plot was not generated in the SLOPE session."
+  "Plot was not generated in the Omics ML Mentor session."
 } else {
   params$plots$table$PP__normalization__post
 }

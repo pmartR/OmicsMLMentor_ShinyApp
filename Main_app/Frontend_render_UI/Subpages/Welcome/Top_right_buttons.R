@@ -15,7 +15,7 @@ observeEvent(input$contact, {
       br(),
       
       paste0("Please email us at Lisa.Bramer@pnnl.gov with any questions or ",
-             "concerns regarding the SLOPE app. This includes, but is not ",
+             "concerns regarding the Omics ML Mentor app. This includes, but is not ",
              "limited to, bugs, feature requests, and feedback.")
       
     )

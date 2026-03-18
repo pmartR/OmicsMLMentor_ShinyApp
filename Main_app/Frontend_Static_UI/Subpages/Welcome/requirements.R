@@ -5,7 +5,7 @@ requirements_function <- function(){
     div(
       style = 'height:500px; overflow-y: scroll',
     paste0(
-      "SLOPE requires quantitative ‘omics data to build a model. The following",
+      "Omics ML Mentor requires quantitative ‘omics data to build a model. The following",
       " types of 'omics data are currently supported:"),
     
     br(),

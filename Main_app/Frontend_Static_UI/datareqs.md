@@ -1,8 +1,8 @@
-### <span style = 'color:navy'><strong>SLOPE – General Requirements</strong></span>
+### <span style = 'color:navy'><strong>Omics ML Mentor – General Requirements</strong></span>
 
 ***
 
-SLOPE requires quantitative ‘omics data to build a model. The following types of 'omics data are currently supported: 
+Omics ML Mentor requires quantitative ‘omics data to build a model. The following types of 'omics data are currently supported: 
 **Metabolomics**
     * NMR
         * By identified metabolites identified in the spectra

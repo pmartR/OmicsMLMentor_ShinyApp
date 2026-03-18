@@ -1,4 +1,4 @@
-### Additional SLOPE model attributes
+### Additional Omics ML Mentor model attributes
 
 add_model_attributes <- function(model, supervised = T, model_name){
   

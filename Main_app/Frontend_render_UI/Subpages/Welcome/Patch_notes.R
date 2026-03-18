@@ -3,7 +3,7 @@ patch_notes <- list(
   "v 0.1" = "Added functionality for introjs and user experience levels",
   "v 0.2" = "Additional features, quality of life support, and AWS deployment support",
   "v 0.3" = "Bugfix and progress UI release for MP prod env -- upcoming changes include reports, more bugfixes, and improved AWS functionality",
-  "v 1.0" = "Deployment of SLOPE for MultiProbe enviornment, including many bigfixes, features, and updated README.md. Prediction on new data is"
+  "v 1.0" = "Deployment of Omics ML Mentor for MultiProbe enviornment, including many bigfixes, features, and updated README.md. Prediction on new data is"
 )
 
 subtext <- c(
@@ -25,7 +25,7 @@ observeEvent(input$launch_app_info,{
       
       strong("Currently running:"),
       br(),
-      paste0("SLOPE app ", names(patch_notes)[length(patch_notes)]),
+      paste0("Omics ML Mentor app ", names(patch_notes)[length(patch_notes)]),
       br(),
       paste0("Release date: ", subtext[length(subtext)]),
       br(),

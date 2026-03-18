@@ -248,7 +248,7 @@ ttext <- list(
   COVARIATE_TYPE_INFO = "Suppose your covariate has values [1,1,2,2,3,3].  By default, it is treated as a factor variable, but you may want to specify it is numeric.",
   COVARIATES_NO_EFFECT = "Keeping samples that have missing values for a covariate will cause that covariate to be ignored in most subsequent analyses.",
   CV_THRESH_TOO_LOW = "Maximum CV must be between 1 and the maximum data CV: ",
-  DATA_IMPORTED = "Your data has been uploaded from a SLOPE project, continue by completing the remainder of the tab: ",
+  DATA_IMPORTED = "Your data has been uploaded from a Omics ML Mentor project, continue by completing the remainder of the tab: ",
   DOWNLOAD_OPTS_DISABLED = "Currently selected parameters are the same as the ones currently stored for this plot",
   GTEST_TOO_FEW = "All groups must have at least 3 nonmissing observations for at least one biomolecule to perform the G-test, the following groups did not: ",
   GOALS_NOT_COMPLETE = "Data source and at least two datatypes must be specified and confirmed.  (Separate lipids count as one)",

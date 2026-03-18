@@ -4,11 +4,14 @@
 # Change this when we bump versions, or if you have some test version of the
 # base container you can specify --build-arg base_tag=<yourtag> in docker run.
 
-ARG BASE_IMAGE=slope-base
-ARG BASE_TAG=latest
+#ARG BASE_IMAGE=slope-base
+#ARG BASE_TAG=latest
 
 # Note ARGs are "forgotten" after FROM statement
-FROM ${BASE_IMAGE}:${BASE_TAG}
+#FROM ${BASE_IMAGE}:${BASE_TAG}
+
+# Degnan - March 2026 - I'm updating the files so no need to rebuild the container
+FROM code-registry.emsl.pnl.gov/multiomics-analyses/slope-app:0.0.5 
 
 WORKDIR /srv/shiny-server/slope
 

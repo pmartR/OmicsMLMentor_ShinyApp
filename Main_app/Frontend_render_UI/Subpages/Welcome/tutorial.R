@@ -3,17 +3,17 @@ steps <- reactive(data.frame(
   
   step = 1:9,
   intro = c(
-    HTML(paste0("Welcome to SLOPE v 1.0! This application allows users",
+    HTML(paste0("Welcome to Omics ML Mentor v 1.0! This application allows users",
     " to upload 'omics data and develop statistical machine learning models ",
     "with expert guidance.<br/><br/> This tutorial will take you through ",
     "how to find additional information about the ",
     "data types, models, and statistical methods currently supported.")),
     
-    HTML(paste0("SLOPE requires quantitative ‘omics data to build a model. ",
+    HTML(paste0("Omics ML Mentor requires quantitative ‘omics data to build a model. ",
            "Proteomic, metabolomic, lipidomic, and transcriptomic data types are supported.",
            " To view data requirement specifics and/or download templates, click this button.")),
     
-    HTML(paste0("Currently, SLOPE supports a variety of models and statistical",
+    HTML(paste0("Currently, Omics ML Mentor supports a variety of models and statistical",
            " analyses to manage your data with respect to the supported ",
            "models. Use this button to see all information ",
            "associated with the supported models and methods."
@@ -57,7 +57,7 @@ launch_tutorial <- function(){
   
   shinyalert("Welcome!",
              paste0(
-               "SLOPE functions as a tool to assist analysts in developing",
+               "Omics ML Mentor functions as a tool to assist analysts in developing",
                " high quality machine learning models.",
                " Would you like to view the ",
                "introduction tutorial?"),

@@ -38,7 +38,7 @@ welcome_tab <- function(){
       12,
       wellPanel(
         
-        strong("Welcome to SLOPE! The buttons below can help you get started:"),
+        strong("Welcome to Omics ML Mentor! The buttons below can help you get started:"),
         br(),
         br(),
         actionButton("launch_totoro", "Launch introduction tutorial"),
@@ -75,7 +75,7 @@ welcome_tab <- function(){
       )
     ),
     
-    column(12, actionButton("welcome_confirm", "Start SLOPE!"))
+    column(12, actionButton("welcome_confirm", "Start Omics ML Mentor!"))
   ) # fluidrow
   # )
   

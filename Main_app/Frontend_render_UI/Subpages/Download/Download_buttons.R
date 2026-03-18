@@ -137,7 +137,7 @@ observeEvent(input$makezipfile, {
           omicsData = reactiveValuesToList(omicsData), 
           tables = reactiveValuesToList(table_table_current), 
           plots = reactiveValuesToList(plot_table_current), 
-          titleName = "SLOPE Report")
+          titleName = "Omics ML Mentor Report")
         rmarkdown::render(paste0(orig_wd, "/www/markdowns/Report_Template.Rmd"), output_dir = getwd(), output_file = fs::path_sanitize(input$report_name), params = params, envir = new.env())
       })
     }, error = print)
